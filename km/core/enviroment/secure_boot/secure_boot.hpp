@@ -1,3 +1,4 @@
+#pragma once
 #define SystemSecureBootInformation 145
 
 typedef struct _SYSTEM_SECUREBOOT_INFORMATION {
