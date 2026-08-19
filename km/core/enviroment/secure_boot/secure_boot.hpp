@@ -1,4 +1,6 @@
 #pragma once
+#include <ntddk.h>
+
 #define SystemSecureBootInformation 145
 
 typedef struct _SYSTEM_SECUREBOOT_INFORMATION {
@@ -11,3 +13,5 @@ struct SECURE_BOOT_CHECK {
     BOOLEAN isEnabled;
     BOOLEAN consistentData; // check if spoofed
 };
+
+SECURE_BOOT_CHECK isSecureBootEnabled();

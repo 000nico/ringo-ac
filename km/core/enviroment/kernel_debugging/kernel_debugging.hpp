@@ -8,3 +8,5 @@ typedef struct _SYSTEM_KERNEL_DEBUGGER_INFORMATION {
 struct KERNEL_DEBUGGING_CHECK {
 	BOOLEAN isEnabled;
 };
+
+KERNEL_DEBUGGING_CHECK isKernelDebuggerPresent();

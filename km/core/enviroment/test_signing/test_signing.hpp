@@ -13,3 +13,5 @@ typedef struct _SYSTEM_CODEINTEGRITY_INFORMATION {
 struct TEST_SIGNING_CHECK {
     BOOLEAN isEnabled;
 };
+
+TEST_SIGNING_CHECK isTestSigningEnabled();
