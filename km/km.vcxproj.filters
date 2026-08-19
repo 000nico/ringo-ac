@@ -30,12 +30,24 @@
     <ClCompile Include="core\enviroment\secure_boot\secure_boot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\enviroment\test_signing\test_signing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\enviroment\kernel_debugging\kernel_debugging.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\enviroment\secure_boot\secure_boot.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="sdk\imports\imports.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\enviroment\test_signing\test_signing.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\enviroment\kernel_debugging\kernel_debugging.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -6,7 +6,6 @@
 DEFINE_GUID(EFI_GLOBAL_VARIABLE_GUID,
 	0x8be4df61, 0x93ca, 0x11d2, 0xaa, 0x0d, 0x00, 0xe0, 0x98, 0x03, 0x2b, 0x8c);
 
-
 BOOLEAN zwQueryCheck(_SYSTEM_SECUREBOOT_INFORMATION* psbi) {
 	_SYSTEM_SECUREBOOT_INFORMATION sbi = { 0 };
 	ULONG returnLenght = 0;
@@ -20,7 +19,6 @@ BOOLEAN zwQueryCheck(_SYSTEM_SECUREBOOT_INFORMATION* psbi) {
 		*psbi = sbi;
 		return true;
 	}
-
 }
 
 BOOLEAN uefiCheck(BOOLEAN* pEnabled) {
