@@ -2,6 +2,7 @@
 #include<winnt.h>
 #include "../../../../../global.hpp"
 
+// todo: add whitelist process
 OB_PREOP_CALLBACK_STATUS OpenProcessCallback(_In_ PVOID RegistrationContext, _Inout_ POB_PRE_OPERATION_INFORMATION Info) {
 	if (Info->ObjectType != *PsProcessType && Info->ObjectType != *PsThreadType)
 		return OB_PREOP_SUCCESS;
@@ -9,7 +10,7 @@ OB_PREOP_CALLBACK_STATUS OpenProcessCallback(_In_ PVOID RegistrationContext, _In
 	HANDLE callerPid = PsGetProcessId(PsGetCurrentProcess());
 	HANDLE targetPid = PsGetProcessId((PEPROCESS)Info->Object);
 
-	if (targetPid == (HANDLE)g_ProtectedGamePid && callerPid != (HANDLE)g_ProtectedGamePid) {
+	if (targetPid == (HANDLE)ringo_context.ProtectedGamePid && callerPid != (HANDLE)ringo_context.ProtectedGamePid) {
 		if (Info->Operation == OB_OPERATION_HANDLE_CREATE) {
 			if (Info->Parameters->CreateHandleInformation.OriginalDesiredAccess & (PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION)) { // its a bitmask so == doesnt work well{
 				Info->Parameters->CreateHandleInformation.DesiredAccess &= ~(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION);

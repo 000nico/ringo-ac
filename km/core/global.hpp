@@ -1,3 +1,8 @@
 #pragma once
 
-ULONG g_ProtectedGamePid;
+typedef struct RINGO_CONTEXT {
+	ULONG ProtectedGamePid;
+	PVOID ObCallbackHandle;
+};
+
+RINGO_CONTEXT ringo_context;
