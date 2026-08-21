@@ -11,7 +11,7 @@ BOOLEAN checkTestSigning(BOOLEAN* pTestSigningEnabled) {
 	NTSTATUS status = ZwQuerySystemInformation(SystemCodeIntegrityInformation, &sci, sizeof(sci), &returnLenght);
 
 	if (!NT_SUCCESS(status)) {
-		return false;
+		return FALSE;
 	}
 
 	*pTestSigningEnabled = (sci.CodeIntegrityOptions & CODEINTEGRITY_OPTION_TESTSIGN) != 0;

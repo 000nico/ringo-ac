@@ -13,11 +13,11 @@ BOOLEAN zwQueryCheck(_SYSTEM_SECUREBOOT_INFORMATION* psbi) {
 	NTSTATUS status = ZwQuerySystemInformation(SystemSecureBootInformation, &sbi, sizeof(sbi), &returnLenght);
 
 	if (!NT_SUCCESS(status))
-		return false; // not supported
+		return FALSE; // not supported
 
 	else {
 		*psbi = sbi;
-		return true;
+		return TRUE;
 	}
 }
 
@@ -32,11 +32,11 @@ BOOLEAN uefiCheck(BOOLEAN* pEnabled) {
 	NTSTATUS status = ExGetFirmwareEnvironmentVariable(&varName, (LPGUID)&EFI_GLOBAL_VARIABLE_GUID, &value, &valueLenght, &attributes);
 
 	if (!NT_SUCCESS(status)) {
-		return false; // no uefi or not existing variable, or legacy bios
+		return FALSE; // no uefi or not existing variable, or legacy bios
 	}
 	else {
 		*pEnabled = (value != 0);
-		return true;
+		return TRUE;
 	}
 }
 

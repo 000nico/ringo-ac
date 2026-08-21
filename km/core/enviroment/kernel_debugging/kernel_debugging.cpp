@@ -7,10 +7,10 @@ BOOLEAN zwQueryCheck(BOOLEAN* pIsKernelDebuggerPresent) {
 	ULONG returnLenght = 0;
 	NTSTATUS status = ZwQuerySystemInformation(SystemKernelDebuggerInformation, &skdi, sizeof(skdi), &returnLenght);
 
-	if (!NT_SUCCESS(status)) return false;
+	if (!NT_SUCCESS(status)) return FALSE;
 	else {
 		*pIsKernelDebuggerPresent = skdi.KernelDebuggerEnabled && !skdi.KernelDebuggerNotPresent; // kernel debugging can be enabled, but not necesarially present atm
-		return true;
+		return TRUE;
 	}
 }
 

@@ -97,15 +97,19 @@
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="core\enviroment\hvci\hvci.cpp" />
     <ClCompile Include="core\enviroment\kernel_debugging\kernel_debugging.cpp" />
     <ClCompile Include="core\enviroment\secure_boot\secure_boot.cpp" />
     <ClCompile Include="core\enviroment\test_signing\test_signing.cpp" />
+    <ClCompile Include="core\enviroment\vbs\vbs.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="core\enviroment\hvci\hvci.hpp" />
     <ClInclude Include="core\enviroment\kernel_debugging\kernel_debugging.hpp" />
     <ClInclude Include="core\enviroment\secure_boot\secure_boot.hpp" />
     <ClInclude Include="core\enviroment\test_signing\test_signing.hpp" />
+    <ClInclude Include="core\enviroment\vbs\vbs.hpp" />
     <ClInclude Include="sdk\imports\imports.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

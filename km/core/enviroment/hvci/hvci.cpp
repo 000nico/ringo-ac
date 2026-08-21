@@ -10,12 +10,12 @@ BOOLEAN zwCheck(BOOLEAN* pHvciEnabled) {
 	NTSTATUS status = ZwQuerySystemInformation(SystemCodeIntegrityInformation, &sci, sizeof(sci), &returnLenght);
 
 	if (!NT_SUCCESS(status)) {
-		return false;
+		return FALSE;
 	}
 	else {
 		BOOLEAN hvciEnabled = (sci.CodeIntegrityOptions & CODEINTEGRITY_OPTION_HVCI_KMCI_ENABLED) != 0;
 		*pHvciEnabled = hvciEnabled;
-		return true;
+		return TRUE;
 	}
 }
 

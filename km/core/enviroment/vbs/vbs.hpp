@@ -21,3 +21,5 @@ struct VBS_CHECK {
     BOOLEAN isVBSEnabled;
     BOOLEAN isHVCIEnabled;
 };
+
+VBS_CHECK isVBSEnabled();
