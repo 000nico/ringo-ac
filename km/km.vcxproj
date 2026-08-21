@@ -98,6 +98,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\enviroment\hvci\hvci.cpp" />
+    <ClCompile Include="core\enviroment\hypervisor\hypervisor.cpp" />
     <ClCompile Include="core\enviroment\kernel_debugging\kernel_debugging.cpp" />
     <ClCompile Include="core\enviroment\secure_boot\secure_boot.cpp" />
     <ClCompile Include="core\enviroment\test_signing\test_signing.cpp" />
@@ -106,6 +107,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\enviroment\hvci\hvci.hpp" />
+    <ClInclude Include="core\enviroment\hypervisor\hypervisor.hpp" />
     <ClInclude Include="core\enviroment\kernel_debugging\kernel_debugging.hpp" />
     <ClInclude Include="core\enviroment\secure_boot\secure_boot.hpp" />
     <ClInclude Include="core\enviroment\test_signing\test_signing.hpp" />

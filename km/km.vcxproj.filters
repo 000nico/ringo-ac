@@ -42,6 +42,9 @@
     <ClCompile Include="core\enviroment\vbs\vbs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\enviroment\hypervisor\hypervisor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\enviroment\secure_boot\secure_boot.hpp">
@@ -60,6 +63,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\enviroment\vbs\vbs.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\enviroment\hypervisor\hypervisor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
