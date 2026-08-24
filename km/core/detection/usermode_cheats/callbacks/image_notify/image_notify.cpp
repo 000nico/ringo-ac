@@ -1,4 +1,3 @@
-#include<ntifs.h>
 #include "../../../../global.hpp"
 #include "image_notify.hpp"
 
@@ -9,10 +8,10 @@ VOID LoadImageCallback(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE Proce
     if (FullImageName == NULL)
         return;
 
-    if (g_FlaggedDllsCount >= 256)
+    if (g_LoadedDllsCount >= 256 || g_FlaggedDllsCount > 256)
         return;
 
-    FLAGGED_DLL fd = {};
+    LOADED_MODULE fd = {};
 
     RtlInitEmptyUnicodeString(&fd.FullImageName, fd.NameBuffer, sizeof(fd.NameBuffer));
     RtlCopyUnicodeString(&fd.FullImageName, FullImageName);
@@ -21,10 +20,10 @@ VOID LoadImageCallback(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE Proce
     fd.Mem.Image.ImageSize = ImageInfo->ImageSize;
     fd.isSigned = (ImageInfo->ImageSignatureLevel > SE_SIGNING_LEVEL_UNSIGNED);
 
-    LONG index = InterlockedIncrement((PLONG)&g_FlaggedDllsCount) - 1;
+    LONG index = InterlockedIncrement((PLONG)&g_LoadedDllsCount) - 1;
     if (index < 256) {
-        RtlCopyMemory(&g_FlaggedDlls[index], &fd, sizeof(FLAGGED_DLL));
-        g_FlaggedDlls[index].FullImageName.Buffer = g_FlaggedDlls[index].NameBuffer; // fix puntero
+        RtlCopyMemory(&g_LoadedDlls[index], &fd, sizeof(LOADED_MODULE));
+        g_LoadedDlls[index].FullImageName.Buffer = g_LoadedDlls[index].NameBuffer;
     }
 }
 

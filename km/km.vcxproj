@@ -97,6 +97,8 @@
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="core\detection\usermode_cheats\callbacks\create_thread_notify\create_thread_notify.cpp" />
+    <ClCompile Include="core\detection\usermode_cheats\callbacks\image_notify\image_notify.cpp" />
     <ClCompile Include="core\detection\usermode_cheats\callbacks\ob_callbacks\openprocess\openprocess.cpp" />
     <ClCompile Include="core\enviroment\hvci\hvci.cpp" />
     <ClCompile Include="core\enviroment\hypervisor\hypervisor.cpp" />
@@ -107,6 +109,8 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="core\detection\usermode_cheats\callbacks\create_thread_notify\create_thread_notify.hpp" />
+    <ClInclude Include="core\detection\usermode_cheats\callbacks\image_notify\image_notify.hpp" />
     <ClInclude Include="core\detection\usermode_cheats\callbacks\ob_callbacks\openprocess\openprocess.hpp" />
     <ClInclude Include="core\enviroment\hvci\hvci.hpp" />
     <ClInclude Include="core\enviroment\hypervisor\hypervisor.hpp" />

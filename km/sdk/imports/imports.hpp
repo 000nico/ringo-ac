@@ -6,3 +6,11 @@ extern "C" NTSTATUS ZwQuerySystemInformation(
     IN ULONG SystemInformationLength,
     OUT PULONG ReturnLength OPTIONAL
 );
+
+extern "C" NTSTATUS NTAPI ZwQueryInformationThread(
+    _In_      HANDLE          ThreadHandle,
+    _In_      THREADINFOCLASS ThreadInformationClass,
+    _Out_     PVOID           ThreadInformation,
+    _In_      ULONG           ThreadInformationLength,
+    _Out_opt_ PULONG          ReturnLength
+);

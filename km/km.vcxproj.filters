@@ -48,6 +48,12 @@
     <ClCompile Include="core\detection\usermode_cheats\callbacks\ob_callbacks\openprocess\openprocess.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\detection\usermode_cheats\callbacks\image_notify\image_notify.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\detection\usermode_cheats\callbacks\create_thread_notify\create_thread_notify.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\enviroment\secure_boot\secure_boot.hpp">
@@ -75,6 +81,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\global.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\detection\usermode_cheats\callbacks\image_notify\image_notify.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\detection\usermode_cheats\callbacks\create_thread_notify\create_thread_notify.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
