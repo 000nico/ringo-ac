@@ -14,3 +14,7 @@ extern "C" NTSTATUS NTAPI ZwQueryInformationThread(
     _In_      ULONG           ThreadInformationLength,
     _Out_opt_ PULONG          ReturnLength
 );
+
+extern "C" NTKERNELAPI PUCHAR PsGetProcessImageFileName(
+    _In_ PEPROCESS Process
+);

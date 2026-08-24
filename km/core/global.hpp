@@ -3,7 +3,9 @@
 #include "detection/usermode_cheats/callbacks/create_thread_notify/create_thread_notify.hpp"
 
 typedef struct RINGO_CONTEXT {
-	ULONG ProtectedGamePid;
+	HANDLE ProtectedGamePid;
+	PUCHAR ProtectedGameProcessName;
+	BOOLEAN isGameOpen = FALSE;
 
 	struct {
 		PVOID ObCallbackHandle;
@@ -13,6 +15,9 @@ typedef struct RINGO_CONTEXT {
 
 		BOOLEAN isCreateThreadCallbackRegistered;
 		PCREATE_THREAD_NOTIFY_ROUTINE CreateThreadCallbackPtr;
+
+		BOOLEAN isCreateProcessCallbackRegistered;
+		PCREATE_PROCESS_NOTIFY_ROUTINE_EX CreateProcessNotifyRoutinePtr;
 	} Callbacks;
 };
 
@@ -24,6 +29,6 @@ LOADED_MODULE g_FlaggedDlls[256];
 volatile LONG g_FlaggedDllsCount;
 
 CREATED_THREAD g_CreatedThreads[256];
-volatile LONG g_CreatedThreads;
+volatile LONG g_CreatedThreadsCount;
 
 RINGO_CONTEXT ringo_context;

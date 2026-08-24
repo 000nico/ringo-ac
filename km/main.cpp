@@ -17,6 +17,9 @@ void DriverUnload(PDRIVER_OBJECT DriverObject) {
     if (ringo_context.Callbacks.isCreateThreadCallbackRegistered == TRUE)
         PsRemoveCreateThreadNotifyRoutine(ringo_context.Callbacks.CreateThreadCallbackPtr);
 
+    if (ringo_context.Callbacks.isCreateProcessCallbackRegistered == TRUE)
+        PsSetCreateProcessNotifyRoutineEx(ringo_context.Callbacks.CreateProcessNotifyRoutinePtr, TRUE); // i would really want to know why microsoft has a remove for every callback but not for this one
+
     KdPrint(("Ringo Driver Unloaded\n"));
     
 }
