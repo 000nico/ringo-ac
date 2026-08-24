@@ -1,9 +1,10 @@
-#include<ntifs.h>
-#include<winnt.h>
 #include "../../../../../global.hpp"
+#include "openprocess.hpp"
 
 // todo: add whitelist process
 OB_PREOP_CALLBACK_STATUS OpenProcessCallback(_In_ PVOID RegistrationContext, _Inout_ POB_PRE_OPERATION_INFORMATION Info) {
+	UNREFERENCED_PARAMETER(RegistrationContext);
+
 	if (Info->ObjectType != *PsProcessType && Info->ObjectType != *PsThreadType)
 		return OB_PREOP_SUCCESS;
 

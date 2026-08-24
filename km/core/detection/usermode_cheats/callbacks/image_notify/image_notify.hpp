@@ -1,20 +1,20 @@
 #pragma once
 #include<ntifs.h>
 
-typedef struct LOADED_MODULE {
-	WCHAR NameBuffer[256];
-	UNICODE_STRING FullImageName;
-
-	BOOLEAN isSigned;
-
-	struct {
-		struct {
-			PVOID ImageBase;
-			SIZE_T ImageSize;
-		} Image;
-		
-	} Mem;
-};
+#ifndef _LOADED_MODULE_DEFINED
+#define _LOADED_MODULE_DEFINED
+typedef struct _LOADED_MODULE {
+    WCHAR NameBuffer[256];
+    UNICODE_STRING FullImageName;
+    BOOLEAN isSigned;
+    struct {
+        struct {
+            PVOID ImageBase;
+            SIZE_T ImageSize;
+        } Image;
+    } Mem;
+} LOADED_MODULE;
+#endif
 
 VOID SetLoadImageCallback();
 

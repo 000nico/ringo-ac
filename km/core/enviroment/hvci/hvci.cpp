@@ -1,6 +1,5 @@
-#include "hvci.hpp"
 #include "../../../sdk/imports/imports.hpp"
-#include <ntddk.h>
+#include "hvci.hpp"
 
 BOOLEAN zwCheck(BOOLEAN* pHvciEnabled) {
 	SYSTEM_CODEINTEGRITY_INFORMATION sci = { 0 };

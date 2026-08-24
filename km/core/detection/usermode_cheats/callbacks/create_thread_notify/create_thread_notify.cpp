@@ -1,9 +1,11 @@
 // This is util to detect manual map injections, because we can know if a 
 // new thread appeared and see if its start address does match with a legitime module known in that process
 
+#include <ntifs.h>
+#include "../../../../../sdk/imports/imports.hpp"
 #include "../../../../global.hpp"
 #include "create_thread_notify.hpp"
-#include "../../../../../sdk/imports/imports.hpp"
+
 
 PVOID GetStartAddress(HANDLE ThreadId) {
     PETHREAD thread;

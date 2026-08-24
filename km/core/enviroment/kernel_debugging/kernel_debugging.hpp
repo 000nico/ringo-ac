@@ -1,3 +1,4 @@
+#pragma once
 #define SystemKernelDebuggerInformation 35
 
 typedef struct _SYSTEM_KERNEL_DEBUGGER_INFORMATION {

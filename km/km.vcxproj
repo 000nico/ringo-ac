@@ -107,6 +107,7 @@
     <ClCompile Include="core\enviroment\secure_boot\secure_boot.cpp" />
     <ClCompile Include="core\enviroment\test_signing\test_signing.cpp" />
     <ClCompile Include="core\enviroment\vbs\vbs.cpp" />
+    <ClCompile Include="core\global.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>

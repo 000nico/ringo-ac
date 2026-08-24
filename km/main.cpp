@@ -1,9 +1,8 @@
 #include "core/detection/usermode_cheats/callbacks/ob_callbacks/openprocess/openprocess.hpp"
 #include "core/detection/usermode_cheats/callbacks/image_notify/image_notify.hpp"
 #include "core/detection/usermode_cheats/callbacks/create_thread_notify/create_thread_notify.hpp"
+#include "core/detection/usermode_cheats/callbacks/create_process_notify/create_process_notify.hpp"
 #include "core/global.hpp"
-
-RINGO_CONTEXT ringo_context = { 0 };
 
 void DriverUnload(PDRIVER_OBJECT DriverObject) {
     UNREFERENCED_PARAMETER(DriverObject);
@@ -21,7 +20,6 @@ void DriverUnload(PDRIVER_OBJECT DriverObject) {
         PsSetCreateProcessNotifyRoutineEx(ringo_context.Callbacks.CreateProcessNotifyRoutinePtr, TRUE); // i would really want to know why microsoft has a remove for every callback but not for this one
 
     KdPrint(("Ringo Driver Unloaded\n"));
-    
 }
 
 extern "C"
@@ -42,6 +40,10 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) 
     SetCreateThreadCallback();
     if (ringo_context.Callbacks.isCreateThreadCallbackRegistered == FALSE)
         KdPrint(("[-] CreateThreadCallback not loaded."));
+
+    SetCreateProcessCallback();
+    if (ringo_context.Callbacks.isCreateProcessCallbackRegistered == FALSE)
+        KdPrint(("[-] CreateProcessCallback not loaded."));
 
     DriverObject->DriverUnload = DriverUnload;
 
