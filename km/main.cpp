@@ -3,6 +3,7 @@
 #include "core/detection/usermode_cheats/callbacks/create_thread_notify/create_thread_notify.hpp"
 #include "core/detection/usermode_cheats/callbacks/create_process_notify/create_process_notify.hpp"
 #include "core/global.hpp"
+#include "core/comunication/ioctl/ioctl.hpp"
 
 void DriverUnload(PDRIVER_OBJECT DriverObject) {
     UNREFERENCED_PARAMETER(DriverObject);
@@ -44,6 +45,10 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) 
     SetCreateProcessCallback();
     if (ringo_context.Callbacks.isCreateProcessCallbackRegistered == FALSE)
         KdPrint(("[-] CreateProcessCallback not loaded."));
+
+    // load ioctl
+    if(!NT_SUCCESS(SetupDevice(DriverObject)))
+        KdPrint(("[-] IOCTL setup not loaded"));
 
     DriverObject->DriverUnload = DriverUnload;
 

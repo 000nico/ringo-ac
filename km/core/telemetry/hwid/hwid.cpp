@@ -6,7 +6,7 @@
 NTSTATUS getSmbiosUuid(UCHAR OutUuid[16]) {
     ULONG size = sizeof(SYSTEM_FIRMWARE_TABLE_INFORMATION);
     PSYSTEM_FIRMWARE_TABLE_INFORMATION info =
-        (PSYSTEM_FIRMWARE_TABLE_INFORMATION)ExAllocatePoolWithTag(NonPagedPool, size, 'SMBI');
+        (PSYSTEM_FIRMWARE_TABLE_INFORMATION)ExAllocatePool2(POOL_FLAG_NON_PAGED, size, 'SMBI');
     if (!info) return STATUS_INSUFFICIENT_RESOURCES;
 
     info->ProviderSignature = 'RSMB';
@@ -19,7 +19,7 @@ NTSTATUS getSmbiosUuid(UCHAR OutUuid[16]) {
 
     ExFreePoolWithTag(info, 'SMBI');
     size = returnLength;
-    info = (PSYSTEM_FIRMWARE_TABLE_INFORMATION)ExAllocatePoolWithTag(NonPagedPool, size, 'SMBI');
+    info = (PSYSTEM_FIRMWARE_TABLE_INFORMATION)ExAllocatePool2(POOL_FLAG_NON_PAGED, size, 'SMBI');
     if (!info) return STATUS_INSUFFICIENT_RESOURCES;
 
     info->ProviderSignature = 'RSMB';

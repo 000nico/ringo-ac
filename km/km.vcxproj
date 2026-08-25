@@ -97,6 +97,8 @@
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="core\comunication\ioctl\dispatcher.cpp" />
+    <ClCompile Include="core\comunication\ioctl\setup.cpp" />
     <ClCompile Include="core\detection\usermode_cheats\callbacks\create_process_notify\create_process_notify.cpp" />
     <ClCompile Include="core\detection\usermode_cheats\callbacks\create_thread_notify\create_thread_notify.cpp" />
     <ClCompile Include="core\detection\usermode_cheats\callbacks\image_notify\image_notify.cpp" />
@@ -112,6 +114,8 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="core\comunication\ioctl\codes.hpp" />
+    <ClInclude Include="core\comunication\ioctl\ioctl.hpp" />
     <ClInclude Include="core\detection\usermode_cheats\callbacks\create_process_notify\create_process_notify.hpp" />
     <ClInclude Include="core\detection\usermode_cheats\callbacks\create_thread_notify\create_thread_notify.hpp" />
     <ClInclude Include="core\detection\usermode_cheats\callbacks\image_notify\image_notify.hpp" />
