@@ -60,6 +60,9 @@
     <ClCompile Include="core\global.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\telemetry\hwid\hwid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\enviroment\secure_boot\secure_boot.hpp">
@@ -96,6 +99,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\detection\usermode_cheats\callbacks\create_process_notify\create_process_notify.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\telemetry\hwid\hwid.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

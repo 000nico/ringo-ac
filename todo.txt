@@ -1,7 +1,0 @@
-SystemHypervisorInformation          // 197 - detecta si corrés dentro de un hypervisor
-SystemHypervisorDetailInformation    // 159 - detalles del hypervisor presente
-SystemBootEnvironmentInformation     // 90 - tipo de boot (UEFI vs BIOS legacy, boot device)
-SystemModuleInformation              // 11 - lista de todos los módulos/drivers cargados en kernel
-SystemModuleInformationEx            // 171 - versión extendida
-SystemCodeIntegrityPolicyInformation // 134 - política de integridad activa
-SystemCodeIntegrityCertificateInformation // 18

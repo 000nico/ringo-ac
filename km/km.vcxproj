@@ -108,6 +108,7 @@
     <ClCompile Include="core\enviroment\test_signing\test_signing.cpp" />
     <ClCompile Include="core\enviroment\vbs\vbs.cpp" />
     <ClCompile Include="core\global.cpp" />
+    <ClCompile Include="core\telemetry\hwid\hwid.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -122,6 +123,7 @@
     <ClInclude Include="core\enviroment\test_signing\test_signing.hpp" />
     <ClInclude Include="core\enviroment\vbs\vbs.hpp" />
     <ClInclude Include="core\global.hpp" />
+    <ClInclude Include="core\telemetry\hwid\hwid.hpp" />
     <ClInclude Include="sdk\imports\imports.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
