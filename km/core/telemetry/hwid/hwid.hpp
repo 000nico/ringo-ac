@@ -9,3 +9,5 @@ typedef struct _HWID {
     ULONG CpuHash;           // CPUID EAX=1 + EAX=0
     ULONG DiskSerial;
 } HWID;
+
+HWID buildHwid();

@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\comunication\ioctl\get_env_info.cpp" />
+    <ClCompile Include="core\comunication\ioctl\setters.cpp" />
     <ClCompile Include="core\driver.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -30,6 +31,7 @@
     <ClInclude Include="..\km\core\enviroment\secure_boot\secure_boot.hpp" />
     <ClInclude Include="..\km\core\enviroment\test_signing\test_signing.hpp" />
     <ClInclude Include="..\km\core\enviroment\vbs\vbs.hpp" />
+    <ClInclude Include="..\km\core\telemetry\hwid\hwid.hpp" />
     <ClInclude Include="core\comunication\ioctl\get_env_info.hpp" />
     <ClInclude Include="core\comunication\ioctl\ioctl.hpp" />
     <ClInclude Include="core\driver.hpp" />

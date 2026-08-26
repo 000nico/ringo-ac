@@ -67,8 +67,6 @@ DWORD getInformationClass(ENVIRONMENT_INFO_CLASS informationClass) {
 }
 
 BOOLEAN GetEnvironmentInformation(HANDLE hDriver, ENVIRONMENT_INFO_CLASS informationClass, PVOID buffer, ULONG size, DWORD* bytesReturned) {
-	NTSTATUS status = STATUS_SUCCESS;
-	
 	if (!hDriver || hDriver == INVALID_HANDLE_VALUE || !buffer) return STATUS_INVALID_PARAMETER;
 
 	DWORD ioctlCode = getInformationClass(informationClass);

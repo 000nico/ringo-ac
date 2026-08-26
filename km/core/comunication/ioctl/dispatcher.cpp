@@ -2,8 +2,9 @@
 #include <ntifs.h>
 
 #include "ioctl.hpp"
-#include "../../global.hpp"
 #include "codes.hpp"
+
+#include "../../global.hpp"
 
 #include "../../enviroment/test_signing/test_signing.hpp"
 #include "../../enviroment/secure_boot/secure_boot.hpp"
@@ -11,6 +12,8 @@
 #include "../../enviroment/hypervisor/hypervisor.hpp"
 #include "../../enviroment/hvci/hvci.hpp"
 #include "../../enviroment/vbs/vbs.hpp"
+
+#include "../../telemetry/hwid/hwid.hpp"
 
 NTSTATUS IoctlHandler(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
     UNREFERENCED_PARAMETER(DeviceObject);
@@ -34,6 +37,12 @@ NTSTATUS IoctlHandler(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
     switch (code) {
         // getters
         case IOCTL_GET_HWID: {
+            if (outputSize < sizeof(HWID)) { status = STATUS_BUFFER_TOO_SMALL; break; }
+
+            HWID hwid = buildHwid();
+            RtlCopyMemory(buffer, &hwid, sizeof(hwid));
+            bytesReturned = sizeof(hwid);
+
             break;
         }
 

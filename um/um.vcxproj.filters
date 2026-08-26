@@ -24,6 +24,9 @@
     <ClCompile Include="core\comunication\ioctl\get_env_info.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\comunication\ioctl\setters.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\driver.hpp">
@@ -51,6 +54,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\comunication\ioctl\get_env_info.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\km\core\telemetry\hwid\hwid.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
