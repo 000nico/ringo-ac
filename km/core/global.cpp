@@ -7,3 +7,5 @@ volatile LONG g_FlaggedDllsCount = 0;
 CREATED_THREAD g_CreatedThreads[256] = { 0 };
 volatile LONG g_CreatedThreadsCount = 0;
 RINGO_CONTEXT ringo_context = { 0 };
+
+PDRIVER_OBJECT g_DriverObject = NULL;

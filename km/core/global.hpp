@@ -28,3 +28,5 @@ extern CREATED_THREAD g_CreatedThreads[256];
 extern volatile LONG g_CreatedThreadsCount;
 
 extern RINGO_CONTEXT ringo_context;
+
+extern PDRIVER_OBJECT g_DriverObject;

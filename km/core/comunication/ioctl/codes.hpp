@@ -1,3 +1,4 @@
+// This file is SHARED with usermode !!!
 #pragma once
 
 #define IOCTL_BASE 0x8000

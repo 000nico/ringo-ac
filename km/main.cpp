@@ -26,7 +26,6 @@ void DriverUnload(PDRIVER_OBJECT DriverObject) {
 extern "C"
 NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) {
     UNREFERENCED_PARAMETER(RegistryPath);
-
     KdPrint(("Ringo Driver Loaded\n"));
 
     // load callbacks

@@ -14,3 +14,5 @@ struct HYPERVISOR_CHECK {
     BOOLEAN hypervisorPresent;
     BOOLEAN manipulatedInformation;
 };
+
+HYPERVISOR_CHECK getHypervisorInfo();

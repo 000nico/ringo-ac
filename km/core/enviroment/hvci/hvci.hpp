@@ -2,13 +2,7 @@
 #define CODEINTEGRITY_OPTION_HVCI_KMCI_ENABLED 0x400
 #define SystemCodeIntegrityInformation 103
 
-#ifndef _SYSTEM_CODEINTEGRITY_INFORMATION_DEFINED
-#define _SYSTEM_CODEINTEGRITY_INFORMATION_DEFINED
-typedef struct _SYSTEM_CODEINTEGRITY_INFORMATION {
-    ULONG Length;
-    ULONG CodeIntegrityOptions;
-} SYSTEM_CODEINTEGRITY_INFORMATION, * PSYSTEM_CODEINTEGRITY_INFORMATION;
-#endif
+#include "../test_signing/test_signing.hpp"
 
 struct HVCI_CHECK {
     BOOLEAN isEnabled;
