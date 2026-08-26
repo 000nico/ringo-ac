@@ -1,8 +1,9 @@
 #include "driver.hpp"
+#include "../../km/core/comunication/ioctl/codes.hpp"
 
 BOOLEAN open_driver(HANDLE* pDriverHandle) {
     *pDriverHandle = CreateFile(
-        L"\\\\.\\ringo",
+        DEVICE_NAME,
         GENERIC_READ | GENERIC_WRITE,
         FILE_SHARE_READ | FILE_SHARE_WRITE,
         NULL,

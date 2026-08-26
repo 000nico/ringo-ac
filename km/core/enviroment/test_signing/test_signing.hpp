@@ -1,5 +1,14 @@
 #pragma once
+
+#ifdef _KERNEL_MODE
 #include <ntddk.h>
+#else
+#define WIN32_NO_STATUS
+#include <windows.h>
+#undef WIN32_NO_STATUS
+#include <ntstatus.h>
+#endif
+
 
 #define SystemCodeIntegrityInformation 103
 #define CODEINTEGRITY_OPTION_ENABLED     0x01

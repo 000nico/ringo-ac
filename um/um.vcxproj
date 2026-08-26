@@ -19,10 +19,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="core\comunication\ioctl\get_env_info.cpp" />
     <ClCompile Include="core\driver.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\km\core\enviroment\hvci\hvci.hpp" />
+    <ClInclude Include="..\km\core\enviroment\hypervisor\hypervisor.hpp" />
+    <ClInclude Include="..\km\core\enviroment\kernel_debugging\kernel_debugging.hpp" />
+    <ClInclude Include="..\km\core\enviroment\secure_boot\secure_boot.hpp" />
+    <ClInclude Include="..\km\core\enviroment\test_signing\test_signing.hpp" />
+    <ClInclude Include="..\km\core\enviroment\vbs\vbs.hpp" />
+    <ClInclude Include="core\comunication\ioctl\get_env_info.hpp" />
+    <ClInclude Include="core\comunication\ioctl\ioctl.hpp" />
     <ClInclude Include="core\driver.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

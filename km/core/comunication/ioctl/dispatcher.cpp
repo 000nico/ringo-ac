@@ -24,6 +24,13 @@ NTSTATUS IoctlHandler(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
     NTSTATUS status = STATUS_SUCCESS;
     ULONG_PTR bytesReturned = 0;
 
+    if ((inputSize > 0 || outputSize > 0) && buffer == NULL) {
+        Irp->IoStatus.Status = STATUS_INVALID_PARAMETER;
+        Irp->IoStatus.Information = 0;
+        IoCompleteRequest(Irp, IO_NO_INCREMENT);
+        return STATUS_INVALID_PARAMETER;
+    }
+
     switch (code) {
         // getters
         case IOCTL_GET_HWID: {
@@ -140,17 +147,22 @@ NTSTATUS IoctlHandler(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 
         // setters 
         case IOCTL_SET_GAME_NAME: {
-            if (inputSize == 0) { status = STATUS_INVALID_PARAMETER; break; }
-            ringo_context.ProtectedGameProcessName = (PUCHAR)buffer;
+            if (inputSize == 0 || inputSize >= sizeof(ringo_context.ProtectedGameProcessName)) { status = STATUS_INVALID_PARAMETER; break; }
+
+            RtlZeroMemory(ringo_context.ProtectedGameProcessName, sizeof(ringo_context.ProtectedGameProcessName));
+            RtlCopyMemory(ringo_context.ProtectedGameProcessName, buffer, inputSize);
+
             break;
         }
 
         // driver
+        /*
         case IOCTL_UNLOAD_DRIVER: {
             if (g_DriverObject && g_DriverObject->DriverUnload)
                 g_DriverObject->DriverUnload(g_DriverObject);
             break;
         }
+        */
 
         default:
             status = STATUS_INVALID_DEVICE_REQUEST;
