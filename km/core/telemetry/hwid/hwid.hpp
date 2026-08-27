@@ -1,6 +1,14 @@
 // HWID = SHA256(SMBIOS_UUID + CPUID + DiskPhysicalSerial)
 #pragma once
+
+#ifdef _KERNEL_MODE
 #include<ntifs.h>
+#else
+#define WIN32_NO_STATUS
+#include <windows.h>
+#undef WIN32_NO_STATUS
+#include <ntstatus.h>
+#endif
 
 #define SystemFirmwareTableInformation 76
 

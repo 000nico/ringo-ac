@@ -10,6 +10,7 @@
 #include "../km/core/enviroment/secure_boot/secure_boot.hpp"
 #include "../km/core/enviroment/test_signing/test_signing.hpp"
 #include "../km/core/enviroment/vbs/vbs.hpp"
+#include "../km/core/enviroment/tpm/tpm.hpp"
 
 #include "../km/core/telemetry/hwid/hwid.hpp"
 
@@ -74,6 +75,12 @@ int main()
         std::cout << "[+] VBS = " << vbs_check.isVBSEnabled << std::endl;
     else
         std::cout << "[-] Error getting VBS info" << std::endl;
+
+    TPM tpm_check = {};
+    if (NT_SUCCESS(GetEnvironmentInformation(hDriver, InfoVbs, &tpm_check, sizeof(tpm_check), &bytesReturned)))
+        std::cout << "[+] TPM = " << tpm_check.TpmVersion << std::endl;
+    else
+        std::cout << "[-] Error getting TPM info" << std::endl;
 
     // Callbacks Status
     BOOLEAN isCreateProcessCallbackSet = FALSE;

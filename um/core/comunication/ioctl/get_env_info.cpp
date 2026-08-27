@@ -10,6 +10,8 @@
 #include "../../../../km/core/enviroment/secure_boot/secure_boot.hpp"
 #include "../../../../km/core/enviroment/test_signing/test_signing.hpp"
 #include "../../../../km/core/enviroment/vbs/vbs.hpp"
+#include "../../../../km/core/enviroment/tpm/tpm.hpp"
+
 
 DWORD getInformationClass(ENVIRONMENT_INFO_CLASS informationClass) {
     DWORD ioctlCode = 0;
