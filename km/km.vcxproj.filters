@@ -69,6 +69,9 @@
     <ClCompile Include="core\comunication\ioctl\setup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\enviroment\tpm\tpm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\enviroment\secure_boot\secure_boot.hpp">
@@ -114,6 +117,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\comunication\ioctl\codes.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\enviroment\tpm\tpm.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

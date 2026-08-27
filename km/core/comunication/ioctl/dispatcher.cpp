@@ -12,6 +12,7 @@
 #include "../../enviroment/hypervisor/hypervisor.hpp"
 #include "../../enviroment/hvci/hvci.hpp"
 #include "../../enviroment/vbs/vbs.hpp"
+#include "../../enviroment/tpm/tpm.hpp"
 
 #include "../../telemetry/hwid/hwid.hpp"
 
@@ -122,6 +123,12 @@ NTSTATUS IoctlHandler(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
         }
 
         case IOCTL_GET_TPM_INFORMATION: {
+            if (outputSize < sizeof(TPM)) { status = STATUS_BUFFER_TOO_SMALL; break; }
+
+            TPM tpm = getTpmVersion();
+            RtlCopyMemory(buffer, &tpm, sizeof(tpm));
+            bytesReturned = sizeof(tpm);
+
             break;
         }
 

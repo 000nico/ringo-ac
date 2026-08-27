@@ -108,6 +108,7 @@
     <ClCompile Include="core\enviroment\kernel_debugging\kernel_debugging.cpp" />
     <ClCompile Include="core\enviroment\secure_boot\secure_boot.cpp" />
     <ClCompile Include="core\enviroment\test_signing\test_signing.cpp" />
+    <ClCompile Include="core\enviroment\tpm\tpm.cpp" />
     <ClCompile Include="core\enviroment\vbs\vbs.cpp" />
     <ClCompile Include="core\global.cpp" />
     <ClCompile Include="core\telemetry\hwid\hwid.cpp" />
@@ -125,6 +126,7 @@
     <ClInclude Include="core\enviroment\kernel_debugging\kernel_debugging.hpp" />
     <ClInclude Include="core\enviroment\secure_boot\secure_boot.hpp" />
     <ClInclude Include="core\enviroment\test_signing\test_signing.hpp" />
+    <ClInclude Include="core\enviroment\tpm\tpm.hpp" />
     <ClInclude Include="core\enviroment\vbs\vbs.hpp" />
     <ClInclude Include="core\global.hpp" />
     <ClInclude Include="core\telemetry\hwid\hwid.hpp" />
