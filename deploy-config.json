@@ -1,0 +1,24 @@
+{
+  "build": {
+    "solutionPath": "C:\\dev\\ringo-ac\\km\\km.slnx",
+    "configuration": "Debug",
+    "platform": "x64",
+    "msbuildPath": "MSBuild.exe"
+  },
+  "vmware": {
+    "vmrunPath": "C:\\Program Files (x86)\\VMware\\VMware VIX\\vmrun.exe",
+    "vmType": "ws",
+    "vmxPath": "D:\\VMs\\WDKTestVM\\WDKTestVM.vmx",
+    "guestUser": "Administrator",
+    "guestPassword": "242908"
+  },
+  "driver": {
+    "driverName": "ringo",
+    "sysFileName": "ringo.sys",
+    "exeFileName": "ringo-um.exe",
+    "remoteDeployPath": "C:\\Users\\nico\\Desktop"
+  },
+  "options": {
+    "rebootIfNeeded": true
+  }
+}
