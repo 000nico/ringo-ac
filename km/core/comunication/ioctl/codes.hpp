@@ -26,3 +26,4 @@
 
 #define DEVICE_NAME     L"\\Device\\ringo"
 #define SYMBOLIC_LINK   L"\\DosDevices\\ringo"
+#define DEVICE_NAME_UM L"\\\\.\\ringo"

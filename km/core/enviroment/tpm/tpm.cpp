@@ -1,3 +1,4 @@
+#pragma comment(lib, "tbs.lib")
 #include "tpm.hpp"
 #include <ntddk.h>
 #include <tbs.h>
@@ -7,7 +8,7 @@ TPM getTpmVersion() {
 
     TBS_HCONTEXT hContext = NULL;
     TBS_RESULT tbsResult;
-    NTSTATUS status = STATUS_SUCCESS;
+    //NTSTATUS status = STATUS_SUCCESS;
 
     // Attempt to detect TPM 2.0
     TBS_CONTEXT_PARAMS2 contextParams = { 0 };

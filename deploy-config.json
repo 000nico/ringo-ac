@@ -1,21 +1,23 @@
 {
   "build": {
-    "solutionPath": "C:\\dev\\ringo-ac\\km\\km.slnx",
+    "kernelSolutionPath": "C:\\dev\\ringo-ac\\km\\km.slnx",
+    "userSolutionPath": "C:\\dev\\ringo-ac\\um\\um.slnx",
     "configuration": "Debug",
     "platform": "x64",
-    "msbuildPath": "MSBuild.exe"
+    "msbuildPath": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe"
   },
   "vmware": {
-    "vmrunPath": "C:\\Program Files (x86)\\VMware\\VMware VIX\\vmrun.exe",
+    "vmrunPath": "C:\\Program Files (x86)\\VMware\\VMware Workstation\\vmrun.exe",
     "vmType": "ws",
-    "vmxPath": "D:\\VMs\\WDKTestVM\\WDKTestVM.vmx",
-    "guestUser": "Administrator",
-    "guestPassword": "242908"
+    "vmxPath": "C:\\Users\\nicol\\OneDrive\\Documentos\\Virtual Machines\\Windows 11 x64\\Windows 11 x64.vmx",
+    "guestUser": "nico",
+    "guestPassword": "242908",
+    "encryptionPassword": "24292008"
   },
   "driver": {
     "driverName": "ringo",
-    "sysFileName": "ringo.sys",
-    "exeFileName": "ringo-um.exe",
+    "sysFileName": "km.sys",
+    "exeFileName": "um.exe",
     "remoteDeployPath": "C:\\Users\\nico\\Desktop"
   },
   "options": {
