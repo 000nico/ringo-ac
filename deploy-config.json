@@ -9,8 +9,8 @@
   "vmware": {
     "vmrunPath": "C:\\Program Files (x86)\\VMware\\VMware Workstation\\vmrun.exe",
     "vmType": "ws",
-    "vmxPath": "C:\\Users\\nicol\\OneDrive\\Documentos\\Virtual Machines\\Windows 11 x64\\Windows 11 x64.vmx",
-    "guestUser": "nico",
+    "vmxPath": "C:\\Users\\nicol\\OneDrive\\Documentos\\Virtual Machines\\nicolas\\nicolas.vmx",
+    "guestUser": "nicovm",
     "guestPassword": "242908",
     "encryptionPassword": "24292008"
   },
@@ -18,7 +18,7 @@
     "driverName": "ringo",
     "sysFileName": "km.sys",
     "exeFileName": "um.exe",
-    "remoteDeployPath": "C:\\Users\\nico\\Desktop"
+    "remoteDeployPath": "C:\\Users\\nicovm\\Desktop"
   },
   "options": {
     "rebootIfNeeded": true

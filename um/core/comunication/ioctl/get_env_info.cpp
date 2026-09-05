@@ -75,5 +75,5 @@ BOOLEAN GetEnvironmentInformation(HANDLE hDriver, ENVIRONMENT_INFO_CLASS informa
 
 	BOOL result = DeviceIoControl(hDriver, ioctlCode, NULL, 0, buffer, size, bytesReturned, NULL);
 
-	return result? STATUS_SUCCESS : STATUS_UNSUCCESSFUL;
+	return (BOOLEAN)result;
 }

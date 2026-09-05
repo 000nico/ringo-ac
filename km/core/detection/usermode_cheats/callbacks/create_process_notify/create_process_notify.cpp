@@ -11,6 +11,7 @@ VOID PcreateProcessNotifyRoutineEx(_Inout_ PEPROCESS Process, _In_ HANDLE Proces
 	PUCHAR name = PsGetProcessImageFileName(Process);
 	if (!name) return;
 
+	if (!ringo_context.ProtectedGameProcessName) return;
 	if (strcmp((const char*)name, (const char*)ringo_context.ProtectedGameProcessName) == 0) {
 		// process created
 		if (CreateInfo) {

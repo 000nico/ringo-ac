@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
-    Builds the kernel-mode (.sys) and user-mode (.exe) parts of a driver project
-    and copies the binaries to a VMware Workstation/Player VM.
+    Builds the kernel-mode (.sys) and user-mode (.exe) projects and copies
+    both binaries to the Desktop of a VMware Workstation/Player VM.
 #>
 
 [CmdletBinding()]
@@ -44,9 +44,8 @@ $GuestPasswordPlain = $config.vmware.guestPassword
 $VmEncryptionPassword = $config.vmware.encryptionPassword
 
 # Driver settings
-$SysFileName      = $config.driver.sysFileName
-$ExeFileName      = $config.driver.exeFileName
-$RemoteDeployPath = $config.driver.remoteDeployPath
+$SysFileName = $config.driver.sysFileName
+$ExeFileName = $config.driver.exeFileName
 
 if (-not (Test-Path $VmrunPath)) {
     throw "vmrun.exe not found at '$VmrunPath'. Install VMware Workstation/Player or fix 'vmware.vmrunPath' in the config."
@@ -63,7 +62,18 @@ function Invoke-VmRun {
         [switch]$IgnoreError
     )
     $fullArgs = @("-T", $VmType) + $VmEncryptionArgs + @("-gu", $GuestUser, "-gp", $GuestPasswordPlain) + $Arguments
-    $output = & $VmrunPath @fullArgs 2>&1
+
+    # NOTE: Windows PowerShell (5.1) silently drops empty-string ("") arguments
+    # when calling a native exe via '&' with array splatting. Since an empty
+    # guest password is a valid/common case (no-password guest account), that
+    # bug shifts every argument after it and vmrun ends up misreading the
+    # .vmx path as a command name. Building the command line manually and
+    # running it through cmd.exe forces every argument -- including the
+    # empty one -- to be quoted and passed through correctly.
+    $quotedArgs = ($fullArgs | ForEach-Object { '"' + $_ + '"' }) -join ' '
+    $commandLine = "`"$VmrunPath`" $quotedArgs"
+
+    $output = cmd /c $commandLine 2>&1
     $exitCode = $LASTEXITCODE
     if ($exitCode -ne 0 -and -not $IgnoreError) {
         throw "vmrun failed (exit $exitCode): $output"
@@ -72,10 +82,38 @@ function Invoke-VmRun {
 }
 
 # ---------------------------------------------------------------------------
-# Helper: build one solution with MSBuild (compilacion estatica agregada)
+# Helper: generate a .props file that FORCES static CRT linking (/MT or /MTd)
+# ---------------------------------------------------------------------------
+# Passing /p:RuntimeLibrary=... on the MSBuild command line often does NOT
+# override a value the .vcxproj already hardcodes in its own ItemDefinitionGroup.
+# The reliable fix is to import a .props file AFTER the project's own C++
+# targets via ForceImportAfterCppTargets -- item metadata defined later wins,
+# so this guarantees the static runtime (no vcruntime140.dll / msvcp140.dll
+# dependency at runtime) regardless of what the project file says.
+function New-StaticCrtPropsFile {
+    $propsPath = Join-Path $env:TEMP "force_static_crt.props"
+    $propsContent = @'
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <RuntimeLibrary Condition="'$(Configuration)'=='Debug'">MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary Condition="'$(Configuration)'!='Debug'">MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+  </ItemDefinitionGroup>
+</Project>
+'@
+    Set-Content -Path $propsPath -Value $propsContent -Encoding UTF8
+    return $propsPath
+}
+
+# ---------------------------------------------------------------------------
+# Helper: build one solution with MSBuild
 # ---------------------------------------------------------------------------
 function Build-Solution {
-    param([string]$SolutionPath)
+    param(
+        [string]$SolutionPath,
+        [switch]$ForceStaticCrt
+    )
 
     Write-Step "Building solution: $SolutionPath ($Configuration|$Platform)"
 
@@ -90,6 +128,12 @@ function Build-Solution {
         "/nologo",
         "/v:minimal"
     )
+
+    if ($ForceStaticCrt) {
+        $propsPath = New-StaticCrtPropsFile
+        $buildArgs += "/p:ForceImportAfterCppTargets=`"$propsPath`""
+        Write-Host "Forcing static CRT (/MT or /MTd) via $propsPath" -ForegroundColor Yellow
+    }
 
     $proc = Start-Process -FilePath $MSBuildPath -ArgumentList $buildArgs -NoNewWindow -Wait -PassThru
     if ($proc.ExitCode -ne 0) {
@@ -125,10 +169,10 @@ function Find-BuiltBinary {
 }
 
 # ---------------------------------------------------------------------------
-# 1. Build both solutions
+# 1. Build both solutions (KM + UM)
 # ---------------------------------------------------------------------------
 Build-Solution -SolutionPath $KernelSolutionPath
-Build-Solution -SolutionPath $UserSolutionPath
+Build-Solution -SolutionPath $UserSolutionPath -ForceStaticCrt
 
 # ---------------------------------------------------------------------------
 # 2. Locate the generated binaries
@@ -142,52 +186,14 @@ Write-Host "SYS: $($sysFile.FullName)"
 Write-Host "EXE: $($exeFile.FullName)"
 
 # ---------------------------------------------------------------------------
-# 3. Make sure the VM is running and VMware Tools is ready
+# 3. Copy both binaries to the Desktop of the VM
 # ---------------------------------------------------------------------------
-Write-Step "Checking VM state"
+$RemoteDesktopPath = "C:\Users\$GuestUser\Desktop"
 
-$runningVms = & $VmrunPath -T $VmType @VmEncryptionArgs list
-$vmAlreadyRunning = ($runningVms | Where-Object { $_ -match [regex]::Escape($VmxPath) }).Count -gt 0
+Write-Step "Copying binaries to VM Desktop ($RemoteDesktopPath)"
 
-if (-not $vmAlreadyRunning) {
-    Write-Host "VM is not running. Starting it..." -ForegroundColor Yellow
-    & $VmrunPath -T $VmType @VmEncryptionArgs start $VmxPath nogui
-    Start-Sleep -Seconds 10
-} else {
-    Write-Host "VM is already running." -ForegroundColor Green
-}
-
-Write-Host "Waiting for VMware Tools to be ready inside the guest..."
-$maxRetries = 30
-$toolsReady = $false
-for ($i = 0; $i -lt $maxRetries; $i++) {
-    $state = & $VmrunPath -T $VmType @VmEncryptionArgs checkToolsState $VmxPath 2>&1
-    if ($state -match "running") {
-        $toolsReady = $true
-        break
-    }
-    Start-Sleep -Seconds 5
-}
-if (-not $toolsReady) { throw "VMware Tools did not respond in time inside the guest." }
-Write-Host "VMware Tools ready." -ForegroundColor Green
-
-# Sanity check that the guest credentials actually work
-Invoke-VmRun -Arguments @("runProgramInGuest", $VmxPath, "-noWait", "C:\Windows\System32\cmd.exe", "/c", "exit")
-Write-Host "Guest credentials validated." -ForegroundColor Green
-
-# ---------------------------------------------------------------------------
-# 4. Copy binaries to the VM
-# ---------------------------------------------------------------------------
-Write-Step "Copying binaries to the VM ($RemoteDeployPath)"
-
-# Create destination folder in the guest (ignore error if it already exists)
-Invoke-VmRun -IgnoreError -Arguments @(
-    "runProgramInGuest", $VmxPath, "-activeWindow",
-    "C:\Windows\System32\cmd.exe", "/c", "mkdir `"$RemoteDeployPath`""
-)
-
-$remoteSysPath = Join-Path $RemoteDeployPath $SysFileName
-$remoteExePath = Join-Path $RemoteDeployPath $ExeFileName
+$remoteSysPath = Join-Path $RemoteDesktopPath $SysFileName
+$remoteExePath = Join-Path $RemoteDesktopPath $ExeFileName
 
 Invoke-VmRun -Arguments @("copyFileFromHostToGuest", $VmxPath, $sysFile.FullName, $remoteSysPath)
 Invoke-VmRun -Arguments @("copyFileFromHostToGuest", $VmxPath, $exeFile.FullName, $remoteExePath)
