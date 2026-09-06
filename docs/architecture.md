@@ -1,4 +1,4 @@
-# 🏗️ System Architecture & IOCTL Interface
+# System Architecture and IOCTL Interface
 
 This document covers the low-level architectural design of Ringo Anti-Cheat, the kernel-mode driver lifecycle, global runtime structures, and the IOCTL communication protocol between User Mode (UM) and Kernel Mode (KM).
 
@@ -8,7 +8,7 @@ This document covers the low-level architectural design of Ringo Anti-Cheat, the
 
 The kernel driver (`km.sys`) is implemented as a standard WDM driver targeting Windows 10/11 x64.
 
-### 1.1 `DriverEntry` Execution Flow
+### 1.1 DriverEntry Execution Flow
 When the service is loaded into the kernel address space:
 1. **Object Callbacks Registration**: Calls `ObRegisterCallbacksOpenProcess()` to hook process and thread handle operations.
 2. **System Notify Routines Setup**:
@@ -22,7 +22,7 @@ When the service is loaded into the kernel address space:
    - Maps `IRP_MJ_CREATE`, `IRP_MJ_CLOSE`, and `IRP_MJ_DEVICE_CONTROL`.
 4. Sets the `DriverObject->DriverUnload` routine pointer.
 
-### 1.2 `DriverUnload` Teardown Flow
+### 1.2 DriverUnload Teardown Flow
 When the service is stopped:
 1. **Unregister Object Callbacks**: Calls `ObUnRegisterCallbacks(ringo_context.Callbacks.ObCallbackHandle)`.
 2. **Remove System Notify Routines**:
@@ -33,9 +33,9 @@ When the service is stopped:
 
 ---
 
-## 2. Runtime Context & Memory Model
+## 2. Runtime Context and Memory Model
 
-The driver state is maintained in a centralized global structure: [`RINGO_CONTEXT ringo_context`](file:///C:/dev/ringo-ac/km/core/global.hpp).
+The driver state is maintained in a centralized global structure: `RINGO_CONTEXT ringo_context`.
 
 ```cpp
 typedef struct RINGO_CONTEXT {
@@ -69,7 +69,7 @@ typedef struct RINGO_CONTEXT {
 
 ## 3. IOCTL Communication Protocol
 
-All communication uses `METHOD_BUFFERED` via `DeviceIoControl`. Buffer definitions are synchronized in [`km/core/comunication/ioctl/codes.hpp`](file:///C:/dev/ringo-ac/km/core/comunication/ioctl/codes.hpp).
+All communication uses `METHOD_BUFFERED` via `DeviceIoControl`. Buffer definitions are synchronized in `km/core/comunication/ioctl/codes.hpp`.
 
 ### 3.1 Control Codes Specification
 

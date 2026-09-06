@@ -1,12 +1,12 @@
-# 🛡️ Detection Engine & Callbacks
+# Detection Engine and Callbacks
 
 This document details the callback hooks, object filtering routines, and kernel memory scanners implemented in Ringo Anti-Cheat.
 
 ---
 
-## 1. Object Callbacks (`ObRegisterCallbacks`)
+## 1. Object Callbacks (ObRegisterCallbacks)
 
-📁 **Source:** [`km/core/detection/callbacks/ob_callbacks/obcallback.cpp`](file:///C:/dev/ringo-ac/km/core/detection/callbacks/ob_callbacks/obcallback.cpp)
+Source: `km/core/detection/callbacks/ob_callbacks/obcallback.cpp`
 
 ### 1.1 Purpose
 Prevents unauthorized user-mode processes from obtaining handle permissions that allow reading/writing process memory, injecting threads, or modifying thread execution contexts in the protected game.
@@ -43,9 +43,9 @@ Prevents unauthorized user-mode processes from obtaining handle permissions that
 
 ---
 
-## 2. Process Lifecycle Hook (`PsSetCreateProcessNotifyRoutineEx`)
+## 2. Process Lifecycle Hook (PsSetCreateProcessNotifyRoutineEx)
 
-📁 **Source:** [`km/core/detection/callbacks/create_process_notify/create_process_notify.cpp`](file:///C:/dev/ringo-ac/km/core/detection/callbacks/create_process_notify/create_process_notify.cpp)
+Source: `km/core/detection/callbacks/create_process_notify/create_process_notify.cpp`
 
 - **Callback Signature**: `PCREATE_PROCESS_NOTIFY_ROUTINE_EX` (`PcreateProcessNotifyRoutineEx`).
 - **Functionality**:
@@ -56,9 +56,9 @@ Prevents unauthorized user-mode processes from obtaining handle permissions that
 
 ---
 
-## 3. Thread Creation Hook (`PsSetCreateThreadNotifyRoutineEx`)
+## 3. Thread Creation Hook (PsSetCreateThreadNotifyRoutineEx)
 
-📁 **Source:** [`km/core/detection/callbacks/create_thread_notify/create_thread_notify.cpp`](file:///C:/dev/ringo-ac/km/core/detection/callbacks/create_thread_notify/create_thread_notify.cpp)
+Source: `km/core/detection/callbacks/create_thread_notify/create_thread_notify.cpp`
 
 - **Callback Signature**: `PCREATE_THREAD_NOTIFY_ROUTINE` with `PsCreateThreadNotifyNonSystem` flag.
 - **Functionality**:
@@ -69,9 +69,9 @@ Prevents unauthorized user-mode processes from obtaining handle permissions that
 
 ---
 
-## 4. Image Load Monitor (`PsSetLoadImageNotifyRoutineEx`)
+## 4. Image Load Monitor (PsSetLoadImageNotifyRoutineEx)
 
-📁 **Source:** [`km/core/detection/callbacks/image_notify/image_notify.cpp`](file:///C:/dev/ringo-ac/km/core/detection/callbacks/image_notify/image_notify.cpp)
+Source: `km/core/detection/callbacks/image_notify/image_notify.cpp`
 
 - **Callback Signature**: `PLOAD_IMAGE_NOTIFY_ROUTINE` (`LoadImageCallback`).
 - **Functionality**:
@@ -84,13 +84,13 @@ Prevents unauthorized user-mode processes from obtaining handle permissions that
 
 ## 5. Kernel Driver Scanners (Manual Map Detection)
 
-📁 **Source:** [`km/core/detection/manual_map_driver_scan/`](file:///C:/dev/ringo-ac/km/core/detection/manual_map_driver_scan/)
+Source: `km/core/detection/manual_map_driver_scan/`
 
-### 5.1 Legitimate Driver Enumeration (`driver_scan.cpp`)
+### 5.1 Legitimate Driver Enumeration (driver_scan.cpp)
 - Queries `ZwQuerySystemInformation(SystemModuleInformation, ...)` (`0xB`).
 - Allocates a dynamic baseline (`LOADED_LEGIT_DRIVERS`) in `NonPagedPoolNx` containing all legitimate kernel module virtual ranges (`ImageBase` to `ImageBase + ImageSize`).
 
-### 5.2 Big Pool Allocation Tracker (`big_pool_track/bpt.cpp`)
+### 5.2 Big Pool Allocation Tracker (big_pool_track/bpt.cpp)
 - Queries `ZwQuerySystemInformation(SystemBigPoolInformation, ...)` (`0x42`).
 - Iterates through all allocations where:
   - `NonPaged == 1`
@@ -98,5 +98,5 @@ Prevents unauthorized user-mode processes from obtaining handle permissions that
   - The allocation's virtual address does **not** fall within any known legitimate module address range (`!isAddressInKnownModule(...)`).
 - Creates a `DETECTION_ENTRY` with `METHOD_BIG_POOL`.
 
-### 5.3 Kernel Space Walk (`kernel_space_walk/kwalk.cpp`)
-- *Status:* **Placeholder / Unimplemented**. Planned for page table walking (PML4 traversal) to detect unbacked executable kernel pages.
+### 5.3 Kernel Space Walk (kernel_space_walk/kwalk.cpp)
+- Status: **Placeholder / Unimplemented**. Planned for page table walking (PML4 traversal) to detect unbacked executable kernel pages.

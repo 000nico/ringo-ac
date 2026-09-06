@@ -1,4 +1,4 @@
-# 🔒 Environment Integrity & Hardware Telemetry
+# Environment Integrity and Hardware Telemetry
 
 This document describes the environment verification subsystems and the Hardware Identification (HWID) telemetry engine implemented in Ringo Anti-Cheat.
 
@@ -20,8 +20,8 @@ The environment engine verifies that the underlying operating system is running 
    - Bit 31 Check    - UEFI Env Var & Registry     - TestSigning      - KdNotPresent
 ```
 
-### 1.1 Hypervisor Presence & Tampering Detection
-📁 **Source:** [`km/core/enviroment/hypervisor/hypervisor.cpp`](file:///C:/dev/ringo-ac/km/core/enviroment/hypervisor/hypervisor.cpp)
+### 1.1 Hypervisor Presence and Tampering Detection
+Source: `km/core/enviroment/hypervisor/hypervisor.cpp`
 
 - **Mechanism**:
   1. Calls `ZwQuerySystemInformation(SystemHypervisorInformation, ...)` to check `shi.HypervisorPresent`.
@@ -29,7 +29,7 @@ The environment engine verifies that the underlying operating system is running 
   3. If `HypervisorPresent != rawBit`, flags `manipulatedInformation = TRUE` (indicating spoofing or selective hooking of system information).
 
 ### 1.2 Multi-Source Secure Boot Verification
-📁 **Source:** [`km/core/enviroment/secure_boot/secure_boot.cpp`](file:///C:/dev/ringo-ac/km/core/enviroment/secure_boot/secure_boot.cpp)
+Source: `km/core/enviroment/secure_boot/secure_boot.cpp`
 
 - **Mechanism**: Performs a 3-way validation cross-checking different kernel subsystems:
   1. `ZwQuerySystemInformation(SystemSecureBootInformation, ...)` for `SecureBootEnabled` and `SecureBootCapable`.
@@ -38,20 +38,20 @@ The environment engine verifies that the underlying operating system is running 
   4. If results mismatch or if `isEnabled && !isSupported`, flags `consistentData = FALSE`.
 
 ### 1.3 Code Integrity, HVCI, and VBS
-📁 **Sources:** [`hvci.cpp`](file:///C:/dev/ringo-ac/km/core/enviroment/hvci/hvci.cpp), [`test_signing.cpp`](file:///C:/dev/ringo-ac/km/core/enviroment/test_signing/test_signing.cpp), [`vbs.cpp`](file:///C:/dev/ringo-ac/km/core/enviroment/vbs/vbs.cpp)
+Sources: `hvci.cpp`, `test_signing.cpp`, `vbs.cpp`
 
 - **HVCI**: Queries `SystemCodeIntegrityInformation` (`103`) for `CODEINTEGRITY_OPTION_HVCI_KMCI_ENABLED` (`0x400`).
 - **Test Signing**: Checks `sci.CodeIntegrityOptions & CODEINTEGRITY_OPTION_TESTSIGN` (`0x02`).
 - **VBS / Isolated User Mode**: Queries `SystemIsolatedUserModeInformation` for `HvciEnabled` and `SecureKernelRunning`.
 
 ### 1.4 Kernel Debugger Detection
-📁 **Source:** [`km/core/enviroment/kernel_debugging/kernel_debugging.cpp`](file:///C:/dev/ringo-ac/km/core/enviroment/kernel_debugging/kernel_debugging.cpp)
+Source: `km/core/enviroment/kernel_debugging/kernel_debugging.cpp`
 
 - Queries `SystemKernelDebuggerInformation` (`0x23`).
 - Validates: `isKernelDebuggerPresent = skdi.KernelDebuggerEnabled && !skdi.KernelDebuggerNotPresent`.
 
 ### 1.5 TPM Hardware Probing
-📁 **Source:** [`km/core/enviroment/tpm/tpm.cpp`](file:///C:/dev/ringo-ac/km/core/enviroment/tpm/tpm.cpp)
+Source: `km/core/enviroment/tpm/tpm.cpp`
 
 - Opens `\Device\TPM` using `ZwCreateFile`.
 - Probes for TPM 2.0 command `TPM2_GetRandom` (`0x8001...0x017B`).
@@ -59,9 +59,9 @@ The environment engine verifies that the underlying operating system is running 
 
 ---
 
-## 2. Hardware Telemetry & HWID Generation
+## 2. Hardware Telemetry and HWID Generation
 
-📁 **Source:** [`km/core/telemetry/hwid/hwid.cpp`](file:///C:/dev/ringo-ac/km/core/telemetry/hwid/hwid.cpp)
+Source: `km/core/telemetry/hwid/hwid.cpp`
 
 Ringo generates a deterministic hardware profile based on immutable machine primitives:
 

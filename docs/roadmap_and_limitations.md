@@ -1,16 +1,16 @@
-# 🚧 Project Status, Limitations & Roadmap
+# Project Status, Limitations and Roadmap
 
-This document outlines what Ringo Anti-Cheat currently implements, what is currently **not** implemented, known technical limitations, and the future development roadmap.
+This document outlines what Ringo Anti-Cheat currently implements, what is currently not implemented, known technical limitations, and the future development roadmap.
 
 ---
 
 ## 1. What Ringo-AC Does (Current Capabilities)
 
-- **Handle Protection (`ObRegisterCallbacks`)**:
+- **Handle Protection (ObRegisterCallbacks)**:
   - Restricts unauthorized process handles against the target game, stripping `PROCESS_VM_READ`, `PROCESS_VM_WRITE`, and `PROCESS_VM_OPERATION`.
   - Restricts unauthorized thread handles, stripping context modification, termination, and suspension rights (`THREAD_SET_CONTEXT`, `THREAD_SUSPEND_RESUME`, `THREAD_TERMINATE`, etc.).
   - Distinguishes kernel-mode handles from user-mode handles.
-- **Process & Thread Lifecycle Monitoring**:
+- **Process and Thread Lifecycle Monitoring**:
   - Automatically identifies when the protected game starts or terminates via `PsSetCreateProcessNotifyRoutineEx`.
   - Intercepts thread creation via `PsSetCreateThreadNotifyRoutineEx` and captures thread start addresses (`ThreadQuerySetWin32StartAddress`).
   - Detects cross-process (remote) thread injections (`PsGetCurrentProcessId() != ProcessId`).
@@ -28,7 +28,7 @@ This document outlines what Ringo Anti-Cheat currently implements, what is curre
 
 ---
 
-## 2. What Ringo-AC Does NOT Do (Current Gaps & Security Caveats)
+## 2. What Ringo-AC Does NOT Do (Current Gaps and Security Caveats)
 
 - **Does NOT Prevent Kernel-Mode Cheats (DKOM / Direct Kernel Memory Manipulation)**:
   - If a cheat runs as a signed/vulnerable driver or is mapped into kernel space, it can bypass `ObRegisterCallbacks` by directly manipulating `EPROCESS` or mapping physical memory via `\Device\PhysicalMemory` or page table manipulation (`CR3`).
@@ -43,7 +43,7 @@ This document outlines what Ringo Anti-Cheat currently implements, what is curre
 
 ---
 
-## 3. What is WIP / Half-Implemented / Stubs
+## 3. What is In Progress / Incomplete / Stubs
 
 | Component | Path | Current State | Missing Functionality |
 | :--- | :--- | :--- | :--- |
@@ -58,14 +58,14 @@ This document outlines what Ringo Anti-Cheat currently implements, what is curre
 ## 4. Development Roadmap
 
 ### Phase 1: Robust Usermode Memory Scanning
-- [ ] Implement usermode VAD (Virtual Address Descriptor) scanner to detect `PAGE_EXECUTE_READWRITE` / unbacked allocated memory in the game process.
-- [ ] Implement thread call stack walking for threads created inside the game to verify return addresses point within legitimate module `.text` sections.
+- Implement usermode VAD (Virtual Address Descriptor) scanner to detect `PAGE_EXECUTE_READWRITE` / unbacked allocated memory in the game process.
+- Implement thread call stack walking for threads created inside the game to verify return addresses point within legitimate module `.text` sections.
 
-### Phase 2: Kernel Cheat & BYOVD Defense
-- [ ] Implement PML4 page table walk in `kwalk.cpp` to discover unbacked executable kernel memory.
-- [ ] Implement BYOVD blocklist monitor filtering driver loads (`PsSetLoadImageNotifyRoutine` on `ProcessId == 0` for kernel drivers) matching known vulnerable driver hashes and certificates.
-- [ ] Implement PE header and import table validation on non-paged Big Pool allocations in `bpt.cpp`.
+### Phase 2: Kernel Cheat and BYOVD Defense
+- Implement PML4 page table walk in `kwalk.cpp` to discover unbacked executable kernel memory.
+- Implement BYOVD blocklist monitor filtering driver loads (`PsSetLoadImageNotifyRoutine` on `ProcessId == 0` for kernel drivers) matching known vulnerable driver hashes and certificates.
+- Implement PE header and import table validation on non-paged Big Pool allocations in `bpt.cpp`.
 
 ### Phase 3: Communication Hardening
-- [ ] Apply restrictive Security Descriptor (SDDL) on `\Device\ringo` allowing access only to the game / anticheat client process token.
-- [ ] Implement heartbeat ping and encrypted challenge-response handshake over IOCTL to prevent replay and spoofing attacks.
+- Apply restrictive Security Descriptor (SDDL) on `\Device\ringo` allowing access only to the game / anticheat client process token.
+- Implement heartbeat ping and encrypted challenge-response handshake over IOCTL to prevent replay and spoofing attacks.
