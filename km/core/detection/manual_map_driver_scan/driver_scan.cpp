@@ -27,29 +27,43 @@ ULONG GetLegitDriverCount(RTL_PROCESS_MODULES* modules) {
     return min(modules->NumberOfModules, 512);
 }
 
-LOADED_LEGIT_DRIVERS GetLegitDriverList() {
-    LOADED_LEGIT_DRIVERS lld = {};
+LOADED_LEGIT_DRIVERS* GetLegitDriverList() {
     ULONG returnLength = 0;
 
     PVOID buffer = AllocateAndQueryModules(&returnLength);
     if (!buffer)
-        return lld;
+        return NULL;
 
     RTL_PROCESS_MODULES* modules = (RTL_PROCESS_MODULES*)buffer;
+    ULONG count = GetLegitDriverCount(modules);
 
-    lld.Count = GetLegitDriverCount(modules);
+    SIZE_T allocSize = sizeof(LOADED_LEGIT_DRIVERS) + (count > 0 ? (count - 1) : 0) * sizeof(LOADED_LEGIT_DRIVER_ENTRY);
+    LOADED_LEGIT_DRIVERS* lld = (LOADED_LEGIT_DRIVERS*)ExAllocatePool2(POOL_FLAG_NON_PAGED, allocSize, 'tGLD');
+    if (!lld) {
+        ExFreePoolWithTag(buffer, 'tGLD');
+        return NULL;
+    }
 
-    for (ULONG i = 0; i < lld.Count; i++) {
-        lld.Drivers[i].ImageBase = modules->Modules[i].ImageBase;
-        lld.Drivers[i].ImageSize = modules->Modules[i].ImageSize;
-        RtlCopyMemory(lld.Drivers[i].FullPathName, modules->Modules[i].FullPathName, sizeof(lld.Drivers[i].FullPathName));
+    lld->Count = count;
+    for (ULONG i = 0; i < count; i++) {
+        lld->Drivers[i].ImageBase = modules->Modules[i].ImageBase;
+        lld->Drivers[i].ImageSize = modules->Modules[i].ImageSize;
+        RtlCopyMemory(lld->Drivers[i].FullPathName, modules->Modules[i].FullPathName, sizeof(lld->Drivers[i].FullPathName));
     }
 
     ExFreePoolWithTag(buffer, 'tGLD');
     return lld;
 }
 
+VOID FreeLegitDriverList(LOADED_LEGIT_DRIVERS* lld) {
+    if (lld) {
+        ExFreePoolWithTag(lld, 'tGLD');
+    }
+}
+
 BOOLEAN isAddressInKnownModule(PVOID address, LOADED_LEGIT_DRIVERS* lld) {
+    if (!lld) return FALSE;
+
     for (ULONG i = 0; i < lld->Count; i++) {
         ULONG_PTR base = (ULONG_PTR)lld->Drivers[i].ImageBase;
         ULONG_PTR end = base + lld->Drivers[i].ImageSize;

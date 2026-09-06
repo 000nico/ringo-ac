@@ -31,9 +31,10 @@ struct LOADED_LEGIT_DRIVER_ENTRY {
 
 struct LOADED_LEGIT_DRIVERS {
     ULONG Count;
-    LOADED_LEGIT_DRIVER_ENTRY* Drivers;
+    LOADED_LEGIT_DRIVER_ENTRY Drivers[1];
 };
 
 // exposing fns
-LOADED_LEGIT_DRIVERS GetLegitDriverList();
+LOADED_LEGIT_DRIVERS* GetLegitDriverList();
+VOID FreeLegitDriverList(LOADED_LEGIT_DRIVERS* lld);
 BOOLEAN isAddressInKnownModule(PVOID address, LOADED_LEGIT_DRIVERS* lld);

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -45,16 +45,16 @@
     <ClCompile Include="core\enviroment\hypervisor\hypervisor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core\detection\usermode_cheats\callbacks\ob_callbacks\openprocess\openprocess.cpp">
+    <ClCompile Include="core\detection\callbacks\ob_callbacks\obcallback.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core\detection\usermode_cheats\callbacks\image_notify\image_notify.cpp">
+    <ClCompile Include="core\detection\callbacks\image_notify\image_notify.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core\detection\usermode_cheats\callbacks\create_thread_notify\create_thread_notify.cpp">
+    <ClCompile Include="core\detection\callbacks\create_thread_notify\create_thread_notify.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="core\detection\usermode_cheats\callbacks\create_process_notify\create_process_notify.cpp">
+    <ClCompile Include="core\detection\callbacks\create_process_notify\create_process_notify.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="core\global.cpp">
@@ -107,19 +107,19 @@
     <ClInclude Include="core\enviroment\hypervisor\hypervisor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core\detection\usermode_cheats\callbacks\ob_callbacks\openprocess\openprocess.hpp">
+    <ClInclude Include="core\detection\callbacks\ob_callbacks\obcallback.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\global.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core\detection\usermode_cheats\callbacks\image_notify\image_notify.hpp">
+    <ClInclude Include="core\detection\callbacks\image_notify\image_notify.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core\detection\usermode_cheats\callbacks\create_thread_notify\create_thread_notify.hpp">
+    <ClInclude Include="core\detection\callbacks\create_thread_notify\create_thread_notify.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="core\detection\usermode_cheats\callbacks\create_process_notify\create_process_notify.hpp">
+    <ClInclude Include="core\detection\callbacks\create_process_notify\create_process_notify.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\telemetry\hwid\hwid.hpp">

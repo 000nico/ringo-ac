@@ -38,18 +38,21 @@ NTSTATUS getSmbiosUuid(UCHAR OutUuid[16]) {
     PUCHAR ptr = smbios;
     PUCHAR end = smbios + (info->TableBufferLength - 8);
 
-    while (ptr < end) {
+    while (ptr + 4 <= end) {
         UCHAR type = ptr[0];
         UCHAR length = ptr[1];
 
-        if (type == 1 && length >= 0x19) {
+        if (type == 127 || length < 4)
+            break;
+
+        if (type == 1 && length >= 0x19 && (ptr + 8 + 16 <= end)) {
             RtlCopyMemory(OutUuid, ptr + 8, 16);
             ExFreePoolWithTag(info, 'SMBI');
             return STATUS_SUCCESS;
         }
 
         PUCHAR strSection = ptr + length;
-        while (strSection < end - 1 && !(strSection[0] == 0 && strSection[1] == 0))
+        while (strSection + 1 < end && !(strSection[0] == 0 && strSection[1] == 0))
             strSection++;
         ptr = strSection + 2;
     }
@@ -68,7 +71,7 @@ ULONG getCpuHash() {
     hash ^= (ULONG)cpuInfo[0];
     hash ^= (ULONG)cpuInfo[3];
 
-    __cpuid(cpuInfo, 4);
+    __cpuidex(cpuInfo, 4, 0);
     hash ^= (ULONG)cpuInfo[0];
 
     return hash;

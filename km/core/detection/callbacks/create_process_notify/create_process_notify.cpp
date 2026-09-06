@@ -4,15 +4,16 @@
     // check the parent proces of anything being created, if the parent its the game, its sus
 
 #include "create_process_notify.hpp"
-#include "../../../../global.hpp"
-#include "../../../../../sdk/imports/imports.hpp"
+#include "../../../global.hpp"
+#include "../../../../sdk/imports/imports.hpp"
 
 VOID PcreateProcessNotifyRoutineEx(_Inout_ PEPROCESS Process, _In_ HANDLE ProcessId, _Inout_opt_ PPS_CREATE_NOTIFY_INFO CreateInfo) {
 	PUCHAR name = PsGetProcessImageFileName(Process);
 	if (!name) return;
 
-	if (!ringo_context.ProtectedGameProcessName) return;
-	if (strcmp((const char*)name, (const char*)ringo_context.ProtectedGameProcessName) == 0) {
+	if (ringo_context.ProtectedGameProcessName[0] == '\0') return;
+
+	if (_stricmp((const char*)name, (const char*)ringo_context.ProtectedGameProcessName) == 0) {
 		// process created
 		if (CreateInfo) {
 			ringo_context.ProtectedGamePid = ProcessId;
@@ -20,8 +21,10 @@ VOID PcreateProcessNotifyRoutineEx(_Inout_ PEPROCESS Process, _In_ HANDLE Proces
 		}
 		// process destroyed
 		else {
-			ringo_context.ProtectedGamePid = NULL;
-			ringo_context.isGameOpen = FALSE;
+			if (ringo_context.ProtectedGamePid == ProcessId) {
+				ringo_context.ProtectedGamePid = NULL;
+				ringo_context.isGameOpen = FALSE;
+			}
 		}
 	}
 }

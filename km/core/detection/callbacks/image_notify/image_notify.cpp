@@ -1,11 +1,14 @@
-#include "../../../../global.hpp"
+#include "../../../global.hpp"
 #include "image_notify.hpp"
 
 VOID LoadImageCallback(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE ProcessId, _In_ PIMAGE_INFO ImageInfo) {
+    if (!ringo_context.isGameOpen || ringo_context.ProtectedGamePid == NULL)
+        return;
+
     if (ProcessId != (HANDLE)ringo_context.ProtectedGamePid)
         return;
 
-    if (FullImageName == NULL)
+    if (FullImageName == NULL || ImageInfo == NULL)
         return;
 
     if (g_LoadedDllsCount >= 256 || ringo_context.Detections.DllDetectionReport.Count > 256)

@@ -1,7 +1,7 @@
-#include "core/detection/usermode_cheats/callbacks/ob_callbacks/openprocess/openprocess.hpp"
-#include "core/detection/usermode_cheats/callbacks/image_notify/image_notify.hpp"
-#include "core/detection/usermode_cheats/callbacks/create_thread_notify/create_thread_notify.hpp"
-#include "core/detection/usermode_cheats/callbacks/create_process_notify/create_process_notify.hpp"
+#include "core/detection/callbacks/ob_callbacks/obcallback.hpp"
+#include "core/detection/callbacks/image_notify/image_notify.hpp"
+#include "core/detection/callbacks/create_thread_notify/create_thread_notify.hpp"
+#include "core/detection/callbacks/create_process_notify/create_process_notify.hpp"
 #include "core/global.hpp"
 #include "core/comunication/ioctl/ioctl.hpp"
 
@@ -18,7 +18,9 @@ void DriverUnload(PDRIVER_OBJECT DriverObject) {
         PsRemoveCreateThreadNotifyRoutine(ringo_context.Callbacks.CreateThreadCallbackPtr);
 
     if (ringo_context.Callbacks.isCreateProcessCallbackRegistered == TRUE)
-        PsSetCreateProcessNotifyRoutineEx(ringo_context.Callbacks.CreateProcessNotifyRoutinePtr, TRUE); // i would really want to know why microsoft has a remove for every callback but not for this one
+        PsSetCreateProcessNotifyRoutineEx(ringo_context.Callbacks.CreateProcessNotifyRoutinePtr, TRUE);
+
+    CleanupDevice();
 
     KdPrint(("Ringo Driver Unloaded\n"));
 }
@@ -31,23 +33,26 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) 
     // load callbacks
     ringo_context.Callbacks.ObCallbackHandle = ObRegisterCallbacksOpenProcess();
     if (ringo_context.Callbacks.ObCallbackHandle == NULL) {
-        KdPrint(("[-] ObCallbackHandle not loaded."));
+        KdPrint(("[-] ObCallbackHandle not loaded.\n"));
     }
 
+    SetLoadImageCallback();
     if (ringo_context.Callbacks.isLoadImageCallbackRegistered == FALSE) {
-        KdPrint(("[-] SetLoadImage Callback not loaded."));
+        KdPrint(("[-] SetLoadImage Callback not loaded.\n"));
     }
 
+    SetCreateThreadCallback();
     if (ringo_context.Callbacks.isCreateThreadCallbackRegistered == FALSE) {
-        KdPrint(("[-] CreateThreadCallback not loaded."));
+        KdPrint(("[-] CreateThreadCallback not loaded.\n"));
     }
 
+    SetCreateProcessCallback();
     if (ringo_context.Callbacks.isCreateProcessCallbackRegistered == FALSE) {
-        KdPrint(("[-] CreateProcessCallback not loaded."));
+        KdPrint(("[-] CreateProcessCallback not loaded.\n"));
     }
 
     if (!NT_SUCCESS(SetupDevice(DriverObject))) {
-        KdPrint(("[-] IOCTL setup not loaded"));
+        KdPrint(("[-] IOCTL setup not loaded\n"));
     }
 
     DriverObject->DriverUnload = DriverUnload;

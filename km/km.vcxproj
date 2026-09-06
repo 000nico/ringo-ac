@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -94,6 +94,14 @@
     <DriverSign>
       <FileDigestAlgorithm>sha256</FileDigestAlgorithm>
     </DriverSign>
+    <ClCompile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>Tbs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/INTEGRITYCHECK %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\Windows Kits\10\Lib\10.0.28000.0\um\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Inf Include="km.inf" />
@@ -104,14 +112,14 @@
   <ItemGroup>
     <ClCompile Include="core\comunication\ioctl\dispatcher.cpp" />
     <ClCompile Include="core\comunication\ioctl\setup.cpp" />
+    <ClCompile Include="core\detection\callbacks\create_process_notify\create_process_notify.cpp" />
+    <ClCompile Include="core\detection\callbacks\create_thread_notify\create_thread_notify.cpp" />
+    <ClCompile Include="core\detection\callbacks\image_notify\image_notify.cpp" />
+    <ClCompile Include="core\detection\callbacks\ob_callbacks\obcallback.cpp" />
     <ClCompile Include="core\detection\detections.cpp" />
     <ClCompile Include="core\detection\manual_map_driver_scan\big_pool_track\bpt.cpp" />
     <ClCompile Include="core\detection\manual_map_driver_scan\driver_scan.cpp" />
     <ClCompile Include="core\detection\manual_map_driver_scan\kernel_space_walk\kwalk.cpp" />
-    <ClCompile Include="core\detection\usermode_cheats\callbacks\create_process_notify\create_process_notify.cpp" />
-    <ClCompile Include="core\detection\usermode_cheats\callbacks\create_thread_notify\create_thread_notify.cpp" />
-    <ClCompile Include="core\detection\usermode_cheats\callbacks\image_notify\image_notify.cpp" />
-    <ClCompile Include="core\detection\usermode_cheats\callbacks\ob_callbacks\openprocess\openprocess.cpp" />
     <ClCompile Include="core\enviroment\hvci\hvci.cpp" />
     <ClCompile Include="core\enviroment\hypervisor\hypervisor.cpp" />
     <ClCompile Include="core\enviroment\kernel_debugging\kernel_debugging.cpp" />
@@ -126,14 +134,14 @@
   <ItemGroup>
     <ClInclude Include="core\comunication\ioctl\codes.hpp" />
     <ClInclude Include="core\comunication\ioctl\ioctl.hpp" />
+    <ClInclude Include="core\detection\callbacks\create_process_notify\create_process_notify.hpp" />
+    <ClInclude Include="core\detection\callbacks\create_thread_notify\create_thread_notify.hpp" />
+    <ClInclude Include="core\detection\callbacks\image_notify\image_notify.hpp" />
+    <ClInclude Include="core\detection\callbacks\ob_callbacks\obcallback.hpp" />
     <ClInclude Include="core\detection\detections.hpp" />
     <ClInclude Include="core\detection\manual_map_driver_scan\big_pool_track\bpt.hpp" />
     <ClInclude Include="core\detection\manual_map_driver_scan\driver_scan.hpp" />
     <ClInclude Include="core\detection\manual_map_driver_scan\kernel_space_walk\kwalk.hpp" />
-    <ClInclude Include="core\detection\usermode_cheats\callbacks\create_process_notify\create_process_notify.hpp" />
-    <ClInclude Include="core\detection\usermode_cheats\callbacks\create_thread_notify\create_thread_notify.hpp" />
-    <ClInclude Include="core\detection\usermode_cheats\callbacks\image_notify\image_notify.hpp" />
-    <ClInclude Include="core\detection\usermode_cheats\callbacks\ob_callbacks\openprocess\openprocess.hpp" />
     <ClInclude Include="core\enviroment\hvci\hvci.hpp" />
     <ClInclude Include="core\enviroment\hypervisor\hypervisor.hpp" />
     <ClInclude Include="core\enviroment\kernel_debugging\kernel_debugging.hpp" />

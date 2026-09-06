@@ -69,9 +69,10 @@ DWORD getInformationClass(ENVIRONMENT_INFO_CLASS informationClass) {
 }
 
 BOOLEAN GetEnvironmentInformation(HANDLE hDriver, ENVIRONMENT_INFO_CLASS informationClass, PVOID buffer, ULONG size, DWORD* bytesReturned) {
-	if (!hDriver || hDriver == INVALID_HANDLE_VALUE || !buffer) return STATUS_INVALID_PARAMETER;
+	if (!hDriver || hDriver == INVALID_HANDLE_VALUE || !buffer) return FALSE;
 
 	DWORD ioctlCode = getInformationClass(informationClass);
+	if (ioctlCode == 0) return FALSE;
 
 	BOOL result = DeviceIoControl(hDriver, ioctlCode, NULL, 0, buffer, size, bytesReturned, NULL);
 

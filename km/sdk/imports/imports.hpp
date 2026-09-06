@@ -19,3 +19,7 @@ extern "C" NTSTATUS NTAPI ZwQueryInformationThread(
 extern "C" NTKERNELAPI PUCHAR PsGetProcessImageFileName(
     _In_ PEPROCESS Process
 );
+
+extern "C" NTKERNELAPI HANDLE PsGetThreadProcessId(
+    _In_ PETHREAD Thread
+);

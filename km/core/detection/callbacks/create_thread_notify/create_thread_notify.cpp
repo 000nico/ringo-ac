@@ -2,10 +2,9 @@
 // new thread appeared and see if its start address does match with a legitime module known in that process
 
 #include <ntifs.h>
-#include "../../../../../sdk/imports/imports.hpp"
-#include "../../../../global.hpp"
+#include "../../../../sdk/imports/imports.hpp"
+#include "../../../global.hpp"
 #include "create_thread_notify.hpp"
-
 
 PVOID GetStartAddress(HANDLE ThreadId) {
     PETHREAD thread;
@@ -36,7 +35,10 @@ BOOLEAN isCreatedRemotely(HANDLE ProcessId) {
 }
 
 VOID CreateThreadCallback(_In_ HANDLE ProcessId, _In_ HANDLE ThreadId, _In_ BOOLEAN Create) {
-	if (ProcessId == (HANDLE)ringo_context.ProtectedGamePid && Create == TRUE) { 
+    if (!ringo_context.isGameOpen || ringo_context.ProtectedGamePid == NULL)
+        return;
+
+    if (ProcessId == (HANDLE)ringo_context.ProtectedGamePid && Create == TRUE) { 
         CREATED_THREAD ct = {};
         ct.StartAddress = GetStartAddress(ThreadId);
         ct.isCreatedRemotely = isCreatedRemotely(ProcessId);
@@ -49,7 +51,7 @@ VOID CreateThreadCallback(_In_ HANDLE ProcessId, _In_ HANDLE ThreadId, _In_ BOOL
                 RtlCopyMemory(&g_CreatedThreads[index], &ct, sizeof(CREATED_THREAD));
             }
         }
-	}
+    }
 }
 
 VOID SetCreateThreadCallback() {

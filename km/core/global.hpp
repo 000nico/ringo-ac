@@ -1,12 +1,12 @@
 #pragma once
 #include "../sdk/imports/imports.hpp"
-#include "detection/usermode_cheats/callbacks/image_notify/image_notify.hpp"
-#include "detection/usermode_cheats/callbacks/create_thread_notify/create_thread_notify.hpp"
+#include "detection/callbacks/image_notify/image_notify.hpp"
+#include "detection/callbacks/create_thread_notify/create_thread_notify.hpp"
 #include "detection/detections.hpp"
 
 typedef struct RINGO_CONTEXT {
     HANDLE ProtectedGamePid;
-    PUCHAR ProtectedGameProcessName;
+    UCHAR ProtectedGameProcessName[64];
     BOOLEAN isGameOpen;
 
     struct {

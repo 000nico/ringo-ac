@@ -167,6 +167,7 @@ NTSTATUS IoctlHandler(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 
             RtlZeroMemory(ringo_context.ProtectedGameProcessName, sizeof(ringo_context.ProtectedGameProcessName));
             RtlCopyMemory(ringo_context.ProtectedGameProcessName, buffer, inputSize);
+            ringo_context.ProtectedGameProcessName[inputSize] = '\0';
 
             break;
         }

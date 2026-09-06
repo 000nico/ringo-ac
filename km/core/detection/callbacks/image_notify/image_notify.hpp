@@ -1,0 +1,22 @@
+#pragma once
+#include "../../../../sdk/imports/imports.hpp" 
+
+struct LOADED_MODULE {  
+    WCHAR NameBuffer[256];
+    UNICODE_STRING FullImageName;
+    BOOLEAN isSigned;
+
+    struct {
+        struct {
+            PVOID ImageBase;
+            SIZE_T ImageSize;
+        } Image;
+    } Mem;
+};
+
+struct FLAGGED_DLL_REPORT { 
+    ULONG Count;
+    LOADED_MODULE* Modules;
+};
+
+VOID SetLoadImageCallback();

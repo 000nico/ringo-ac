@@ -28,20 +28,28 @@ PVOID AllocateAndQueryBigPool(ULONG* outReturnLength) {
 
 void BigPool_Detect() {
     ULONG returnLength = 0;
-    LOADED_LEGIT_DRIVERS lld = GetLegitDriverList();
+    LOADED_LEGIT_DRIVERS* lld = GetLegitDriverList();
+    if (!lld)
+        return;
 
     PVOID buffer = AllocateAndQueryBigPool(&returnLength);
-    if (!buffer)
+    if (!buffer) {
+        FreeLegitDriverList(lld);
         return;
+    }
 
     SYSTEM_BIGPOOL_INFORMATION* sbi = (SYSTEM_BIGPOOL_INFORMATION*)buffer;
 
     for (ULONG i = 0; i < sbi->Count; i++) {
         PVOID realVirtualAddress = (PVOID)((ULONG_PTR)sbi->AllocatedInfo[i].VirtualAddress & ~1);
 
-        if (sbi->AllocatedInfo[i].NonPaged == 1 && sbi->AllocatedInfo[i].SizeInBytes > 0x1000 && !isAddressInKnownModule(realVirtualAddress, &lld)) 
-            ringo_context.Detections.DriverDetectionReport.Entries[ringo_context.Detections.DriverDetectionReport.Count++] = CreateDriverDetectionEntry(realVirtualAddress, sbi->AllocatedInfo[i].SizeInBytes, METHOD_BIG_POOL, NULL);
+        if (sbi->AllocatedInfo[i].NonPaged == 1 && sbi->AllocatedInfo[i].SizeInBytes > 0x1000 && !isAddressInKnownModule(realVirtualAddress, lld)) {
+            if (ringo_context.Detections.DriverDetectionReport.Count < 256) {
+                ringo_context.Detections.DriverDetectionReport.Entries[ringo_context.Detections.DriverDetectionReport.Count++] = CreateDriverDetectionEntry(realVirtualAddress, sbi->AllocatedInfo[i].SizeInBytes, METHOD_BIG_POOL, NULL);
+            }
+        }
     }
 
     ExFreePoolWithTag(buffer, 'tGLD');
+    FreeLegitDriverList(lld);
 }
