@@ -35,10 +35,10 @@ BOOLEAN isCreatedRemotely(HANDLE ProcessId) {
 }
 
 VOID CreateThreadCallback(_In_ HANDLE ProcessId, _In_ HANDLE ThreadId, _In_ BOOLEAN Create) {
-    if (!ringo_context.isGameOpen || ringo_context.ProtectedGamePid == NULL)
+    if (!ringo_context.Game.isGameOpen || ringo_context.Game.ProtectedGamePid == NULL)
         return;
 
-    if (ProcessId == (HANDLE)ringo_context.ProtectedGamePid && Create == TRUE) { 
+    if (ProcessId == (HANDLE)ringo_context.Game.ProtectedGamePid && Create == TRUE) { 
         CREATED_THREAD ct = {};
         ct.StartAddress = GetStartAddress(ThreadId);
         ct.isCreatedRemotely = isCreatedRemotely(ProcessId);

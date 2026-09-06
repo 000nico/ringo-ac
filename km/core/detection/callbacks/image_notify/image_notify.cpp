@@ -2,10 +2,10 @@
 #include "image_notify.hpp"
 
 VOID LoadImageCallback(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE ProcessId, _In_ PIMAGE_INFO ImageInfo) {
-    if (!ringo_context.isGameOpen || ringo_context.ProtectedGamePid == NULL)
+    if (!ringo_context.Game.isGameOpen || ringo_context.Game.ProtectedGamePid == NULL)
         return;
 
-    if (ProcessId != (HANDLE)ringo_context.ProtectedGamePid)
+    if (ProcessId != (HANDLE)ringo_context.Game.ProtectedGamePid)
         return;
 
     if (FullImageName == NULL || ImageInfo == NULL)

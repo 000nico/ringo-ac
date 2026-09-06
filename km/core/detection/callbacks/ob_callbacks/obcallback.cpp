@@ -9,7 +9,7 @@ OB_PREOP_CALLBACK_STATUS OpenProcessCallback(_In_ PVOID RegistrationContext, _In
 	if (Info->KernelHandle)
 		return OB_PREOP_SUCCESS;
 
-	if (!ringo_context.isGameOpen || ringo_context.ProtectedGamePid == NULL)
+	if (!ringo_context.Game.isGameOpen || ringo_context.Game.ProtectedGamePid == NULL)
 		return OB_PREOP_SUCCESS;
 
 	if (Info->ObjectType != *PsProcessType && Info->ObjectType != *PsThreadType)
@@ -25,7 +25,7 @@ OB_PREOP_CALLBACK_STATUS OpenProcessCallback(_In_ PVOID RegistrationContext, _In
 		targetPid = PsGetThreadProcessId((PETHREAD)Info->Object);
 	}
 
-	if (targetPid == (HANDLE)ringo_context.ProtectedGamePid && callerPid != (HANDLE)ringo_context.ProtectedGamePid) {
+	if (targetPid == (HANDLE)ringo_context.Game.ProtectedGamePid && callerPid != (HANDLE)ringo_context.Game.ProtectedGamePid) {
 		if (Info->ObjectType == *PsProcessType) {
 			if (Info->Operation == OB_OPERATION_HANDLE_CREATE) {
 				if (Info->Parameters->CreateHandleInformation.OriginalDesiredAccess & (PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION)) {

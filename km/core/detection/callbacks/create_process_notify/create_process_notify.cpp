@@ -11,19 +11,19 @@ VOID PcreateProcessNotifyRoutineEx(_Inout_ PEPROCESS Process, _In_ HANDLE Proces
 	PUCHAR name = PsGetProcessImageFileName(Process);
 	if (!name) return;
 
-	if (ringo_context.ProtectedGameProcessName[0] == '\0') return;
+	if (ringo_context.Game.ProtectedGameProcessName[0] == '\0') return;
 
-	if (_stricmp((const char*)name, (const char*)ringo_context.ProtectedGameProcessName) == 0) {
+	if (_stricmp((const char*)name, (const char*)ringo_context.Game.ProtectedGameProcessName) == 0) {
 		// process created
 		if (CreateInfo) {
-			ringo_context.ProtectedGamePid = ProcessId;
-			ringo_context.isGameOpen = TRUE;
+			ringo_context.Game.ProtectedGamePid = ProcessId;
+			ringo_context.Game.isGameOpen = TRUE;
 		}
 		// process destroyed
 		else {
-			if (ringo_context.ProtectedGamePid == ProcessId) {
-				ringo_context.ProtectedGamePid = NULL;
-				ringo_context.isGameOpen = FALSE;
+			if (ringo_context.Game.ProtectedGamePid == ProcessId) {
+				ringo_context.Game.ProtectedGamePid = NULL;
+				ringo_context.Game.isGameOpen = FALSE;
 			}
 		}
 	}

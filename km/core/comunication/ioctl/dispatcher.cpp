@@ -49,14 +49,14 @@ NTSTATUS IoctlHandler(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 
         case IOCTL_GET_GAME_PID: {
             if (outputSize < sizeof(HANDLE)) { status = STATUS_BUFFER_TOO_SMALL; break; }
-            *(HANDLE*)buffer = ringo_context.ProtectedGamePid;
+            *(HANDLE*)buffer = ringo_context.Game.ProtectedGamePid;
             bytesReturned = sizeof(HANDLE);
             break;
         }
 
         case IOCTL_GET_GAME_STATUS: {
             if (outputSize < sizeof(BOOLEAN)) { status = STATUS_BUFFER_TOO_SMALL; break; }
-            *(BOOLEAN*)buffer = ringo_context.isGameOpen;
+            *(BOOLEAN*)buffer = ringo_context.Game.isGameOpen;
             bytesReturned = sizeof(BOOLEAN);
             break;
         }
@@ -163,11 +163,11 @@ NTSTATUS IoctlHandler(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 
         // setters 
         case IOCTL_SET_GAME_NAME: {
-            if (inputSize == 0 || inputSize >= sizeof(ringo_context.ProtectedGameProcessName)) { status = STATUS_INVALID_PARAMETER; break; }
+            if (inputSize == 0 || inputSize >= sizeof(ringo_context.Game.ProtectedGameProcessName)) { status = STATUS_INVALID_PARAMETER; break; }
 
-            RtlZeroMemory(ringo_context.ProtectedGameProcessName, sizeof(ringo_context.ProtectedGameProcessName));
-            RtlCopyMemory(ringo_context.ProtectedGameProcessName, buffer, inputSize);
-            ringo_context.ProtectedGameProcessName[inputSize] = '\0';
+            RtlZeroMemory(ringo_context.Game.ProtectedGameProcessName, sizeof(ringo_context.Game.ProtectedGameProcessName));
+            RtlCopyMemory(ringo_context.Game.ProtectedGameProcessName, buffer, inputSize);
+            ringo_context.Game.ProtectedGameProcessName[inputSize] = '\0';
 
             break;
         }

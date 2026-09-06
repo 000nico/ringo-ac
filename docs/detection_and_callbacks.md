@@ -50,9 +50,9 @@ Source: `km/core/detection/callbacks/create_process_notify/create_process_notify
 - **Callback Signature**: `PCREATE_PROCESS_NOTIFY_ROUTINE_EX` (`PcreateProcessNotifyRoutineEx`).
 - **Functionality**:
   - Extracts the short image filename using `PsGetProcessImageFileName(Process)`.
-  - Performs case-insensitive matching (`_stricmp`) against `ringo_context.ProtectedGameProcessName`.
-  - **On Process Spawn** (`CreateInfo != NULL`): Sets `ringo_context.ProtectedGamePid = ProcessId` and `ringo_context.isGameOpen = TRUE`.
-  - **On Process Termination** (`CreateInfo == NULL`): If `ProcessId == ringo_context.ProtectedGamePid`, resets `ProtectedGamePid = NULL` and `isGameOpen = FALSE`.
+  - Performs case-insensitive matching (`_stricmp`) against `ringo_context.Game.ProtectedGameProcessName`.
+  - **On Process Spawn** (`CreateInfo != NULL`): Sets `ringo_context.Game.ProtectedGamePid = ProcessId` and `ringo_context.Game.isGameOpen = TRUE`.
+  - **On Process Termination** (`CreateInfo == NULL`): If `ProcessId == ringo_context.Game.ProtectedGamePid`, resets `ProtectedGamePid = NULL` and `isGameOpen = FALSE`.
 
 ---
 
@@ -62,7 +62,7 @@ Source: `km/core/detection/callbacks/create_thread_notify/create_thread_notify.c
 
 - **Callback Signature**: `PCREATE_THREAD_NOTIFY_ROUTINE` with `PsCreateThreadNotifyNonSystem` flag.
 - **Functionality**:
-  - Filters thread creation events specifically for `ProcessId == ringo_context.ProtectedGamePid`.
+  - Filters thread creation events specifically for `ProcessId == ringo_context.Game.ProtectedGamePid`.
   - **Remote Thread Detection**: Flags `isCreatedRemotely = (PsGetCurrentProcessId() != ProcessId)`.
   - **Win32 Start Address Resolution**: Calls `GetStartAddress(ThreadId)` which opens a temporary kernel handle with `ObOpenObjectByPointer` and invokes `ZwQueryInformationThread(..., ThreadQuerySetWin32StartAddress, ...)`.
   - Records the event into `ringo_context.Detections.ThreadDetectionReport.Entries[index]`.
@@ -75,7 +75,7 @@ Source: `km/core/detection/callbacks/image_notify/image_notify.cpp`
 
 - **Callback Signature**: `PLOAD_IMAGE_NOTIFY_ROUTINE` (`LoadImageCallback`).
 - **Functionality**:
-  - Filters DLL/image mappings into the address space of `ringo_context.ProtectedGamePid`.
+  - Filters DLL/image mappings into the address space of `ringo_context.Game.ProtectedGamePid`.
   - Filters out signed legitimate modules; flags unsigned binaries (`!isSigned`).
   - Stores suspicious entries into `ringo_context.Detections.DllDetectionReport.Entries[index]`.
 

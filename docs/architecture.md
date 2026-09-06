@@ -39,9 +39,11 @@ The driver state is maintained in a centralized global structure: `RINGO_CONTEXT
 
 ```cpp
 typedef struct RINGO_CONTEXT {
-    HANDLE ProtectedGamePid;             // PID of the active protected game process
-    UCHAR ProtectedGameProcessName[64];  // Target executable image name (e.g. "cs2.exe")
-    BOOLEAN isGameOpen;                  // Boolean flag indicating if target process is alive
+    struct {
+        HANDLE ProtectedGamePid;             // PID of the active protected game process
+        UCHAR ProtectedGameProcessName[64];  // Target executable image name (e.g. "cs2.exe")
+        BOOLEAN isGameOpen;                  // Boolean flag indicating if target process is alive
+    } Game;
 
     struct {
         PVOID ObCallbackHandle;

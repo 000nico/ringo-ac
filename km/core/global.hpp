@@ -5,9 +5,11 @@
 #include "detection/detections.hpp"
 
 typedef struct RINGO_CONTEXT {
-    HANDLE ProtectedGamePid;
-    UCHAR ProtectedGameProcessName[64];
-    BOOLEAN isGameOpen;
+    struct {
+        HANDLE ProtectedGamePid;
+        UCHAR ProtectedGameProcessName[64];
+        BOOLEAN isGameOpen;
+    } Game;
 
     struct {
         PVOID ObCallbackHandle;
