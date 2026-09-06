@@ -1,4 +1,5 @@
 #pragma once
+#include "../../../../../sdk/imports/imports.hpp"
 
 #define THREAD_QUERY_INFORMATION 0x0040
 

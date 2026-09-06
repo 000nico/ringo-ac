@@ -72,6 +72,18 @@
     <ClCompile Include="core\enviroment\tpm\tpm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\detection\manual_map_driver_scan\kernel_space_walk\kwalk.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\detection\manual_map_driver_scan\big_pool_track\bpt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\detection\manual_map_driver_scan\driver_scan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\detection\detections.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\enviroment\secure_boot\secure_boot.hpp">
@@ -120,6 +132,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\enviroment\tpm\tpm.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\detection\manual_map_driver_scan\kernel_space_walk\kwalk.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\detection\manual_map_driver_scan\big_pool_track\bpt.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\detection\manual_map_driver_scan\driver_scan.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\detection\detections.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

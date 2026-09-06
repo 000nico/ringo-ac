@@ -8,7 +8,7 @@ VOID LoadImageCallback(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE Proce
     if (FullImageName == NULL)
         return;
 
-    if (g_LoadedDllsCount >= 256 || g_FlaggedDllsCount > 256)
+    if (g_LoadedDllsCount >= 256 || ringo_context.Detections.DllDetectionReport.Count > 256)
         return;
 
     LOADED_MODULE fd = {};

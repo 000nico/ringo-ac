@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef _KERNEL_MODE
-#include <ntddk.h>
+#include "../../../sdk/imports/imports.hpp"
 #else
 #define WIN32_NO_STATUS
 #include <windows.h>

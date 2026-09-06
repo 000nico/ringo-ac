@@ -1,12 +1,14 @@
-// global.hpp — solo declaraciones
 #pragma once
+#include "../sdk/imports/imports.hpp"
 #include "detection/usermode_cheats/callbacks/image_notify/image_notify.hpp"
 #include "detection/usermode_cheats/callbacks/create_thread_notify/create_thread_notify.hpp"
+#include "detection/detections.hpp"
 
 typedef struct RINGO_CONTEXT {
     HANDLE ProtectedGamePid;
     PUCHAR ProtectedGameProcessName;
     BOOLEAN isGameOpen;
+
     struct {
         PVOID ObCallbackHandle;
         BOOLEAN isLoadImageCallbackRegistered;
@@ -16,13 +18,16 @@ typedef struct RINGO_CONTEXT {
         BOOLEAN isCreateProcessCallbackRegistered;
         PCREATE_PROCESS_NOTIFY_ROUTINE_EX CreateProcessNotifyRoutinePtr;
     } Callbacks;
+
+    struct {
+        DRIVER_DETECTION_REPORT DriverDetectionReport;
+        FLAGGED_DLL_REPORT DllDetectionReport;
+    } Detections;
+
 } RINGO_CONTEXT;
 
 extern LOADED_MODULE g_LoadedDlls[256];
 extern volatile LONG g_LoadedDllsCount;
-
-extern LOADED_MODULE g_FlaggedDlls[256];
-extern volatile LONG g_FlaggedDllsCount;
 
 extern CREATED_THREAD g_CreatedThreads[256];
 extern volatile LONG g_CreatedThreadsCount;

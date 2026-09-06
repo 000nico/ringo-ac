@@ -30,24 +30,25 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) 
 
     // load callbacks
     ringo_context.Callbacks.ObCallbackHandle = ObRegisterCallbacksOpenProcess();
-    if (ringo_context.Callbacks.ObCallbackHandle == NULL)
+    if (ringo_context.Callbacks.ObCallbackHandle == NULL) {
         KdPrint(("[-] ObCallbackHandle not loaded."));
+    }
 
-    SetLoadImageCallback();
-    if (ringo_context.Callbacks.isLoadImageCallbackRegistered == FALSE)
+    if (ringo_context.Callbacks.isLoadImageCallbackRegistered == FALSE) {
         KdPrint(("[-] SetLoadImage Callback not loaded."));
+    }
 
-    SetCreateThreadCallback();
-    if (ringo_context.Callbacks.isCreateThreadCallbackRegistered == FALSE)
+    if (ringo_context.Callbacks.isCreateThreadCallbackRegistered == FALSE) {
         KdPrint(("[-] CreateThreadCallback not loaded."));
+    }
 
-    SetCreateProcessCallback();
-    if (ringo_context.Callbacks.isCreateProcessCallbackRegistered == FALSE)
+    if (ringo_context.Callbacks.isCreateProcessCallbackRegistered == FALSE) {
         KdPrint(("[-] CreateProcessCallback not loaded."));
+    }
 
-    // load ioctl
-    if(!NT_SUCCESS(SetupDevice(DriverObject)))
+    if (!NT_SUCCESS(SetupDevice(DriverObject))) {
         KdPrint(("[-] IOCTL setup not loaded"));
+    }
 
     DriverObject->DriverUnload = DriverUnload;
 

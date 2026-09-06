@@ -1,4 +1,3 @@
-#include <ntddk.h>
 #include <initguid.h> 
 #include "secure_boot.hpp"
 #include "../../../sdk/imports/imports.hpp"

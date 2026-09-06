@@ -1,101 +1,125 @@
-#pragma comment(lib, "tbs.lib")
+#include "../../../sdk/imports/imports.hpp"
 #include "tpm.hpp"
-#include <ntddk.h>
-#include <tbs.h>
+
+static NTSTATUS OpenTpmDevice(HANDLE* outHandle) {
+    UNICODE_STRING deviceName = RTL_CONSTANT_STRING(L"\\Device\\TPM");
+    OBJECT_ATTRIBUTES objAttr;
+    IO_STATUS_BLOCK ioStatus;
+
+    InitializeObjectAttributes(&objAttr, &deviceName, OBJ_KERNEL_HANDLE | OBJ_CASE_INSENSITIVE, NULL, NULL);
+
+    return ZwCreateFile(
+        outHandle,
+        GENERIC_READ | GENERIC_WRITE,
+        &objAttr,
+        &ioStatus,
+        NULL,
+        FILE_ATTRIBUTE_NORMAL,
+        0,
+        FILE_OPEN,
+        FILE_SYNCHRONOUS_IO_NONALERT,
+        NULL,
+        0
+    );
+}
+
+static NTSTATUS SendTpmCommand(HANDLE hTpm, UCHAR* command, ULONG commandSize, UCHAR* response, ULONG* responseSize) {
+    IO_STATUS_BLOCK ioStatus;
+
+    NTSTATUS status = ZwWriteFile(
+        hTpm,
+        NULL, NULL, NULL,
+        &ioStatus,
+        command,
+        commandSize,
+        NULL, NULL
+    );
+
+    if (!NT_SUCCESS(status)) {
+        return status;
+    }
+
+    RtlZeroMemory(&ioStatus, sizeof(ioStatus));
+
+    status = ZwReadFile(
+        hTpm,
+        NULL, NULL, NULL,
+        &ioStatus,
+        response,
+        *responseSize,
+        NULL, NULL
+    );
+
+    if (NT_SUCCESS(status)) {
+        *responseSize = (ULONG)ioStatus.Information;
+    }
+
+    return status;
+}
 
 TPM getTpmVersion() {
     TPM tpm = {};
-
-    TBS_HCONTEXT hContext = NULL;
-    TBS_RESULT tbsResult;
-    //NTSTATUS status = STATUS_SUCCESS;
-
-    // Attempt to detect TPM 2.0
-    TBS_CONTEXT_PARAMS2 contextParams = { 0 };
-    contextParams.version = TBS_CONTEXT_VERSION_TWO;
-    contextParams.includeTpm12 = 0;
-    contextParams.includeTpm20 = 1;
-
-    tbsResult = Tbsi_Context_Create((PCTBS_CONTEXT_PARAMS)&contextParams, &hContext);
-
-    if (tbsResult == TBS_SUCCESS && hContext != NULL) {
-        // TPM2_GetRandom
-        UCHAR tpm2Command[] = {
-            0x80, 0x01,
-            0x00, 0x00, 0x00, 0x0C,
-            0x00, 0x00, 0x01, 0x7B,
-            0x00, 0x20
-        };
-
-        UCHAR tpmResponse[128] = { 0 };
-        UINT32 responseLength = sizeof(tpmResponse);
-
-        tbsResult = Tbsip_Submit_Command(
-            hContext, TBS_COMMAND_LOCALITY_ZERO, TBS_COMMAND_PRIORITY_NORMAL,
-            tpm2Command, sizeof(tpm2Command), tpmResponse, &responseLength
-        );
-
-        if (tbsResult == TBS_SUCCESS) {
-            UINT32 tpmReturnCode = (tpmResponse[6] << 24) | (tpmResponse[7] << 16) |
-                (tpmResponse[8] << 8) | (tpmResponse[9]);
-
-            if (tpmReturnCode == 0) {
-                KdPrint(("[+] AntiCheat: TPM 2.0 detected and responsive.\n"));
-
-                tpm.TpmVersion = TpmVersion2_0;
-
-                Tbsip_Context_Close(hContext);
-                return tpm;
-            }
-        }
-
-        Tbsip_Context_Close(hContext);
-        hContext = NULL;
-    }
-
-    // Fallback: Attempt to detect TPM 1.2
-    contextParams.includeTpm12 = 1;
-    contextParams.includeTpm20 = 0;
-
-    tbsResult = Tbsi_Context_Create((PCTBS_CONTEXT_PARAMS)&contextParams, &hContext);
-
-    if (tbsResult == TBS_SUCCESS && hContext != NULL) {
-        // TPM_ORD_GetRandom
-        UCHAR tpm1Command[] = {
-            0x00, 0xC1,
-            0x00, 0x00, 0x00, 0x0E,
-            0x00, 0x00, 0x00, 0x46,
-            0x00, 0x00, 0x00, 0x20
-        };
-
-        UCHAR tpmResponse[128] = { 0 };
-        UINT32 responseLength = sizeof(tpmResponse);
-
-        tbsResult = Tbsip_Submit_Command(
-            hContext, TBS_COMMAND_LOCALITY_ZERO, TBS_COMMAND_PRIORITY_NORMAL,
-            tpm1Command, sizeof(tpm1Command), tpmResponse, &responseLength
-        );
-
-        if (tbsResult == TBS_SUCCESS) {
-            UINT32 tpmReturnCode = (tpmResponse[6] << 24) | (tpmResponse[7] << 16) |
-                (tpmResponse[8] << 8) | (tpmResponse[9]);
-
-            if (tpmReturnCode == 0) {
-                KdPrint(("[+] AntiCheat: TPM 1.2 detected and responsive.\n"));
-
-                tpm.TpmVersion = TpmVersion1_2;
-
-                Tbsip_Context_Close(hContext);
-                return tpm;
-            }
-        }
-
-        Tbsip_Context_Close(hContext);
-    }
-
     tpm.TpmVersion = TpmVersionNone;
 
-    KdPrint(("[-] AntiCheat: No functional TPM found on the system.\n"));
+    HANDLE hTpm = NULL;
+    NTSTATUS status = OpenTpmDevice(&hTpm);
 
+    if (!NT_SUCCESS(status)) {
+        KdPrint(("[-] Failed to open TPM device: 0x%X\n", status));
+        return tpm;
+    }
+
+    // try TPM 2.0 first — TPM2_GetRandom command
+    UCHAR tpm2Command[] = {
+        0x80, 0x01,
+        0x00, 0x00, 0x00, 0x0C,
+        0x00, 0x00, 0x01, 0x7B,
+        0x00, 0x20
+    };
+
+    UCHAR tpmResponse[128] = { 0 };
+    ULONG responseLength = sizeof(tpmResponse);
+
+    status = SendTpmCommand(hTpm, tpm2Command, sizeof(tpm2Command), tpmResponse, &responseLength);
+
+    if (NT_SUCCESS(status)) {
+        UINT32 returnCode = (tpmResponse[6] << 24) | (tpmResponse[7] << 16) |
+            (tpmResponse[8] << 8) | tpmResponse[9];
+
+        if (returnCode == 0) {
+            KdPrint(("[+] TPM 2.0 detected and responsive.\n"));
+            tpm.TpmVersion = TpmVersion2_0;
+            ZwClose(hTpm);
+            return tpm;
+        }
+    }
+
+    // fallback: TPM 1.2 — TPM_ORD_GetRandom command
+    RtlZeroMemory(tpmResponse, sizeof(tpmResponse));
+    responseLength = sizeof(tpmResponse);
+
+    UCHAR tpm1Command[] = {
+        0x00, 0xC1,
+        0x00, 0x00, 0x00, 0x0E,
+        0x00, 0x00, 0x00, 0x46,
+        0x00, 0x00, 0x00, 0x20
+    };
+
+    status = SendTpmCommand(hTpm, tpm1Command, sizeof(tpm1Command), tpmResponse, &responseLength);
+
+    if (NT_SUCCESS(status)) {
+        UINT32 returnCode = (tpmResponse[6] << 24) | (tpmResponse[7] << 16) |
+            (tpmResponse[8] << 8) | tpmResponse[9];
+
+        if (returnCode == 0) {
+            KdPrint(("[+] TPM 1.2 detected and responsive.\n"));
+            tpm.TpmVersion = TpmVersion1_2;
+            ZwClose(hTpm);
+            return tpm;
+        }
+    }
+
+    KdPrint(("[-] No functional TPM found.\n"));
+    ZwClose(hTpm);
     return tpm;
 }

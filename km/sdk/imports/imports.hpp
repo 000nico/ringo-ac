@@ -1,5 +1,5 @@
 #pragma once
-#include <ntddk.h>
+#include <ntifs.h>
 
 extern "C" NTSTATUS ZwQuerySystemInformation(
     IN ULONG SystemInformationClass,

@@ -87,6 +87,7 @@
     <Link>
       <AdditionalDependencies>Tbs.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/INTEGRITYCHECK %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\Windows Kits\10\Lib\10.0.28000.0\um\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -103,6 +104,10 @@
   <ItemGroup>
     <ClCompile Include="core\comunication\ioctl\dispatcher.cpp" />
     <ClCompile Include="core\comunication\ioctl\setup.cpp" />
+    <ClCompile Include="core\detection\detections.cpp" />
+    <ClCompile Include="core\detection\manual_map_driver_scan\big_pool_track\bpt.cpp" />
+    <ClCompile Include="core\detection\manual_map_driver_scan\driver_scan.cpp" />
+    <ClCompile Include="core\detection\manual_map_driver_scan\kernel_space_walk\kwalk.cpp" />
     <ClCompile Include="core\detection\usermode_cheats\callbacks\create_process_notify\create_process_notify.cpp" />
     <ClCompile Include="core\detection\usermode_cheats\callbacks\create_thread_notify\create_thread_notify.cpp" />
     <ClCompile Include="core\detection\usermode_cheats\callbacks\image_notify\image_notify.cpp" />
@@ -121,6 +126,10 @@
   <ItemGroup>
     <ClInclude Include="core\comunication\ioctl\codes.hpp" />
     <ClInclude Include="core\comunication\ioctl\ioctl.hpp" />
+    <ClInclude Include="core\detection\detections.hpp" />
+    <ClInclude Include="core\detection\manual_map_driver_scan\big_pool_track\bpt.hpp" />
+    <ClInclude Include="core\detection\manual_map_driver_scan\driver_scan.hpp" />
+    <ClInclude Include="core\detection\manual_map_driver_scan\kernel_space_walk\kwalk.hpp" />
     <ClInclude Include="core\detection\usermode_cheats\callbacks\create_process_notify\create_process_notify.hpp" />
     <ClInclude Include="core\detection\usermode_cheats\callbacks\create_thread_notify\create_thread_notify.hpp" />
     <ClInclude Include="core\detection\usermode_cheats\callbacks\image_notify\image_notify.hpp" />
