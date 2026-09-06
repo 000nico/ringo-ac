@@ -11,22 +11,26 @@ VOID LoadImageCallback(_In_opt_ PUNICODE_STRING FullImageName, _In_ HANDLE Proce
     if (FullImageName == NULL || ImageInfo == NULL)
         return;
 
-    if (g_LoadedDllsCount >= 256 || ringo_context.Detections.DllDetectionReport.Count > 256)
+    BOOLEAN isSigned = (ImageInfo->ImageSignatureLevel > SE_SIGNING_LEVEL_UNSIGNED);
+    if (isSigned)
         return;
 
-    LOADED_MODULE fd = {};
+    if (ringo_context.Detections.DllDetectionReport.Count < 256) {
+        LOADED_MODULE fd = {};
 
-    RtlInitEmptyUnicodeString(&fd.FullImageName, fd.NameBuffer, sizeof(fd.NameBuffer));
-    RtlCopyUnicodeString(&fd.FullImageName, FullImageName);
+        RtlInitEmptyUnicodeString(&fd.FullImageName, fd.NameBuffer, sizeof(fd.NameBuffer));
+        RtlCopyUnicodeString(&fd.FullImageName, FullImageName);
 
-    fd.Mem.Image.ImageBase = ImageInfo->ImageBase;
-    fd.Mem.Image.ImageSize = ImageInfo->ImageSize;
-    fd.isSigned = (ImageInfo->ImageSignatureLevel > SE_SIGNING_LEVEL_UNSIGNED);
+        fd.Mem.Image.ImageBase = ImageInfo->ImageBase;
+        fd.Mem.Image.ImageSize = ImageInfo->ImageSize;
+        fd.isSigned = isSigned;
 
-    LONG index = InterlockedIncrement((PLONG)&g_LoadedDllsCount) - 1;
-    if (index < 256) {
-        RtlCopyMemory(&g_LoadedDlls[index], &fd, sizeof(LOADED_MODULE));
-        g_LoadedDlls[index].FullImageName.Buffer = g_LoadedDlls[index].NameBuffer;
+        LONG index = InterlockedIncrement((PLONG)&ringo_context.Detections.DllDetectionReport.Count) - 1;
+        if (index < 256) {
+            RtlCopyMemory(&ringo_context.Detections.DllDetectionReport.Entries[index], &fd, sizeof(LOADED_MODULE));
+            ringo_context.Detections.DllDetectionReport.Entries[index].FullImageName.Buffer = 
+                ringo_context.Detections.DllDetectionReport.Entries[index].NameBuffer;
+        }
     }
 }
 

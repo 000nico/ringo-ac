@@ -45,10 +45,10 @@ VOID CreateThreadCallback(_In_ HANDLE ProcessId, _In_ HANDLE ThreadId, _In_ BOOL
         ct.CreatorId = PsGetCurrentProcessId();
         ct.ThreadId = ThreadId;
 
-        if (g_CreatedThreadsCount < 256) {
-            LONG index = InterlockedIncrement((PLONG)&g_CreatedThreadsCount) - 1;
+        if (ringo_context.Detections.ThreadDetectionReport.Count < 256) {
+            LONG index = InterlockedIncrement((PLONG)&ringo_context.Detections.ThreadDetectionReport.Count) - 1;
             if (index < 256) {
-                RtlCopyMemory(&g_CreatedThreads[index], &ct, sizeof(CREATED_THREAD));
+                RtlCopyMemory(&ringo_context.Detections.ThreadDetectionReport.Entries[index], &ct, sizeof(CREATED_THREAD));
             }
         }
     }

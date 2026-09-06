@@ -22,15 +22,10 @@ typedef struct RINGO_CONTEXT {
     struct {
         DRIVER_DETECTION_REPORT DriverDetectionReport;
         FLAGGED_DLL_REPORT DllDetectionReport;
+        THREAD_DETECTION_REPORT ThreadDetectionReport;
     } Detections;
 
 } RINGO_CONTEXT;
-
-extern LOADED_MODULE g_LoadedDlls[256];
-extern volatile LONG g_LoadedDllsCount;
-
-extern CREATED_THREAD g_CreatedThreads[256];
-extern volatile LONG g_CreatedThreadsCount;
 
 extern RINGO_CONTEXT ringo_context;
 

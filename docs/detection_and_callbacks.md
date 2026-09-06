@@ -65,7 +65,7 @@ Source: `km/core/detection/callbacks/create_thread_notify/create_thread_notify.c
   - Filters thread creation events specifically for `ProcessId == ringo_context.ProtectedGamePid`.
   - **Remote Thread Detection**: Flags `isCreatedRemotely = (PsGetCurrentProcessId() != ProcessId)`.
   - **Win32 Start Address Resolution**: Calls `GetStartAddress(ThreadId)` which opens a temporary kernel handle with `ObOpenObjectByPointer` and invokes `ZwQueryInformationThread(..., ThreadQuerySetWin32StartAddress, ...)`.
-  - Records the event into `g_CreatedThreads[index]`.
+  - Records the event into `ringo_context.Detections.ThreadDetectionReport.Entries[index]`.
 
 ---
 
@@ -76,9 +76,8 @@ Source: `km/core/detection/callbacks/image_notify/image_notify.cpp`
 - **Callback Signature**: `PLOAD_IMAGE_NOTIFY_ROUTINE` (`LoadImageCallback`).
 - **Functionality**:
   - Filters DLL/image mappings into the address space of `ringo_context.ProtectedGamePid`.
-  - Records the `ImageBase`, `ImageSize`, and `FullImageName`.
-  - Determines if the module is signed (`ImageInfo->ImageSignatureLevel > SE_SIGNING_LEVEL_UNSIGNED`).
-  - Stores the entry into `g_LoadedDlls[index]`.
+  - Filters out signed legitimate modules; flags unsigned binaries (`!isSigned`).
+  - Stores suspicious entries into `ringo_context.Detections.DllDetectionReport.Entries[index]`.
 
 ---
 

@@ -56,14 +56,11 @@ typedef struct RINGO_CONTEXT {
     struct {
         DRIVER_DETECTION_REPORT DriverDetectionReport;
         FLAGGED_DLL_REPORT DllDetectionReport;
+        THREAD_DETECTION_REPORT ThreadDetectionReport;
     } Detections;
 
 } RINGO_CONTEXT;
 ```
-
-### Global Buffers
-- `g_LoadedDlls[256]` / `g_LoadedDllsCount`: Lockless circular log storing loaded module structures indexed with `InterlockedIncrement`.
-- `g_CreatedThreads[256]` / `g_CreatedThreadsCount`: Circular log of thread creation records indexed with `InterlockedIncrement`.
 
 ---
 

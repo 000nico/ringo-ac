@@ -10,4 +10,9 @@ typedef struct _CREATED_THREAD {
     HANDLE CreatorId;
 } CREATED_THREAD;
 
+struct THREAD_DETECTION_REPORT {
+    ULONG Count;
+    CREATED_THREAD Entries[256];
+};
+
 VOID SetCreateThreadCallback();

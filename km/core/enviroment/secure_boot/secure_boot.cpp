@@ -22,7 +22,7 @@ BOOLEAN zwQueryCheck(_SYSTEM_SECUREBOOT_INFORMATION* psbi) {
 
 BOOLEAN uefiCheck(BOOLEAN* pEnabled) {
 	UNICODE_STRING varName;
-	RtlInitUnicodeString(&varName, L"Secure Boot");
+	RtlInitUnicodeString(&varName, L"SecureBoot");
 
 	UCHAR value = 0;
 	ULONG valueLenght = sizeof(value);

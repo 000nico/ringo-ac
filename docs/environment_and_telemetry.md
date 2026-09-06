@@ -33,7 +33,7 @@ Source: `km/core/enviroment/secure_boot/secure_boot.cpp`
 
 - **Mechanism**: Performs a 3-way validation cross-checking different kernel subsystems:
   1. `ZwQuerySystemInformation(SystemSecureBootInformation, ...)` for `SecureBootEnabled` and `SecureBootCapable`.
-  2. `ExGetFirmwareEnvironmentVariable` querying the UEFI NVRAM variable `L"Secure Boot"` under `EFI_GLOBAL_VARIABLE_GUID` (`8be4df61-93ca-11d2-aa0d-00e098032b8c`).
+  2. `ExGetFirmwareEnvironmentVariable` querying the UEFI NVRAM variable `L"SecureBoot"` under `EFI_GLOBAL_VARIABLE_GUID` (`8be4df61-93ca-11d2-aa0d-00e098032b8c`).
   3. Registry query via `ZwOpenKey` / `ZwQueryValueKey` for `\Registry\Machine\SYSTEM\CurrentControlSet\Control\SecureBoot\State\UEFISecureBootEnabled`.
   4. If results mismatch or if `isEnabled && !isSupported`, flags `consistentData = FALSE`.
 

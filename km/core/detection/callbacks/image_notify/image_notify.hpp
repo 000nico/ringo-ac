@@ -16,7 +16,7 @@ struct LOADED_MODULE {
 
 struct FLAGGED_DLL_REPORT { 
     ULONG Count;
-    LOADED_MODULE* Modules;
+    LOADED_MODULE Entries[256];
 };
 
 VOID SetLoadImageCallback();
