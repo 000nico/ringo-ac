@@ -38,3 +38,4 @@ struct LOADED_LEGIT_DRIVERS {
 LOADED_LEGIT_DRIVERS* GetLegitDriverList();
 VOID FreeLegitDriverList(LOADED_LEGIT_DRIVERS* lld);
 BOOLEAN isAddressInKnownModule(PVOID address, LOADED_LEGIT_DRIVERS* lld);
+BOOLEAN isRegionExecutable(PVOID address);

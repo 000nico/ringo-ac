@@ -11,6 +11,7 @@ typedef struct RINGO_CONTEXT {
         BOOLEAN isGameOpen;
     } Game;
 
+    // todo: unificar cada callback en structuras para no tener repetidos
     struct {
         PVOID ObCallbackHandle;
         BOOLEAN isLoadImageCallbackRegistered;

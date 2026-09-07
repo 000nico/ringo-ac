@@ -75,3 +75,19 @@ BOOLEAN isAddressInKnownModule(PVOID address, LOADED_LEGIT_DRIVERS* lld) {
 
     return FALSE;
 }
+
+BOOLEAN isRegionExecutable(PVOID address) {
+    MEMORY_BASIC_INFORMATION mbi = {};
+    SIZE_T returnLenght = 0;
+
+    NTSTATUS status = ZwQueryVirtualMemory(ZwCurrentProcess(), address, MemoryBasicInformation, &mbi, sizeof(mbi), &returnLenght);
+
+    if (!NT_SUCCESS(status)) return FALSE;
+
+    else {
+        return(mbi.Protect & PAGE_EXECUTE) ||
+              (mbi.Protect & PAGE_EXECUTE_READ) ||
+              (mbi.Protect & PAGE_EXECUTE_READWRITE) ||
+              (mbi.Protect & PAGE_EXECUTE_WRITECOPY);
+    }
+}

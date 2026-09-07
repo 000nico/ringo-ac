@@ -3,27 +3,45 @@
 #include "../driver_scan.hpp"
 #include "../../detections.hpp"
 #include "../../../global.hpp"
+#include "whitelistTags.hpp"
 
+BOOLEAN isTagInWhiteList(ULONG tag) {
+    for (int i = 0; i < ARRAYSIZE(KnownLegitTags); i++) {
+        if (KnownLegitTags[i] == tag)
+            return TRUE;
+    }
+    return FALSE;
+}
 PVOID AllocateAndQueryBigPool(ULONG* outReturnLength) {
     ULONG returnLength = 0;
+    PVOID buffer = NULL;
 
-    ZwQuerySystemInformation(SystemBigPoolInformation, NULL, 0, &returnLength);
+    for (int attempt = 0; attempt < 5; attempt++) {
+        ZwQuerySystemInformation(SystemBigPoolInformation, NULL, 0, &returnLength);
+        if (returnLength == 0) return NULL;
 
-    if (returnLength == 0)
-        return NULL;
+        returnLength += sizeof(SYSTEM_BIGPOOL_ENTRY) * 16;
 
-    PVOID buffer = ExAllocatePool2(POOL_FLAG_NON_PAGED, returnLength, 'tGLD');
-    if (!buffer)
-        return NULL;
+        buffer = ExAllocatePool2(POOL_FLAG_NON_PAGED, returnLength, 'tGLD');
+        if (!buffer) return NULL;
 
-    NTSTATUS status = ZwQuerySystemInformation(SystemBigPoolInformation, buffer, returnLength, &returnLength);
-    if (!NT_SUCCESS(status)) {
+        NTSTATUS status = ZwQuerySystemInformation(
+            SystemBigPoolInformation, buffer, returnLength, &returnLength
+        );
+
+        if (NT_SUCCESS(status)) {
+            *outReturnLength = returnLength;
+            return buffer;
+        }
+
         ExFreePoolWithTag(buffer, 'tGLD');
-        return NULL;
+        buffer = NULL;
+
+        if (status != STATUS_INFO_LENGTH_MISMATCH)
+            return NULL;
     }
 
-    *outReturnLength = returnLength;
-    return buffer;
+    return NULL;
 }
 
 void BigPool_Detect() {
@@ -43,10 +61,13 @@ void BigPool_Detect() {
     for (ULONG i = 0; i < sbi->Count; i++) {
         PVOID realVirtualAddress = (PVOID)((ULONG_PTR)sbi->AllocatedInfo[i].VirtualAddress & ~1);
 
-        if (sbi->AllocatedInfo[i].NonPaged == 1 && sbi->AllocatedInfo[i].SizeInBytes > 0x1000 && !isAddressInKnownModule(realVirtualAddress, lld)) {
-            if (ringo_context.Detections.DriverDetectionReport.Count < 256) {
-                ringo_context.Detections.DriverDetectionReport.Entries[ringo_context.Detections.DriverDetectionReport.Count++] = CreateDriverDetectionEntry(realVirtualAddress, sbi->AllocatedInfo[i].SizeInBytes, METHOD_BIG_POOL, NULL);
-            }
+        if (!sbi->AllocatedInfo[i].NonPaged == 1) continue;
+        if (!sbi->AllocatedInfo[i].SizeInBytes > 0x1000) continue;
+        if (isAddressInKnownModule(realVirtualAddress, lld)) continue;
+        if (!isRegionExecutable(realVirtualAddress)) continue;
+
+        if (ringo_context.Detections.DriverDetectionReport.Count < 256) {
+            ringo_context.Detections.DriverDetectionReport.Entries[ringo_context.Detections.DriverDetectionReport.Count++] = CreateDriverDetectionEntry(realVirtualAddress, sbi->AllocatedInfo[i].SizeInBytes, METHOD_BIG_POOL, NULL);
         }
     }
 
