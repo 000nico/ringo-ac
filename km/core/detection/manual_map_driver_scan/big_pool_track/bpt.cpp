@@ -6,8 +6,8 @@
 #include "whitelistTags.hpp"
 
 BOOLEAN isTagInWhiteList(ULONG tag) {
-    for (int i = 0; i < ARRAYSIZE(KnownLegitTags); i++) {
-        if (KnownLegitTags[i] == tag)
+    for (int i = 0; i < ARRAYSIZE(KnownLegitPoolTags); i++) {
+        if (KnownLegitPoolTags[i] == tag)
             return TRUE;
     }
     return FALSE;
@@ -61,10 +61,11 @@ void BigPool_Detect() {
     for (ULONG i = 0; i < sbi->Count; i++) {
         PVOID realVirtualAddress = (PVOID)((ULONG_PTR)sbi->AllocatedInfo[i].VirtualAddress & ~1);
 
-        if (!sbi->AllocatedInfo[i].NonPaged == 1) continue;
-        if (!sbi->AllocatedInfo[i].SizeInBytes > 0x1000) continue;
+        if (sbi->AllocatedInfo[i].NonPaged != 1) continue;
+        if (sbi->AllocatedInfo[i].SizeInBytes <= 0x1000) continue;
         if (isAddressInKnownModule(realVirtualAddress, lld)) continue;
         if (!isRegionExecutable(realVirtualAddress)) continue;
+        if (isTagInWhiteList(sbi->AllocatedInfo[i].TagUlong)) continue;
 
         if (ringo_context.Detections.DriverDetectionReport.Count < 256) {
             ringo_context.Detections.DriverDetectionReport.Entries[ringo_context.Detections.DriverDetectionReport.Count++] = CreateDriverDetectionEntry(realVirtualAddress, sbi->AllocatedInfo[i].SizeInBytes, METHOD_BIG_POOL, NULL);

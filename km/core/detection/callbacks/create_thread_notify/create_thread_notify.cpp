@@ -39,6 +39,7 @@ VOID CreateThreadCallback(_In_ HANDLE ProcessId, _In_ HANDLE ThreadId, _In_ BOOL
         return;
 
     if (ProcessId == (HANDLE)ringo_context.Game.ProtectedGamePid && Create == TRUE) { 
+        // todo: crear una funcion q cree esto x mi
         CREATED_THREAD ct = {};
         ct.StartAddress = GetStartAddress(ThreadId);
         ct.isCreatedRemotely = isCreatedRemotely(ProcessId);

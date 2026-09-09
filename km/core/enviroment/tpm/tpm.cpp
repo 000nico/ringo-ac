@@ -83,14 +83,19 @@ TPM getTpmVersion() {
     status = SendTpmCommand(hTpm, tpm2Command, sizeof(tpm2Command), tpmResponse, &responseLength);
 
     if (NT_SUCCESS(status)) {
-        UINT32 returnCode = (tpmResponse[6] << 24) | (tpmResponse[7] << 16) |
-            (tpmResponse[8] << 8) | tpmResponse[9];
+        if (responseLength < 10) {
+            KdPrint(("[-] TPM 2.0 response too short (%lu bytes).\n", responseLength));
+        }
+        else {
+            UINT32 returnCode = (tpmResponse[6] << 24) | (tpmResponse[7] << 16) |
+                (tpmResponse[8] << 8) | tpmResponse[9];
 
-        if (returnCode == 0) {
-            KdPrint(("[+] TPM 2.0 detected and responsive.\n"));
-            tpm.TpmVersion = TpmVersion2_0;
-            ZwClose(hTpm);
-            return tpm;
+            if (returnCode == 0) {
+                KdPrint(("[+] TPM 2.0 detected and responsive.\n"));
+                tpm.TpmVersion = TpmVersion2_0;
+                ZwClose(hTpm);
+                return tpm;
+            }
         }
     }
 
@@ -108,14 +113,19 @@ TPM getTpmVersion() {
     status = SendTpmCommand(hTpm, tpm1Command, sizeof(tpm1Command), tpmResponse, &responseLength);
 
     if (NT_SUCCESS(status)) {
-        UINT32 returnCode = (tpmResponse[6] << 24) | (tpmResponse[7] << 16) |
-            (tpmResponse[8] << 8) | tpmResponse[9];
+        if (responseLength < 10) {
+            KdPrint(("[-] TPM 1.2 response too short (%lu bytes).\n", responseLength));
+        }
+        else {
+            UINT32 returnCode = (tpmResponse[6] << 24) | (tpmResponse[7] << 16) |
+                (tpmResponse[8] << 8) | tpmResponse[9];
 
-        if (returnCode == 0) {
-            KdPrint(("[+] TPM 1.2 detected and responsive.\n"));
-            tpm.TpmVersion = TpmVersion1_2;
-            ZwClose(hTpm);
-            return tpm;
+            if (returnCode == 0) {
+                KdPrint(("[+] TPM 1.2 detected and responsive.\n"));
+                tpm.TpmVersion = TpmVersion1_2;
+                ZwClose(hTpm);
+                return tpm;
+            }
         }
     }
 

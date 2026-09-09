@@ -1,5 +1,6 @@
 #pragma once
 #include "../sdk/imports/imports.hpp"
+#include "detection/vulnerable_drivers/vulnerable_driver_detections.hpp"
 #include "detection/callbacks/image_notify/image_notify.hpp"
 #include "detection/callbacks/create_thread_notify/create_thread_notify.hpp"
 #include "detection/detections.hpp"
@@ -24,6 +25,7 @@ typedef struct RINGO_CONTEXT {
 
     struct {
         DRIVER_DETECTION_REPORT DriverDetectionReport;
+        BYOVD_DETECTION_REPORT ByovdDetectionReport;
         FLAGGED_DLL_REPORT DllDetectionReport;
         THREAD_DETECTION_REPORT ThreadDetectionReport;
     } Detections;

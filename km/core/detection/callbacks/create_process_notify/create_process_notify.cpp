@@ -7,12 +7,7 @@
 #include "../../../global.hpp"
 #include "../../../../sdk/imports/imports.hpp"
 
-VOID PcreateProcessNotifyRoutineEx(_Inout_ PEPROCESS Process, _In_ HANDLE ProcessId, _Inout_opt_ PPS_CREATE_NOTIFY_INFO CreateInfo) {
-	PUCHAR name = PsGetProcessImageFileName(Process);
-	if (!name) return;
-
-	if (ringo_context.Game.ProtectedGameProcessName[0] == '\0') return;
-
+VOID UpdateGameState(PUCHAR name, HANDLE ProcessId, PPS_CREATE_NOTIFY_INFO CreateInfo) {
 	if (_stricmp((const char*)name, (const char*)ringo_context.Game.ProtectedGameProcessName) == 0) {
 		// process created
 		if (CreateInfo) {
@@ -27,6 +22,13 @@ VOID PcreateProcessNotifyRoutineEx(_Inout_ PEPROCESS Process, _In_ HANDLE Proces
 			}
 		}
 	}
+}
+VOID PcreateProcessNotifyRoutineEx(_Inout_ PEPROCESS Process, _In_ HANDLE ProcessId, _Inout_opt_ PPS_CREATE_NOTIFY_INFO CreateInfo) {
+	PUCHAR name = PsGetProcessImageFileName(Process);
+	if (!name) return;
+	if (ringo_context.Game.ProtectedGameProcessName[0] == '\0') return;
+
+	UpdateGameState(name, ProcessId, CreateInfo);
 }
 
 VOID SetCreateProcessCallback() {

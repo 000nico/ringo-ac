@@ -19,4 +19,5 @@ struct FLAGGED_DLL_REPORT {
     LOADED_MODULE Entries[256];
 };
 
+NTSTATUS GetDriverObjectFromImageName(PUNICODE_STRING FullImageName, PDRIVER_OBJECT* OutDriverObject);
 VOID SetLoadImageCallback();

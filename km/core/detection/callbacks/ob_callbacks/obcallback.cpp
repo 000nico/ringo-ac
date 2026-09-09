@@ -1,30 +1,20 @@
 #include "../../../global.hpp"
 #include "obcallback.hpp"
 
-// todo: add whitelist process
-OB_PREOP_CALLBACK_STATUS OpenProcessCallback(_In_ PVOID RegistrationContext, _Inout_ POB_PRE_OPERATION_INFORMATION Info) {
-	UNREFERENCED_PARAMETER(RegistrationContext);
+VOID StripHandleToBYOVD(POB_PRE_OPERATION_INFORMATION Info) {
+	for (ULONG i = 0; i < ringo_context.Detections.ByovdDetectionReport.count; i++) {
+		if (Info->Object == ringo_context.Detections.ByovdDetectionReport.Entries[i].DeviceObject) {
+			if (Info->Operation == OB_OPERATION_HANDLE_CREATE)
+				Info->Parameters->CreateHandleInformation.DesiredAccess = 0;
+			else if (Info->Operation == OB_OPERATION_HANDLE_DUPLICATE)
+				Info->Parameters->DuplicateHandleInformation.DesiredAccess = 0;
 
-	// Ignore kernel-mode handles to prevent breaking legitimate drivers / system services
-	if (Info->KernelHandle)
-		return OB_PREOP_SUCCESS;
-
-	if (!ringo_context.Game.isGameOpen || ringo_context.Game.ProtectedGamePid == NULL)
-		return OB_PREOP_SUCCESS;
-
-	if (Info->ObjectType != *PsProcessType && Info->ObjectType != *PsThreadType)
-		return OB_PREOP_SUCCESS;
-
-	HANDLE callerPid = PsGetProcessId(PsGetCurrentProcess());
-	HANDLE targetPid = NULL;
-
-	if (Info->ObjectType == *PsProcessType) {
-		targetPid = PsGetProcessId((PEPROCESS)Info->Object);
+			break;
+		}
 	}
-	else if (Info->ObjectType == *PsThreadType) {
-		targetPid = PsGetThreadProcessId((PETHREAD)Info->Object);
-	}
+}
 
+VOID StripHandleToGame(HANDLE callerPid, HANDLE targetPid, POB_PRE_OPERATION_INFORMATION Info) {
 	if (targetPid == (HANDLE)ringo_context.Game.ProtectedGamePid && callerPid != (HANDLE)ringo_context.Game.ProtectedGamePid) {
 		if (Info->ObjectType == *PsProcessType) {
 			if (Info->Operation == OB_OPERATION_HANDLE_CREATE) {
@@ -55,13 +45,29 @@ OB_PREOP_CALLBACK_STATUS OpenProcessCallback(_In_ PVOID RegistrationContext, _In
 			}
 		}
 	}
+}
 
+OB_PREOP_CALLBACK_STATUS OpenProcessCallback(_In_ PVOID RegistrationContext, _Inout_ POB_PRE_OPERATION_INFORMATION Info) {
+	UNREFERENCED_PARAMETER(RegistrationContext);
+
+	if (Info->KernelHandle) return OB_PREOP_SUCCESS; // Ignore kernel-mode handles to prevent breaking legitimate drivers / system services
+	if (!ringo_context.Game.isGameOpen || ringo_context.Game.ProtectedGamePid == NULL) return OB_PREOP_SUCCESS;
+	if (Info->ObjectType != *PsProcessType && Info->ObjectType != *PsThreadType && Info->ObjectType != *IoDeviceObjectType) return OB_PREOP_SUCCESS;
+
+	HANDLE callerPid = PsGetProcessId(PsGetCurrentProcess());
+	HANDLE targetPid = NULL;
+
+	if (Info->ObjectType == *PsProcessType)     targetPid = PsGetProcessId((PEPROCESS)Info->Object);
+	else if (Info->ObjectType == *PsThreadType) targetPid = PsGetThreadProcessId((PETHREAD)Info->Object);
+
+	StripHandleToGame(callerPid, targetPid, Info);
+	if(Info->ObjectType == *IoDeviceObjectType) StripHandleToBYOVD(Info);
 	return OB_PREOP_SUCCESS;
 }
 
 // returns the object to use with ObUnRegisterCallbacks at driver unload
 PVOID ObRegisterCallbacksOpenProcess() {
-	OB_OPERATION_REGISTRATION operations[2] = {};
+	OB_OPERATION_REGISTRATION operations[3] = {};
 	operations[0].ObjectType = PsProcessType;
 	operations[0].Operations = OB_OPERATION_HANDLE_CREATE | OB_OPERATION_HANDLE_DUPLICATE;
 	operations[0].PreOperation = OpenProcessCallback;
@@ -72,20 +78,22 @@ PVOID ObRegisterCallbacksOpenProcess() {
 	operations[1].PreOperation = OpenProcessCallback;
 	operations[1].PostOperation = NULL;
 
+	operations[2].ObjectType = IoDeviceObjectType;
+	operations[2].Operations = OB_OPERATION_HANDLE_CREATE | OB_OPERATION_HANDLE_DUPLICATE;
+	operations[2].PreOperation = OpenProcessCallback;
+	operations[2].PostOperation = NULL;
+
 	UNICODE_STRING altitude = RTL_CONSTANT_STRING(L"321000");
 	OB_CALLBACK_REGISTRATION ocr = {};
 	ocr.Version = OB_FLT_REGISTRATION_VERSION;
-	ocr.OperationRegistrationCount = 2;
+	ocr.OperationRegistrationCount = 3;
 	ocr.Altitude = altitude;
 	ocr.RegistrationContext = NULL;
 	ocr.OperationRegistration = operations;
 
 	PVOID pRegistrationHandle = NULL;
-	NTSTATUS status = ObRegisterCallbacks(&ocr, &pRegistrationHandle); // REMEMBER TO UNLOAD WHEN UNLOADING DRIVER!!
-	if (!NT_SUCCESS(status)) {
-		return NULL;
-	}
-	else {
-		return pRegistrationHandle;
-	}
+	NTSTATUS status = ObRegisterCallbacks(&ocr, &pRegistrationHandle); 
+
+	if (!NT_SUCCESS(status)) return NULL;
+	else return pRegistrationHandle;
 }

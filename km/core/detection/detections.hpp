@@ -1,8 +1,9 @@
 #pragma once
 #include "../../sdk/imports/imports.hpp"
 
+// todo: rename with manual map driver detections
+
 enum DETECTION_METHOD {
-    METHOD_IMAGE_CALLBACK,
     METHOD_BIG_POOL,
     METHOD_KERNEL_SPACE_WALKING
 };

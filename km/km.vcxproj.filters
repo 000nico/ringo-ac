@@ -84,6 +84,15 @@
     <ClCompile Include="core\detection\detections.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="core\detection\vulnerable_drivers\byovd_scan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sdk\crypto\hashes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="core\detection\vulnerable_drivers\vulnerable_driver_detections.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\enviroment\secure_boot\secure_boot.hpp">
@@ -144,6 +153,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core\detection\detections.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\detection\manual_map_driver_scan\big_pool_track\whitelistTags.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\detection\vulnerable_drivers\blocked_drivers.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\detection\vulnerable_drivers\byovd_scan.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk\crypto\hashes.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="core\detection\vulnerable_drivers\vulnerable_driver_detections.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

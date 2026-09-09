@@ -77,17 +77,19 @@ BOOLEAN isAddressInKnownModule(PVOID address, LOADED_LEGIT_DRIVERS* lld) {
 }
 
 BOOLEAN isRegionExecutable(PVOID address) {
-    MEMORY_BASIC_INFORMATION mbi = {};
-    SIZE_T returnLenght = 0;
+    // ZwQueryVirtualMemory operates against the current process's virtual address space,
+    // which when called from a system thread does not map kernel addresses at all.
+    // MmIsAddressValid checks whether the virtual address is currently mapped and safe
+    // to access without raising a page-fault, which is the correct primitive for kernel
+    // address validation. Executable permission on kernel regions is enforced by the
+    // pool/section object flags, not by user-mode VirtualQuery semantics.
+    if (!MmIsAddressValid(address)) return FALSE;
 
-    NTSTATUS status = ZwQueryVirtualMemory(ZwCurrentProcess(), address, MemoryBasicInformation, &mbi, sizeof(mbi), &returnLenght);
-
-    if (!NT_SUCCESS(status)) return FALSE;
-
-    else {
-        return(mbi.Protect & PAGE_EXECUTE) ||
-              (mbi.Protect & PAGE_EXECUTE_READ) ||
-              (mbi.Protect & PAGE_EXECUTE_READWRITE) ||
-              (mbi.Protect & PAGE_EXECUTE_WRITECOPY);
-    }
+    // Conservatively treat any valid kernel address that is not covered by a known
+    // module (checked by the caller via isAddressInKnownModule) as potentially
+    // executable. Pool allocations with POOL_FLAG_NON_PAGED|execute intent land in
+    // non-paged executive regions; the big-pool scanner already filters by size and
+    // tag, so returning TRUE here for valid addresses not in the known-module list is
+    // the correct behaviour for anomaly detection purposes.
+    return TRUE;
 }
