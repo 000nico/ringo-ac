@@ -1,7 +1,11 @@
 # Ringo Anti-Cheat (Ringo-AC)
 
-A lightweight hybrid Kernel-Mode (**KM**) and User-Mode (**UM**) Anti-Cheat for Windows x64.
+<div align="center">
+  <img src="docs/banner.jpg" alt="Banner" width="600">
 
+
+  *a lightweight hybrid kernel-mode and user-mode Anti-Cheat for windows x64.*
+</div>
 ---
 
 ## Features

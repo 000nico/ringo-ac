@@ -2,7 +2,7 @@
 #include "obcallback.hpp"
 
 VOID StripHandleToBYOVD(POB_PRE_OPERATION_INFORMATION Info) {
-	for (ULONG i = 0; i < ringo_context.Detections.ByovdDetectionReport.count; i++) {
+	for (int i = 0; i < ringo_context.Detections.ByovdDetectionReport.count; i++) {
 		if (Info->Object == ringo_context.Detections.ByovdDetectionReport.Entries[i].DeviceObject) {
 			if (Info->Operation == OB_OPERATION_HANDLE_CREATE)
 				Info->Parameters->CreateHandleInformation.DesiredAccess = 0;
