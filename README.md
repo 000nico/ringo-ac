@@ -1,13 +1,18 @@
-# Ringo Anti-Cheat (Ringo-AC)
-
 <div align="center">
+  
+  *ringo*
+  
   <img src="docs/banner.jpg" alt="Banner" width="600">
 
 
+[![license](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
+[![language](https://img.shields.io/badge/language-C%2B%2B-00599C?style=flat-square&logo=c%2B%2B&logoColor=white)](https://isocpp.org/)
+[![platform](https://img.shields.io/badge/platform-Windows-0078D6?style=flat-square&logo=windows&logoColor=white)](https://www.microsoft.com)
+
+  
   *a lightweight hybrid kernel-mode and user-mode Anti-Cheat for windows x64.*
 </div
 
-## Features
 
 ### Kernel Mode (`km`)
 - **Process & Thread Protection (`ObRegisterCallbacks`)**: Strips unauthorized `PROCESS_VM_READ`, `PROCESS_VM_WRITE`, `PROCESS_VM_OPERATION`, and dangerous thread manipulation rights (`THREAD_SET_CONTEXT`, `THREAD_TERMINATE`).
