@@ -5,8 +5,7 @@
 
 
   *a lightweight hybrid kernel-mode and user-mode Anti-Cheat for windows x64.*
-</div>
----
+</div
 
 ## Features
 
