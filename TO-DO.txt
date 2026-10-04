@@ -1,2 +1,0 @@
-create_process_notify.cpp deberia detectar procesos sospechosos como debuggers (o no, tal vez esto major dejarselo al packer)
-toda la informacion deberia de poder ser recolectada por el modulo usermode para luego ser enviada al server

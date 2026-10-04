@@ -6,13 +6,13 @@ This document describes the environment verification probes and the hardware ide
 
 ## Environment Probes
 
-The `km/core/enviroment/` directory contains seven independent probes, each in its own subdirectory. They share no state with each other and are invoked by the IOCTL dispatcher on demand. All probes return typed structs that fit in small buffers — the largest is three bytes for the Secure Boot result.
+The `km/core/system/` directory contains seven independent probes, each in its own subdirectory. They share no state with each other and are invoked by the IOCTL dispatcher on demand. All probes return typed structs that fit in small buffers — the largest is three bytes for the Secure Boot result.
 
 The architecture is intentional: probes are isolated so that a failure in one does not cascade, and they are on-demand rather than polled so that the driver does not consume kernel resources between IOCTL calls.
 
 ### Hypervisor Detection
 
-Source: `km/core/enviroment/hypervisor/`
+Source: `km/core/system/hypervisor/`
 
 The hypervisor check does two things. It calls `ZwQuerySystemInformation(SystemHypervisorInformation)` to read the kernel's view of hypervisor presence. It then executes a raw `__cpuid(cpuInfo, 1)` instruction and reads bit 31 of ECX, which the hardware hypervisor sets directly in the CPU response.
 
@@ -20,7 +20,7 @@ If these two answers disagree — the kernel says no hypervisor, but CPUID says 
 
 ### Secure Boot
 
-Source: `km/core/enviroment/secure_boot/`
+Source: `km/core/system/secure_boot/`
 
 Secure Boot is verified through three independent sources and the results are cross-compared:
 
@@ -40,13 +40,13 @@ Test-signing mode is particularly significant for anti-cheat purposes: a system 
 
 ### Kernel Debugger Detection
 
-Source: `km/core/enviroment/kernel_debugging/`
+Source: `km/core/system/kernel_debugging/`
 
 `ZwQuerySystemInformation(SystemKernelDebuggerInformation)` returns two flags: `KernelDebuggerEnabled` and `KernelDebuggerNotPresent`. The probe considers a debugger present only when both conditions hold: enabled is true and not-present is false. Using both avoids false positives from configurations where kernel debugging infrastructure is loaded but not actively connected.
 
 ### TPM Probing
 
-Source: `km/core/enviroment/tpm/`
+Source: `km/core/system/tpm/`
 
 The TPM probe opens `\Device\TPM` via `ZwCreateFile` and attempts a test command. It first tries a TPM 2.0 command (`TPM2_GetRandom`); if that fails it falls back to TPM 1.2 (`TPM_ORD_GetRandom`). The returned `TPM` struct reports the detected version as an enum (`None`, `1.2`, or `2.0`).
 
@@ -56,7 +56,7 @@ This approach works on many systems but is experimental: newer Windows builds ma
 
 ## Hardware Telemetry
 
-Source: `km/core/telemetry/hwid/hwid.cpp`
+Source: `km/core/identity/hwid/hwid.cpp`
 
 The HWID subsystem builds a deterministic 24-byte machine fingerprint from three hardware primitives:
 

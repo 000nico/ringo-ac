@@ -1,0 +1,23 @@
+#pragma once
+#include "sdk/sdk.hpp"
+
+enum BYOVD_DETECTION_METHOD {
+	METHOD_IMAGE_CALLBACK,
+	METHOD_DRIVER_WALKING,
+	METHOD_RUNTIME_SCAN
+};
+
+struct BYOVD_DETECTION_ENTRY {
+	WCHAR NameBuffer[256];
+	UNICODE_STRING FullImageName;
+	PDEVICE_OBJECT DeviceObject;
+	PDRIVER_OBJECT DriverObject;
+	BYOVD_DETECTION_METHOD Method;
+};
+
+struct BYOVD_DETECTION_REPORT {
+	LONG count;
+	BYOVD_DETECTION_ENTRY Entries[256];
+};
+
+VOID add_byovd_report_entry(PUNICODE_STRING FullImageName, PDRIVER_OBJECT DriverObject, PDEVICE_OBJECT DeviceObject, BYOVD_DETECTION_METHOD Method);

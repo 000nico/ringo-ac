@@ -6,7 +6,7 @@ This document covers each detection mechanism in the Ringo kernel driver: the ob
 
 ## Object Callbacks
 
-Source: `km/core/detection/callbacks/ob_callbacks/obcallback.cpp`
+Source: `km/core/callbacks/ob_callback/ob_callback.cpp`
 
 Object callbacks are the most directly protective mechanism in the driver. They intercept handle operations inside the kernel's Object Manager before a handle is returned to any caller, allowing the driver to modify the access rights that will be granted.
 
@@ -26,7 +26,7 @@ The restriction applies to both creation and duplication. Duplicating an existin
 
 ## Process Lifecycle Monitoring
 
-Source: `km/core/detection/callbacks/create_process_notify/create_process_notify.cpp`
+Source: `km/core/callbacks/create_process_notify/create_process_notify.cpp`
 
 The process-creation callback uses `PsSetCreateProcessNotifyRoutineEx`, which provides a `PS_CREATE_NOTIFY_INFO` pointer on process creation (non-null) and a null pointer on process exit. The callback extracts the short image name with `PsGetProcessImageFileName` and compares it case-insensitively against the configured `ProtectedGameProcessName`.
 
@@ -38,7 +38,7 @@ The choice to track by image name rather than accepting a PID from user mode eli
 
 ## Thread Creation Monitoring
 
-Source: `km/core/detection/callbacks/create_thread_notify/create_thread_notify.cpp`
+Source: `km/core/callbacks/create_thread_notify/create_thread_notify.cpp`
 
 Registered via `PsSetCreateThreadNotifyRoutineEx` with the `PsCreateThreadNotifyNonSystem` flag, which suppresses callbacks for kernel system threads. System threads are created frequently by the kernel itself and are never relevant to game-process detection; filtering them at registration avoids the overhead of entering the callback to immediately discard the event.
 
@@ -50,7 +50,7 @@ Reports are written into `RINGO_CONTEXT.Detections.ThreadDetectionReport` using 
 
 ## Image Load Monitoring
 
-Source: `km/core/detection/callbacks/image_notify/image_notify.cpp`
+Source: `km/core/callbacks/image_notify/image_notify.cpp`
 
 The image-load callback fires on every module mapped into any address space. The callback disambiguates between two cases based on `ProcessId`.
 
@@ -62,8 +62,8 @@ When `ProcessId` matches the game's PID, the callback is looking at a module bei
 
 ## BYOVD Detection
 
-Source: `km/core/detection/vulnerable_drivers/byovd_scan.cpp`  
-Blocklist: `km/core/detection/vulnerable_drivers/blocked_drivers.hpp`
+Source: `km/core/detection/byovd/byovd_scan.cpp`
+Blocklist: `km/core/detection/byovd/blocked_drivers.hpp`
 
 Bring-Your-Own-Vulnerable-Driver attacks use legitimate but exploitable drivers to gain kernel-level code execution without needing a signed malicious driver. Ringo defends against this by maintaining a blocklist of known-vulnerable drivers and refusing to grant handles to their device objects once they are identified.
 
@@ -77,25 +77,25 @@ When either path identifies a match, the code calls `GetDriverObjectFromImageNam
 
 ## Manual-Map Driver Scanning
 
-Source: `km/core/detection/manual_map_driver_scan/`
+Source: `km/core/detection/manual_mapped_drivers/`
 
 Manual-mapped drivers are injected directly into kernel memory without going through the Windows driver loader. Because they bypass `PsSetLoadImageNotifyRoutine` (which only fires for properly loaded images), they do not appear in the module list and require a different detection strategy.
 
-**Legitimate Driver Baseline** (`driver_scan.cpp`)
+**Kernel Module Baseline** (`manual_mapped_drivers/driver_scan.cpp`)
 
 `GetLegitDriverList` queries `ZwQuerySystemInformation(SystemModuleInformation)` and builds a `LOADED_LEGIT_DRIVERS` structure in `NonPagedPoolNx` containing the base address and size of every legitimately loaded kernel module. This baseline is the reference for all subsequent checks.
 
-**Big Pool Tracker** (`big_pool_track/bpt.cpp`)
+**Big Pool Tracker** (`big_pool_track/big_pool_track.cpp`)
 
 `ZwQuerySystemInformation(SystemBigPoolInformation)` returns every allocation tracked by the kernel's big pool allocator — allocations above approximately 4 KB that use the large-pool path. The scanner iterates this list and flags any entry where:
 - the pool type is non-paged (`NonPaged == 1`),
 - the size exceeds one page (`SizeInBytes > 0x1000`), and
 - the base address falls outside every address range in the legitimate module baseline.
 
-A whitelist of known-safe pool tags (`whitelistTags.hpp`) is applied to suppress noise from OS and driver allocations that legitimately do not correspond to a loaded module.
+A whitelist of known-safe pool tags (`whitelist_tags.hpp`) is applied to suppress noise from OS and driver allocations that legitimately do not correspond to a loaded module.
 
-Flagged entries are written as `DETECTION_ENTRY` records with `METHOD_BIG_POOL`. The current implementation detects memory that is unaccounted-for but does not yet inspect whether it contains executable code; PE header inspection and page-permission checks are planned improvements to reduce false positives.
+Flagged entries are written as `MANUAL_MAPPED_DRIVER_DETECTION_ENTRY` records with `METHOD_BIG_POOL`. The current implementation detects memory that is unaccounted-for but does not yet inspect whether it contains executable code; PE header inspection and page-permission checks are planned improvements to reduce false positives.
 
-**Kernel Space Walk** (`kernel_space_walk/kwalk.cpp`)
+**Kernel Space Walk** (`kernel_space_walking/kernel_space_walking.cpp`)
 
 This is a planned second method. The intent is to walk the PML4 page table directly and find executable kernel pages that are not backed by any known module. The file is currently empty.

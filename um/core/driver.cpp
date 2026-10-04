@@ -1,5 +1,5 @@
 #include "driver.hpp"
-#include "../../km/core/comunication/ioctl/codes.hpp"
+#include "../../km/core/communication/codes.hpp"
 #include<iostream>
 
 BOOLEAN open_driver(HANDLE* pDriverHandle) {

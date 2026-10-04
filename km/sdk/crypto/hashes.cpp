@@ -1,8 +1,7 @@
-#include "../imports/imports.hpp"
-#include "hashes.hpp"
+#include "../sdk.hpp"
 #include <ntimage.h>
 
-static NTSTATUS ReadFileFromDisk(PUNICODE_STRING filePath, PVOID* outBuffer, ULONG* outSize) {
+static NTSTATUS read_file_from_disk(PUNICODE_STRING filePath, PVOID* outBuffer, ULONG* outSize) {
     OBJECT_ATTRIBUTES         objAttr;
     IO_STATUS_BLOCK           ioStatus;
     HANDLE                    fileHandle = NULL;
@@ -83,7 +82,7 @@ cleanup:
     return status;
 }
 
-static NTSTATUS ComputeSHA256(PVOID data, ULONG dataSize, UCHAR output[HASH_SIZE_SHA256]) {
+static NTSTATUS compute_sha256(PVOID data, ULONG dataSize, UCHAR output[HASH_SIZE_SHA256]) {
     BCRYPT_ALG_HANDLE  hAlg = NULL;
     BCRYPT_HASH_HANDLE hHash = NULL;
     NTSTATUS           status;
@@ -108,7 +107,7 @@ cleanup:
     return status;
 }
 
-static NTSTATUS ComputeAuthentihash(PVOID fileData, ULONG fileSize, UCHAR output[HASH_SIZE_SHA256]) {
+static NTSTATUS compute_authentihash(PVOID fileData, ULONG fileSize, UCHAR output[HASH_SIZE_SHA256]) {
     BCRYPT_ALG_HANDLE     hAlg = NULL;
     BCRYPT_HASH_HANDLE    hHash = NULL;
     NTSTATUS              status = STATUS_SUCCESS;
@@ -271,7 +270,7 @@ cleanup:
     return status;
 }
 
-NTSTATUS ComputeDriverHashes(PUNICODE_STRING FullImageName, PDRIVER_HASHES outHashes) {
+NTSTATUS compute_driver_hashes(PUNICODE_STRING FullImageName, PDRIVER_HASHES outHashes) {
     PVOID    fileBuffer = NULL;
     ULONG    fileSize = 0;
     NTSTATUS status;
@@ -281,14 +280,14 @@ NTSTATUS ComputeDriverHashes(PUNICODE_STRING FullImageName, PDRIVER_HASHES outHa
 
     RtlZeroMemory(outHashes, sizeof(DRIVER_HASHES));
 
-    status = ReadFileFromDisk(FullImageName, &fileBuffer, &fileSize);
+    status = read_file_from_disk(FullImageName, &fileBuffer, &fileSize);
     if (!NT_SUCCESS(status))
         return status;
 
-    status = ComputeSHA256(fileBuffer, fileSize, outHashes->SHA256);
+    status = compute_sha256(fileBuffer, fileSize, outHashes->SHA256);
     outHashes->SHA256Valid = NT_SUCCESS(status);
 
-    status = ComputeAuthentihash(fileBuffer, fileSize, outHashes->Authentihash);
+    status = compute_authentihash(fileBuffer, fileSize, outHashes->Authentihash);
     outHashes->AuthentihashValid = NT_SUCCESS(status);
 
     ExFreePoolWithTag(fileBuffer, 'hsrD');

@@ -32,11 +32,11 @@ The environment probe suite covers the seven platform security properties that m
 
 | Component | Location | Status |
 |---|---|---|
-| **Big pool scanner** | `manual_map_driver_scan/big_pool_track/bpt.cpp` | Identifies unaccounted non-paged allocations but does not verify whether they contain executable code. PE header inspection and page-permission checks are needed to reduce false positives. |
-| **Kernel space walk** | `manual_map_driver_scan/kernel_space_walk/kwalk.cpp` | Empty stub. Intended to traverse PML4 page tables to find unbacked executable kernel pages — a complementary method to the big pool approach. |
-| **Suspicious path filter** | `detection/callbacks/image_notify/image_notify.hpp` | The `EsRutaSospechosa` function (checking common temp/download paths) is defined but commented out and not connected to the detection pipeline. |
-| **TPM direct probing** | `enviroment/tpm/tpm.cpp` | Works on some Windows versions but may fail with `STATUS_INVALID_DEVICE_REQUEST` on newer builds that require routing TPM commands through TBS. |
-| **Process callback heuristics** | `detection/callbacks/create_process_notify/` | Currently only tracks the target game process. Could be extended to flag suspicious processes (debuggers, known injection tools) that appear while the game is running, though this may belong in a packer rather than the kernel driver. |
+| **Big pool scanner** | `manual_mapped_drivers/big_pool_track/big_pool_track.cpp` | Identifies unaccounted non-paged allocations but does not verify whether they contain executable code. PE header inspection and page-permission checks are needed to reduce false positives. |
+| **Kernel space walk** | `manual_mapped_drivers/kernel_space_walking/kernel_space_walking.cpp` | Empty stub. Intended to traverse PML4 page tables to find unbacked executable kernel pages — a complementary method to the big pool approach. |
+| **Suspicious path filter** | `callbacks/image_notify/image_notify.hpp` | The `EsRutaSospechosa` function (checking common temp/download paths) is defined but commented out and not connected to the detection pipeline. |
+| **TPM direct probing** | `system/tpm/tpm.cpp` | Works on some Windows versions but may fail with `STATUS_INVALID_DEVICE_REQUEST` on newer builds that require routing TPM commands through TBS. |
+| **Process callback heuristics** | `callbacks/create_process_notify/` | Currently only tracks the target game process. Could be extended to flag suspicious processes (debuggers, known injection tools) that appear while the game is running, though this may belong in a packer rather than the kernel driver. |
 
 ---
 
@@ -44,7 +44,7 @@ The environment probe suite covers the seven platform security properties that m
 
 **Usermode memory scanning.** A VAD (Virtual Address Descriptor) walker would enumerate allocations in the game process and flag `PAGE_EXECUTE_READWRITE` regions and regions not backed by a file on disk. Thread call stack walking would verify that return addresses on game threads point into legitimate module `.text` sections.
 
-**Kernel space walk.** The PML4 traversal in `kwalk.cpp` would provide a second, independent path for detecting manually mapped kernel code — one that is harder to evade than big pool analysis alone.
+**Kernel space walk.** The PML4 traversal in `kernel_space_walking.cpp` would provide a second, independent path for detecting manually mapped kernel code — one that is harder to evade than big pool analysis alone.
 
 **Big pool scanner hardening.** After enumerating suspicious allocations, the scanner should inspect each one for PE headers, executable section flags, and valid import tables. This would substantially reduce false positives and make the scanner actionable for automated enforcement rather than just logging.
 

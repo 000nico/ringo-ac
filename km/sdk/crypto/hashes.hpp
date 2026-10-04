@@ -13,5 +13,5 @@ typedef struct _DRIVER_HASHES {
     BOOLEAN AuthentihashValid;
 } DRIVER_HASHES, * PDRIVER_HASHES;
 
-NTSTATUS ComputeDriverHashes(PUNICODE_STRING FullImageName, PDRIVER_HASHES outHashes);
-static NTSTATUS ReadFileFromDisk(PUNICODE_STRING filePath, PVOID* outBuffer, ULONG* outSize);
+NTSTATUS compute_driver_hashes(PUNICODE_STRING FullImageName, PDRIVER_HASHES outHashes);
+static NTSTATUS read_file_from_disk(PUNICODE_STRING filePath, PVOID* outBuffer, ULONG* outSize);

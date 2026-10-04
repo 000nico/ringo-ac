@@ -6,11 +6,11 @@ This document describes the internal layout of the Ringo kernel driver: how it i
 
 ## Driver Lifecycle
 
-The kernel driver (`km.sys`) is a standard WDM driver targeting Windows 10/11 x64. Its entry point is `DriverEntry` in `km/main.cpp`.
+The kernel driver (`rngdrv.sys`) is a standard WDM driver targeting Windows 10/11 x64. Its entry point is `DriverEntry` in `km/main.cpp`.
 
 On load, `DriverEntry` runs the following sequence in order:
 
-1. **Object callbacks** — `ObRegisterCallbacksOpenProcess()` registers pre-operation handlers on `PsProcessType`, `PsThreadType`, and `IoDeviceObjectType`. The returned opaque handle is stored in `ringo_context.Callbacks.ObCallbackHandle` for later deregistration.
+1. **Object callbacks** — `ObRegisterCallbacksOpenProcess()` registers pre-operation handlers on `PsProcessType`, `PsThreadType`, and `IoDeviceObjectType`. The returned opaque handle is stored in `g_ringo_context.Callbacks.Ob.callback_handle` for later deregistration.
 2. **Image-load callback** — `PsSetLoadImageNotifyRoutineEx(LoadImageCallback, 0)` registers the module-load monitor. The `Ex` variant is used specifically because it guarantees `FullImageName` is populated and supports the flag that suppresses shared-section remaps.
 3. **Thread-creation callback** — `PsSetCreateThreadNotifyRoutineEx` with `PsCreateThreadNotifyNonSystem` filters out kernel system threads at registration, avoiding high-frequency noise that would never match detection conditions.
 4. **Process-creation callback** — `PsSetCreateProcessNotifyRoutineEx` tracks the target game process by image name, making the kernel the authoritative source of the protected PID.
@@ -24,7 +24,7 @@ On unload, `DriverUnload` reverses the process: it deregisters each callback onl
 
 ## Runtime Context
 
-All mutable driver state lives in a single zero-initialized global `RINGO_CONTEXT ringo_context`, declared in `km/core/global.hpp`:
+All mutable driver state lives in a single zero-initialized global `RINGO_CONTEXT g_ringo_context`, declared in `km/core/global.hpp`:
 
 ```cpp
 typedef struct RINGO_CONTEXT {
@@ -35,17 +35,25 @@ typedef struct RINGO_CONTEXT {
     } Game;
 
     struct {
-        PVOID                          ObCallbackHandle;
-        BOOLEAN                        isLoadImageCallbackRegistered;
-        PLOAD_IMAGE_NOTIFY_ROUTINE     LoadImageCallbackPtr;
-        BOOLEAN                        isCreateThreadCallbackRegistered;
-        PCREATE_THREAD_NOTIFY_ROUTINE  CreateThreadCallbackPtr;
-        BOOLEAN                        isCreateProcessCallbackRegistered;
-        PCREATE_PROCESS_NOTIFY_ROUTINE_EX CreateProcessNotifyRoutinePtr;
+        struct {
+            PVOID callback_handle;
+        } Ob;
+        struct {
+            BOOLEAN is_registered;
+            PLOAD_IMAGE_NOTIFY_ROUTINE callback_ptr;
+        } LoadImage;
+        struct {
+            BOOLEAN is_registered;
+            PCREATE_THREAD_NOTIFY_ROUTINE callback_ptr;
+        } CreateThread;
+        struct {
+            BOOLEAN is_registered;
+            PCREATE_PROCESS_NOTIFY_ROUTINE_EX callback_ptr;
+        } CreateProcess;
     } Callbacks;
 
     struct {
-        DRIVER_DETECTION_REPORT  DriverDetectionReport;
+        MANUAL_MAPPED_DRIVER_DETECTION_REPORT  DriverDetectionReport;
         BYOVD_DETECTION_REPORT   ByovdDetectionReport;
         FLAGGED_DLL_REPORT       DllDetectionReport;
         THREAD_DETECTION_REPORT  ThreadDetectionReport;
@@ -62,7 +70,7 @@ Detection report arrays are fixed-size and write-once from the kernel side. The 
 
 All communication uses `METHOD_BUFFERED` via `DeviceIoControl`. In this mode the I/O manager copies the user-mode input buffer into `Irp->AssociatedIrp.SystemBuffer` before invoking the driver, and copies that same buffer back to the user-mode output buffer on completion. The driver never touches user-mode memory directly.
 
-Control code definitions live in `km/core/comunication/ioctl/codes.hpp`, which is `#include`'d by both the kernel and user-mode projects.
+Control code definitions live in `km/core/communication/codes.hpp`, which is `#include`'d by both the kernel and user-mode projects.
 
 | Control Code | Direction | Payload | Description |
 |---|---|---|---|

@@ -1,6 +1,6 @@
 #include "global.hpp"
-#include "detection/detections.hpp"
+#include "reporting/report_manual_mapped_driver/report_manual_mapped_driver.hpp"
 
-RINGO_CONTEXT ringo_context = { 0 };
+RINGO_CONTEXT g_ringo_context = { 0 };
 
 PDRIVER_OBJECT g_DriverObject = NULL;

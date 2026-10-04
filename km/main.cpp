@@ -1,26 +1,26 @@
-#include "core/detection/callbacks/ob_callbacks/obcallback.hpp"
-#include "core/detection/callbacks/image_notify/image_notify.hpp"
-#include "core/detection/callbacks/create_thread_notify/create_thread_notify.hpp"
-#include "core/detection/callbacks/create_process_notify/create_process_notify.hpp"
+#include "core/callbacks/ob_callback/ob_callback.hpp"
+#include "core/callbacks/image_notify/image_notify.hpp"
+#include "core/callbacks/create_thread_notify/create_thread_notify.hpp"
+#include "core/callbacks/create_process_notify/create_process_notify.hpp"
 #include "core/global.hpp"
-#include "core/comunication/ioctl/ioctl.hpp"
+#include "core/communication/communication.hpp"
 
-void DriverUnload(PDRIVER_OBJECT DriverObject) {
+void driver_unload(PDRIVER_OBJECT DriverObject) {
     UNREFERENCED_PARAMETER(DriverObject);
 
-    if (ringo_context.Callbacks.ObCallbackHandle != NULL)
-        ObUnRegisterCallbacks(ringo_context.Callbacks.ObCallbackHandle);
+    if (g_ringo_context.Callbacks.Ob.callback_handle != NULL)
+        ObUnRegisterCallbacks(g_ringo_context.Callbacks.Ob.callback_handle);
 
-    if (ringo_context.Callbacks.isLoadImageCallbackRegistered == TRUE)
-        PsRemoveLoadImageNotifyRoutine(ringo_context.Callbacks.LoadImageCallbackPtr);
+    if (g_ringo_context.Callbacks.LoadImage.is_registered == TRUE)
+        PsRemoveLoadImageNotifyRoutine(g_ringo_context.Callbacks.LoadImage.callback_ptr);
 
-    if (ringo_context.Callbacks.isCreateThreadCallbackRegistered == TRUE)
-        PsRemoveCreateThreadNotifyRoutine(ringo_context.Callbacks.CreateThreadCallbackPtr);
+    if (g_ringo_context.Callbacks.CreateThread.is_registered == TRUE)
+        PsRemoveCreateThreadNotifyRoutine(g_ringo_context.Callbacks.CreateThread.callback_ptr);
 
-    if (ringo_context.Callbacks.isCreateProcessCallbackRegistered == TRUE)
-        PsSetCreateProcessNotifyRoutineEx(ringo_context.Callbacks.CreateProcessNotifyRoutinePtr, TRUE);
+    if (g_ringo_context.Callbacks.CreateProcess.is_registered == TRUE)
+        PsSetCreateProcessNotifyRoutineEx(g_ringo_context.Callbacks.CreateProcess.callback_ptr, TRUE);
 
-    CleanupDevice();
+    cleanup_device();
 
     KdPrint(("Ringo Driver Unloaded\n"));
 }
@@ -31,31 +31,31 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) 
     KdPrint(("Ringo Driver Loaded\n"));
 
     // load callbacks
-    ringo_context.Callbacks.ObCallbackHandle = ObRegisterCallbacksOpenProcess();
-    if (ringo_context.Callbacks.ObCallbackHandle == NULL) {
-        KdPrint(("[-] ObCallbackHandle not loaded.\n"));
+    g_ringo_context.Callbacks.Ob.callback_handle = ob_register_callbacks_open_process();
+    if (g_ringo_context.Callbacks.Ob.callback_handle == NULL) {
+        KdPrint(("[-] ob_callback_handle not loaded.\n"));
     }
 
-    SetLoadImageCallback();
-    if (ringo_context.Callbacks.isLoadImageCallbackRegistered == FALSE) {
+    set_load_image_callback();
+    if (g_ringo_context.Callbacks.LoadImage.is_registered == FALSE) {
         KdPrint(("[-] SetLoadImage Callback not loaded.\n"));
     }
 
-    SetCreateThreadCallback();
-    if (ringo_context.Callbacks.isCreateThreadCallbackRegistered == FALSE) {
-        KdPrint(("[-] CreateThreadCallback not loaded.\n"));
+    set_create_thread_callback();
+    if (g_ringo_context.Callbacks.CreateThread.is_registered == FALSE) {
+        KdPrint(("[-] create_thread_callback not loaded.\n"));
     }
 
-    SetCreateProcessCallback();
-    if (ringo_context.Callbacks.isCreateProcessCallbackRegistered == FALSE) {
+    set_create_process_callback();
+    if (g_ringo_context.Callbacks.CreateProcess.is_registered == FALSE) {
         KdPrint(("[-] CreateProcessCallback not loaded.\n"));
     }
 
-    if (!NT_SUCCESS(SetupDevice(DriverObject))) {
+    if (!NT_SUCCESS(setup_device(DriverObject))) {
         KdPrint(("[-] IOCTL setup not loaded\n"));
     }
 
-    DriverObject->DriverUnload = DriverUnload;
+    DriverObject->DriverUnload = driver_unload;
 
     return STATUS_SUCCESS;
 }

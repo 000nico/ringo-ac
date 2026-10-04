@@ -1,37 +1,47 @@
 #pragma once
-#include "../sdk/imports/imports.hpp"
-#include "detection/vulnerable_drivers/vulnerable_driver_detections.hpp"
-#include "detection/callbacks/image_notify/image_notify.hpp"
-#include "detection/callbacks/create_thread_notify/create_thread_notify.hpp"
-#include "detection/detections.hpp"
+#include "sdk/sdk.hpp"
+#include "reporting/report_byovd/report_byovd.hpp"
+#include "callbacks/image_notify/image_notify.hpp"
+#include "callbacks/create_thread_notify/create_thread_notify.hpp"
+#include "reporting/report_manual_mapped_driver/report_manual_mapped_driver.hpp"
 
 typedef struct RINGO_CONTEXT {
     struct {
-        HANDLE ProtectedGamePid;
-        UCHAR ProtectedGameProcessName[64];
-        BOOLEAN isGameOpen;
+        HANDLE protected_game_pid;
+        UCHAR protected_game_process_name[64];
+        BOOLEAN is_game_open;
     } Game;
 
-    // todo: unificar cada callback en structuras para no tener repetidos
     struct {
-        PVOID ObCallbackHandle;
-        BOOLEAN isLoadImageCallbackRegistered;
-        PLOAD_IMAGE_NOTIFY_ROUTINE LoadImageCallbackPtr;
-        BOOLEAN isCreateThreadCallbackRegistered;
-        PCREATE_THREAD_NOTIFY_ROUTINE CreateThreadCallbackPtr;
-        BOOLEAN isCreateProcessCallbackRegistered;
-        PCREATE_PROCESS_NOTIFY_ROUTINE_EX CreateProcessNotifyRoutinePtr;
+        struct {
+            PVOID callback_handle;
+        } Ob;
+
+        struct {
+            BOOLEAN is_registered;
+            PLOAD_IMAGE_NOTIFY_ROUTINE callback_ptr;
+        } LoadImage;
+
+        struct {
+            BOOLEAN is_registered;
+            PCREATE_THREAD_NOTIFY_ROUTINE callback_ptr;
+        } CreateThread;
+
+        struct {
+            BOOLEAN is_registered;
+            PCREATE_PROCESS_NOTIFY_ROUTINE_EX callback_ptr;
+        } CreateProcess;
     } Callbacks;
 
     struct {
-        DRIVER_DETECTION_REPORT DriverDetectionReport;
-        BYOVD_DETECTION_REPORT ByovdDetectionReport;
-        FLAGGED_DLL_REPORT DllDetectionReport;
-        THREAD_DETECTION_REPORT ThreadDetectionReport;
+        MANUAL_MAPPED_DRIVER_DETECTION_REPORT driver_detection_report;
+        BYOVD_DETECTION_REPORT byovd_detection_report;
+        FLAGGED_DLL_REPORT dll_detection_report;
+        THREAD_DETECTION_REPORT thread_detection_report;
     } Detections;
 
 } RINGO_CONTEXT;
 
-extern RINGO_CONTEXT ringo_context;
+extern RINGO_CONTEXT g_ringo_context;
 
 extern PDRIVER_OBJECT g_DriverObject;
