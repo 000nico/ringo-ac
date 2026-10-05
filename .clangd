@@ -1,0 +1,6 @@
+CompileFlags:
+  CompilationDatabase: build/debug
+  Add:
+    - --target=x86_64-pc-windows-msvc
+  QueryDriver:
+    - /usr/sbin/clang-cl
