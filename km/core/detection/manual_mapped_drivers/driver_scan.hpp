@@ -39,3 +39,5 @@ LOADED_LEGIT_DRIVERS* get_legit_driver_list();
 VOID free_legit_driver_list(LOADED_LEGIT_DRIVERS* lld);
 BOOLEAN is_address_in_known_module(PVOID address, LOADED_LEGIT_DRIVERS* lld);
 BOOLEAN is_region_executable(PVOID address);
+bool looks_like_return_address(PUCHAR addr);
+bool is_executable(ULONG_PTR va);

@@ -36,7 +36,7 @@ int main()
     else
         std::cout << "[-] Error getting game pid" << std::endl;
 
-    // Environment checks — fix BOOLEAN printing
+    // Environment checks 
     HVCI_CHECK hvci = {};
     if (NT_SUCCESS(get_environment_information(hDriver, InfoHvci, &hvci, sizeof(hvci), &bytesReturned)))
         std::cout << "[+] HVCI = " << (hvci.code_integrity.valid ? (hvci.code_integrity.value ? "TRUE" : "FALSE") : "INVALID") << std::endl;
@@ -87,11 +87,10 @@ int main()
     if (NT_SUCCESS(get_environment_information(hDriver, InfoObCallbackSet, &cb, sizeof(cb), &bytesReturned)))
         std::cout << "[+] ObRegisterCallbacks = " << (cb ? "TRUE" : "FALSE") << std::endl;
 
-    // HWID — fix UUID como hex
+    // HWID 
     HWID hwid = {};
     if (NT_SUCCESS(get_environment_information(hDriver, InfoHwid, &hwid, sizeof(hwid), &bytesReturned))) {
-        printf("[+] HWID[cpuHash = %lu, diskSerial = %lu, hwidSerial = ",
-            hwid.CpuHash, hwid.DiskSerial);
+        printf("[+] HWID[cpuHash = %lu, diskSerial = %lu, hwidSerial = ", hwid.CpuHash, hwid.DiskSerial);
         for (int i = 0; i < sizeof(hwid.SmbiosUuid); i++)
             printf("%02X", ((BYTE*)&hwid.SmbiosUuid)[i]);
         printf("]\n");
