@@ -3,6 +3,7 @@
 #include <ntimage.h>
 
 #define PE_TAG 'epEP'
+
 #define PE_MAX_FILE_SIZE 0x10000000
 #define PE_MAX_SECTION_SIZE 0x10000000
 #define PE_HEADER_READ_SIZE 0x1000
@@ -36,3 +37,5 @@ extern "C" NTSTATUS NTAPI MmCopyVirtualMemory(
 
 PE read_pe_from_pid(HANDLE pid, PVOID base);
 PE read_pe_from_disk(PUNICODE_STRING path);
+SECTION* find_section_by_name(PE* pe, const char* name);
+void free_pe(PE* pe);

@@ -46,7 +46,9 @@ ringo detects kernel mode cheats, both manual mapped drivers and BYOVD
     - with callbacks checks every time an image is loaded
 
 ringo checks its own and game integrity through:
-  - periodically hashing and comparing executable sections
+  - periodically hashing and comparing executable sections (first hash is done to the disk, from there, hashes are done to the process, compared periodically)
+
+ringo has a scheduler that decides randomly when and which functions are raised, in order to make patterns unpredictable, perhaps, having a single thread working makes the attack surface smaller
 
 ringo known limitations:
   - a cheat using a byovd that its not listed could not be detected

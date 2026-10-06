@@ -230,3 +230,15 @@ PE read_pe_from_pid(HANDLE pid, PVOID base)
     pe.valid = TRUE;
     return pe;
 }
+
+SECTION* find_section_by_name(PE* pe, const char* name)
+{
+    for (SIZE_T i = 0; i < pe->sections.count; i++) {
+        SECTION* section = &pe->sections.data[i];
+        if (RtlCompareMemory(section->header.Name, name, strlen(name)) == strlen(name) &&
+            (strlen(name) == IMAGE_SIZEOF_SHORT_NAME || section->header.Name[strlen(name)] == '\0')) {
+            return section;
+        }
+    }
+    return NULL;
+}
