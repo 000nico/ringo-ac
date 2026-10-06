@@ -1,5 +1,4 @@
 #include "driver_scan.hpp"
-#include "sdk/sdk.hpp"
 #include <intrin.h>
 
 PVOID allocate_and_query_modules(ULONG* outReturnLength) {

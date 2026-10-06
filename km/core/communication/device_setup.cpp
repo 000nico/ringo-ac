@@ -1,5 +1,6 @@
 // device.cpp
 #include <ntifs.h>
+#include <wdmsec.h>
 #include "codes.hpp"
 #include "communication.hpp"
 
@@ -27,11 +28,11 @@ static NTSTATUS irp_not_supported(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 NTSTATUS setup_device(PDRIVER_OBJECT DriverObject) {
     UNICODE_STRING deviceName = RTL_CONSTANT_STRING(DEVICE_NAME);
     UNICODE_STRING symLink = RTL_CONSTANT_STRING(SYMBOLIC_LINK);
-
-    NTSTATUS status = IoCreateDevice(
+    UNICODE_STRING sddl = RTL_CONSTANT_STRING(L"D:P(A;;GA;;;SY)");
+    NTSTATUS status = IoCreateDeviceSecure(
         DriverObject, 0, &deviceName,
         FILE_DEVICE_UNKNOWN, FILE_DEVICE_SECURE_OPEN,
-        FALSE, &g_DeviceObject
+        TRUE, &sddl, nullptr, &g_DeviceObject
     );
     if (!NT_SUCCESS(status)) return status;
 

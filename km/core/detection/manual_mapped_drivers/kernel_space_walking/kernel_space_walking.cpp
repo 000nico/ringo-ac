@@ -1,7 +1,6 @@
 #include "core/detection/manual_mapped_drivers/driver_scan.hpp"
 #include "ntifs.h"
 #include "sdk/imports/imports.hpp"
-#include "sdk/sdk.hpp"
 #include "kernel_space_walking.hpp"
 #include "core/reporting/report_manual_mapped_driver/report_manual_mapped_driver.hpp"
 
