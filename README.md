@@ -52,3 +52,16 @@ ringo has a scheduler that decides randomly when and which functions are raised,
 
 ringo known limitations:
   - a cheat using a byovd that its not listed could not be detected
+
+things planned to add:
+while doing this is exciting, and i have a lot ideas of my own to add, i dont have time to implement them right
+now, however:
+  - detect overlays by enumerating windows that are either TOP_MOST or created via CreateWindowInBand
+  - detect communication channels between drivers and um
+  - hook IRP_MJ_DEVICE_CONTROL enumerating drivers with PsSetLoadImageNotifyRoutine  and:
+      - detect sussy buffer lenghts (for example, { PVOID address; SIZE_T size; PVOID buffer; } is 24 bytes)
+      - enumerate and diff constantly PsLoadedModuleList
+      - avoid unsigned um process to get handles of recently loaded drivers (filter with not multimedia / hid)
+      - monitor MmMapIoSpace or physical memory access
+      - inspect IRP stack with IoGetCurrentIrpStackLocation
+   - use NMI callbacks to inspect stack of kernel threads
