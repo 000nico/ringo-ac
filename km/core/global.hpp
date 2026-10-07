@@ -46,6 +46,11 @@ typedef struct RINGO_CONTEXT {
         ULONGLONG process_start_key;
         PEPROCESS process;
         UCHAR last_hash[HASH_SIZE_SHA256];
+
+        struct {
+            PEPROCESS banned_peprocess[128];
+            INT index;
+        } Banned;
     } Session;
 } RINGO_CONTEXT;
 

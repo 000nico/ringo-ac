@@ -34,6 +34,9 @@ NTSTATUS ioctl_handler(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
     if (!compare_sha256(g_ringo_context.Session.last_hash, process_hash))
         goto complete;
 
+    if(is_peprocess_banned(caller))
+        goto complete;
+
     RtlCopyMemory(g_ringo_context.Session.last_hash, process_hash, HASH_SIZE_SHA256);
 
     {
@@ -171,6 +174,13 @@ NTSTATUS ioctl_handler(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
             }
 
             default:
+                g_ringo_context.Session.Banned.banned_peprocess[g_ringo_context.Session.Banned.index] = g_ringo_context.Session.process;
+                g_ringo_context.Session.Banned.index++;
+                
+                g_ringo_context.Session.active = FALSE;
+                g_ringo_context.Session.process = NULL;
+                g_ringo_context.Session.process_start_key = 0;
+                RtlCopyMemory(g_ringo_context.Session.last_hash, 0, HASH_SIZE_SHA256);
                 status = STATUS_INVALID_DEVICE_REQUEST;
                 break;
         }

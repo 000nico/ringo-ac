@@ -1,4 +1,5 @@
 #include "protection.hpp"
+#include "core/global.hpp"
 #include "sdk/crypto/hashes.hpp"
 #include "sdk/pe/pe.hpp"
 
@@ -131,4 +132,14 @@ bool constant_time_compare(const UCHAR* a, const UCHAR* b, SIZE_T size)
 bool compare_sha256(const UCHAR a[HASH_SIZE_SHA256], const UCHAR b[HASH_SIZE_SHA256])
 {
     return constant_time_compare(a, b, HASH_SIZE_SHA256);
+}
+
+bool is_peprocess_banned(PEPROCESS peprocess) {
+    for(int i = 0; i < g_ringo_context.Session.Banned.index; i++) {
+        if(g_ringo_context.Session.Banned.banned_peprocess[i] == peprocess) {
+            return true;
+        }
+    }
+
+    return false;
 }

@@ -40,9 +40,7 @@ static NTSTATUS irp_create(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
     
     NTSTATUS status;
 
-    if (got_file_hash && got_process_hash &&
-        compare_sha256(file_sha256, g_expected_file_hash)) {
-
+    if (got_file_hash && got_process_hash && compare_sha256(file_sha256, g_expected_file_hash) && !is_peprocess_banned(requestor)) {
         ObReferenceObject(requestor);
 
         g_ringo_context.Session.active = TRUE;
