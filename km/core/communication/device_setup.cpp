@@ -1,16 +1,69 @@
 // device.cpp
 #include <ntifs.h>
 #include <wdmsec.h>
-#include "codes.hpp"
 #include "communication.hpp"
+#include "core/global.hpp"
+#include "ntddk.h"
+#include "ntstatus.h"
+#include "protection.hpp"
+#include "sdk/crypto/hashes.hpp"
+#include "wdm.h"
 
 #define DEVICE_NAME   L"\\Device\\ringo"
 #define SYMBOLIC_LINK L"\\DosDevices\\ringo"
 
 static PDEVICE_OBJECT g_DeviceObject = NULL;
 
-static NTSTATUS irp_success(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
+static void close_session()
+{
+    if (g_ringo_context.Session.active && g_ringo_context.Session.process) {
+        ObDereferenceObject(g_ringo_context.Session.process);
+    }
+    g_ringo_context.Session.active = FALSE;
+    g_ringo_context.Session.process = NULL;
+    g_ringo_context.Session.process_start_key = 0;
+}
+
+static NTSTATUS irp_create(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
     UNREFERENCED_PARAMETER(DeviceObject);
+    Irp->IoStatus.Information = 0;
+
+    PEPROCESS requestor = IoGetRequestorProcess(Irp);
+
+    UCHAR file_sha256[HASH_SIZE_SHA256] = {};
+    UCHAR process_sha256[HASH_SIZE_SHA256] = {};
+
+    bool got_file_hash = get_caller_file_hash(requestor, file_sha256);
+    bool got_process_hash = get_caller_process_hash(requestor, process_sha256);
+    if(got_process_hash)
+        RtlCopyMemory(g_ringo_context.Session.last_hash, process_sha256, HASH_SIZE_SHA256);
+    
+    NTSTATUS status;
+
+    if (got_file_hash && got_process_hash &&
+        compare_sha256(file_sha256, g_expected_file_hash)) {
+
+        ObReferenceObject(requestor);
+
+        g_ringo_context.Session.active = TRUE;
+        g_ringo_context.Session.process = requestor;
+        g_ringo_context.Session.process_start_key = PsGetProcessStartKey(requestor);
+        status = STATUS_SUCCESS;
+    } else {
+        close_session();
+        status = STATUS_ACCESS_DENIED;
+    }
+    
+    Irp->IoStatus.Status = status;
+    IoCompleteRequest(Irp, IO_NO_INCREMENT);
+    return status;
+}
+
+static NTSTATUS irp_close(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
+    UNREFERENCED_PARAMETER(DeviceObject);
+
+    close_session();
+
     Irp->IoStatus.Status = STATUS_SUCCESS;
     Irp->IoStatus.Information = 0;
     IoCompleteRequest(Irp, IO_NO_INCREMENT);
@@ -49,8 +102,8 @@ NTSTATUS setup_device(PDRIVER_OBJECT DriverObject) {
     for (int i = 0; i < IRP_MJ_MAXIMUM_FUNCTION; i++)
         DriverObject->MajorFunction[i] = irp_not_supported;
 
-    DriverObject->MajorFunction[IRP_MJ_CREATE] = irp_success;
-    DriverObject->MajorFunction[IRP_MJ_CLOSE] = irp_success;
+    DriverObject->MajorFunction[IRP_MJ_CREATE] = irp_create;
+    DriverObject->MajorFunction[IRP_MJ_CLOSE] = irp_close;
     DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = ioctl_handler;
 
     return STATUS_SUCCESS;

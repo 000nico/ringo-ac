@@ -242,3 +242,84 @@ SECTION* find_section_by_name(PE* pe, const char* name)
     }
     return NULL;
 }
+
+// Same as read_pe_from_disk, but works on an already-open HANDLE instead of
+// resolving a path. Use this when the handle came from ObOpenObjectByPointer
+// over a FILE_OBJECT you already have (e.g. PsReferenceProcessFilePointer),
+// to avoid reopening by path (TOCTOU).
+//
+// Ownership: this function does NOT close `file`. The caller opened it and
+// the caller is responsible for ZwClose.
+//
+// Note: unlike read_pe_from_disk, we don't control how this handle/file
+// object was opened, so we can't assume FILE_SYNCHRONOUS_IO_NONALERT is set.
+// ZwReadFile can legitimately return STATUS_PENDING on an async file object,
+// so we wait on an event explicitly instead of assuming synchronous completion.
+PE read_pe_from_handle(HANDLE file)
+{
+    PE pe;
+    RtlZeroMemory(&pe, sizeof(pe));
+
+    FILE_STANDARD_INFORMATION info;
+    IO_STATUS_BLOCK io;
+    NTSTATUS status = ZwQueryInformationFile(file, &io, &info, sizeof(info), FileStandardInformation);
+    if (!NT_SUCCESS(status) || info.EndOfFile.QuadPart <= 0 || info.EndOfFile.QuadPart > PE_MAX_FILE_SIZE) {
+        return pe;
+    }
+    ULONG file_size = (ULONG)info.EndOfFile.QuadPart;
+
+    Vector<UCHAR> buf = {};
+    if (!vector_resize(&buf, file_size)) {
+        return pe;
+    }
+
+    KEVENT event;
+    KeInitializeEvent(&event, NotificationEvent, FALSE);
+
+    LARGE_INTEGER offset;
+    offset.QuadPart = 0;
+
+    status = ZwReadFile(file, NULL, NULL, NULL, &io, buf.data, file_size, &offset, NULL);
+    // Fallback path for a possibly-async handle: pass our own event instead
+    // of relying on a wait block that was never created for this handle.
+    if (status == STATUS_PENDING) {
+        status = KeWaitForSingleObject(&event, Executive, KernelMode, FALSE, NULL);
+        if (NT_SUCCESS(status)) {
+            status = io.Status;
+        }
+    }
+
+    if (!NT_SUCCESS(status) || io.Information != file_size) {
+        vector_free(&buf);
+        return pe;
+    }
+
+    if (!parse_headers(buf.data, buf.count, &pe)) {
+        free_pe(&pe);
+        vector_free(&buf);
+        return pe;
+    }
+
+    for (SIZE_T i = 0; i < pe.sections.count; i++) {
+        SECTION* section = &pe.sections.data[i];
+        ULONG offset_raw = section->header.PointerToRawData;
+        ULONG raw_size = section->header.SizeOfRawData;
+
+        if (raw_size == 0 || offset_raw >= file_size) {
+            continue;
+        }
+        if (raw_size > file_size - offset_raw) {
+            raw_size = file_size - offset_raw;
+        }
+        if (!vector_resize(&section->data, raw_size)) {
+            free_pe(&pe);
+            vector_free(&buf);
+            return pe;
+        }
+        RtlCopyMemory(section->data.data, buf.data + offset_raw, raw_size);
+    }
+
+    vector_free(&buf);
+    pe.valid = TRUE;
+    return pe;
+}

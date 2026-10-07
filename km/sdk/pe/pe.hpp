@@ -39,3 +39,4 @@ PE read_pe_from_pid(HANDLE pid, PVOID base);
 PE read_pe_from_disk(PUNICODE_STRING path);
 SECTION* find_section_by_name(PE* pe, const char* name);
 void free_pe(PE* pe);
+PE read_pe_from_handle(HANDLE file);

@@ -50,6 +50,14 @@ ringo checks its own and game integrity through:
 
 ringo has a scheduler that decides randomly when and which functions are raised, in order to make patterns unpredictable, perhaps, having a single thread working makes the attack surface smaller
 
+ringo protects its own IRP managers through:
+  - having unique HANDLE, once a process has it, none other can open a HANDLE to the device, this is done via wdmsec.h, IOCreateDeviceSecure, Exclusive=TRUE, FILE_DEVICE_SECURE_OPEN
+  - at the moment of opening the handle, ringo verifies the signature of the caller and its integrity
+  - at the moment of answering an IRP, ringo verifies the caller, its integrity (so duplicate handle doesn't happen) through hashes and modules
+  - before ringo answers any ioctl, usermode has to send through an specific ioctl the HMAC of a random nonce generated with BCryptGenRandom
+  - a "Session" gets created: a struct that has info from the caller, a boolean that its true if it already answered to the nonce. the session gets cleaned in IRP_MJ_CLEANUP / IRP_MJ_CLOSE and when usermode process dies (PsSetCreateProcessNotifyRoutineEx)
+  - if a wrong ioctl is called, the driver will close the handle and refuse to open a new one, to avoid fuzzing
+
 ringo known limitations:
   - a cheat using a byovd that its not listed could not be detected
 
