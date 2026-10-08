@@ -1,6 +1,7 @@
 set(KM_SOURCES
     core/communication/dispatcher.cpp
     core/communication/device_setup.cpp
+    core/communication/protection.cpp
     core/callbacks/create_process_notify/create_process_notify.cpp
     core/callbacks/create_thread_notify/create_thread_notify.cpp
     core/callbacks/image_notify/image_notify.cpp
@@ -22,6 +23,7 @@ set(KM_SOURCES
     core/identity/hwid/hwid.cpp
     main.cpp
     sdk/crypto/hashes.cpp
+    sdk/pe/pe.cpp
 )
 
 set(CMAKE_CXX_STANDARD_LIBRARIES "")
@@ -73,4 +75,5 @@ target_link_libraries(km_driver PRIVATE
     hal.lib
     bufferoverflowfastfailk.lib
     cng.lib
+    wdmsec.lib
 )

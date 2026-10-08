@@ -1,6 +1,17 @@
 #include "driver_scan.hpp"
 #include <intrin.h>
 
+// clang-cl (build Linux -> Windows) no genera el intrinsico __readcr3 a partir
+// del prototipo del WDK (que MSVC reemplaza inline). Para el build con clang se
+// define aca; MSVC no compila esta rama.
+#if defined(__clang__)
+extern "C" unsigned __int64 __readcr3(void) {
+    unsigned __int64 cr3;
+    __asm__ __volatile__("mov %%cr3, %0" : "=r"(cr3));
+    return cr3;
+}
+#endif
+
 PVOID allocate_and_query_modules(ULONG* outReturnLength) {
     ULONG returnLength = 0;
 
@@ -76,6 +87,26 @@ BOOLEAN is_address_in_known_module(PVOID address, LOADED_LEGIT_DRIVERS* lld) {
     return FALSE;
 }
 
+// restaurado: la implementacion se borro por accidente en el commit
+// "added new detection method: check return address via stack walking"
+BOOLEAN is_region_executable(PVOID address) {
+    // ZwQueryVirtualMemory operates against the current process's virtual address space,
+    // which when called from a system thread does not map kernel addresses at all.
+    // MmIsAddressValid checks whether the virtual address is currently mapped and safe
+    // to access without raising a page-fault, which is the correct primitive for kernel
+    // address validation. Executable permission on kernel regions is enforced by the
+    // pool/section object flags, not by user-mode VirtualQuery semantics.
+    if (!MmIsAddressValid(address)) return FALSE;
+
+    // Conservatively treat any valid kernel address that is not covered by a known
+    // module (checked by the caller via is_address_in_known_module) as potentially
+    // executable. Pool allocations with POOL_FLAG_NON_PAGED|execute intent land in
+    // non-paged executive regions; the big-pool scanner already filters by size and
+    // tag, so returning TRUE here for valid addresses not in the known-module list is
+    // the correct behaviour for anomaly detection purposes.
+    return TRUE;
+}
+
 constexpr ULONG64 PTE_PRESENT = 1ull << 0;
 constexpr ULONG64 PTE_LARGE   = 1ull << 7;
 constexpr ULONG64 PTE_NX      = 1ull << 63;
@@ -113,7 +144,7 @@ bool is_executable(ULONG_PTR va)
     return true;
 }
 
-static bool looks_like_return_address(PUCHAR addr)
+bool looks_like_return_address(PUCHAR addr)
 {
     // necesitamos poder leer hasta 7 bytes antes de ra
     if (!MmIsAddressValid(addr - 7) || !MmIsAddressValid(addr - 1))

@@ -1,30 +1,34 @@
-cmake_minimum_required(VERSION 3.20)
-project(ringo-server)
+cmake_minimum_required(VERSION 3.25)
 
-set(CMAKE_CXX_STANDARD 20)
+cmake_policy(SET CMP0091 NEW)
+project(ringo_ac LANGUAGES CXX)
 
-include(FetchContent)
+# km/um se construyen con el toolchain de Windows (clang-cl + WDK/SDK).
+# El server se construye de forma nativa en Linux.
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(RINGO_CROSSCOMPILING TRUE)
+else()
+    set(RINGO_CROSSCOMPILING FALSE)
+endif()
 
-FetchContent_Declare(
-    sqlitecpp
-    GIT_REPOSITORY https://github.com/SRombauts/SQLiteCpp.git
-    GIT_TAG        3.4.0
-)
+option(RINGO_BUILD_KM "Build the kernel-mode driver" ${RINGO_CROSSCOMPILING})
+option(RINGO_BUILD_UM "Build the user-mode application" ${RINGO_CROSSCOMPILING})
 
-FetchContent_Declare(
-    json
-    GIT_REPOSITORY https://github.com/nlohmann/json.git
-    GIT_TAG        v3.11.3
-)
+if(NOT RINGO_CROSSCOMPILING)
+    set(RINGO_BUILD_SERVER_DEFAULT ON)
+else()
+    set(RINGO_BUILD_SERVER_DEFAULT OFF)
+endif()
+set(RINGO_BUILD_SERVER ${RINGO_BUILD_SERVER_DEFAULT} CACHE BOOL "Build the server")
 
-FetchContent_MakeAvailable(sqlitecpp json)
+if(RINGO_BUILD_KM)
+    add_subdirectory(km)
+endif()
 
-add_executable(ringo-server src/main.cpp)
+if(RINGO_BUILD_UM)
+    add_subdirectory(um)
+endif()
 
-target_link_libraries(ringo-server
-    PRIVATE
-    SQLiteCpp
-    nlohmann_json::nlohmann_json
-)
-
-target_include_directories(ringo-server PRIVATE third_party)
+if(RINGO_BUILD_SERVER)
+    add_subdirectory(server)
+endif()
