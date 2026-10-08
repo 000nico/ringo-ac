@@ -56,7 +56,25 @@ ringo protects its own IRP managers through:
   - at the moment of answering an IRP, ringo verifies the caller, its integrity (so duplicate handle doesn't happen) through hashes and modules
   - before ringo answers any ioctl, usermode has to send through an specific ioctl the HMAC of a random nonce generated with BCryptGenRandom
   - a "Session" gets created: a struct that has info from the caller, a boolean that its true if it already answered to the nonce. the session gets cleaned in IRP_MJ_CLEANUP / IRP_MJ_CLOSE and when usermode process dies (PsSetCreateProcessNotifyRoutineEx)
-  - if a wrong ioctl is called, the driver will close the handle and refuse to open a new one, to avoid fuzzing
+  - if a wrong ioctl is called, the driver will close the session and refuse to open a new one, to avoid fuzzing.
+
+ringo its not only a driver, it also has its own server, also coded in c++
+ringo's server has its own db which its separated from any game db. Its for persistency in user's data. 
+reports are separated by
+  - reports: raw data that gets in the server, what came, without processing anything. for example:
+      - 'the HWID "5vDJD234154nffwFWDA" has a thread that its running outside any valid driver address space'
+  - verdicts: the conclusion archieved after processing the data from one or more reports, for example:
+    -  'the HWID "5vDJD234154nffwFWDA" has a risk_score 75, its now flagged"
+
+there are many reports per hwid, but only one report that gets modified per hwid
+the consumers are different. The analisis engine reads reports to calculate verdicts, the game endpoint only reads veredicts
+
+the analysis is for every data, the server checks the consistency between the different ways to get info of the system (like secure boot, vbs, hvci, etc) to check spoofing, and also analyzes the risk. For example, having a big pool outside a valid driver, its not big enough to flag if the driver didn't found any thread outside of the memory. a big bool and a thread outside valid memory, its already sus, but a big pool and a thread inside of that big pool is so sus.
+
+the risk of a user being a cheater decays with time
+
+POST /telemetry
+GET /status/{hwid}
 
 ringo known limitations:
   - a cheat using a byovd that its not listed could not be detected

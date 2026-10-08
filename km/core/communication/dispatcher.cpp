@@ -167,9 +167,13 @@ NTSTATUS ioctl_handler(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
                     status = STATUS_INVALID_PARAMETER;
                     break;
                 }
-                RtlZeroMemory(g_ringo_context.Game.protected_game_process_name, sizeof(g_ringo_context.Game.protected_game_process_name));
-                RtlCopyMemory(g_ringo_context.Game.protected_game_process_name, buffer, inputSize);
-                g_ringo_context.Game.protected_game_process_name[inputSize] = '\0';
+
+                if(g_ringo_context.Game.protected_game_process_name[0] == '\0') {
+                    RtlZeroMemory(g_ringo_context.Game.protected_game_process_name, sizeof(g_ringo_context.Game.protected_game_process_name));
+                    RtlCopyMemory(g_ringo_context.Game.protected_game_process_name, buffer, inputSize);
+                    g_ringo_context.Game.protected_game_process_name[inputSize] = '\0';
+                }
+                
                 break;
             }
 

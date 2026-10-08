@@ -1,15 +1,30 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.20)
+project(ringo-server)
 
-cmake_policy(SET CMP0091 NEW)
-project(ringo_ac LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 20)
 
-option(RINGO_BUILD_KM "Build the kernel-mode driver" ON)
-option(RINGO_BUILD_UM "Build the user-mode application" ON)
+include(FetchContent)
 
-if(RINGO_BUILD_KM)
-    add_subdirectory(km)
-endif()
+FetchContent_Declare(
+    sqlitecpp
+    GIT_REPOSITORY https://github.com/SRombauts/SQLiteCpp.git
+    GIT_TAG        3.4.0
+)
 
-if(RINGO_BUILD_UM)
-    add_subdirectory(um)
-endif()
+FetchContent_Declare(
+    json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG        v3.11.3
+)
+
+FetchContent_MakeAvailable(sqlitecpp json)
+
+add_executable(ringo-server src/main.cpp)
+
+target_link_libraries(ringo-server
+    PRIVATE
+    SQLiteCpp
+    nlohmann_json::nlohmann_json
+)
+
+target_include_directories(ringo-server PRIVATE third_party)

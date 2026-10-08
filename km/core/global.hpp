@@ -1,5 +1,4 @@
 #pragma once
-#include "sdk/crypto/hashes.hpp"
 #include "sdk/sdk.hpp"
 #include "reporting/report_byovd/report_byovd.hpp"
 #include "callbacks/image_notify/image_notify.hpp"
