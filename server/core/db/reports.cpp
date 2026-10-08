@@ -1,0 +1,45 @@
+#include "reports.hpp"
+#include "db.hpp"
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
+namespace db {
+
+void save_environment_report(const EnvironmentReport& r) {
+    SQLite::Statement stmt(*g_db, R"(
+        INSERT INTO environment_reports
+            (hwid, timestamp, debugger_present, hypervisor_detected,
+             secure_boot_enabled, hvci_enabled, test_signing_enabled, vbs_enabled)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    )");
+    stmt.bind(1, r.hwid);
+    stmt.bind(2, (int64_t)r.timestamp);
+    stmt.bind(3, (int)r.debugger_present);
+    stmt.bind(4, (int)r.hypervisor_detected);
+    stmt.bind(5, (int)r.secure_boot_enabled);
+    stmt.bind(6, (int)r.hvci_enabled);
+    stmt.bind(7, (int)r.test_signing_enabled);
+    stmt.bind(8, (int)r.vbs_enabled);
+    stmt.exec();
+}
+
+void save_module_report(const ModuleReport& r) {
+    // los vectores los serializamos como JSON string
+    json unsigned_json = r.unsigned_modules;
+    json suspicious_json = r.suspicious_module_names;
+
+    SQLite::Statement stmt(*g_db, R"(
+        INSERT INTO module_reports
+            (hwid, timestamp, process_hash_mismatch, unsigned_modules, suspicious_modules)
+        VALUES (?, ?, ?, ?, ?)
+    )");
+    stmt.bind(1, r.hwid);
+    stmt.bind(2, (int64_t)r.timestamp);
+    stmt.bind(3, (int)r.process_hash_mismatch);
+    stmt.bind(4, unsigned_json.dump());
+    stmt.bind(5, suspicious_json.dump());
+    stmt.exec();
+}
+
+} // namespace db
