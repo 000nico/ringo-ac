@@ -91,3 +91,5 @@ now, however:
       - monitor MmMapIoSpace or physical memory access
       - inspect IRP stack with IoGetCurrentIrpStackLocation
    - use NMI callbacks to inspect stack of kernel threads
+
+IMPORTANT: ringo is free for non-profit use. if you want to use this for commercial purposes, contact me
