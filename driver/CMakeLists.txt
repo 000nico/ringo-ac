@@ -1,4 +1,4 @@
-set(KM_SOURCES
+set(DRIVER_SOURCES
     core/communication/dispatcher.cpp
     core/communication/device_setup.cpp
     core/communication/protection.cpp
@@ -26,54 +26,29 @@ set(KM_SOURCES
     sdk/pe/pe.cpp
 )
 
-set(CMAKE_CXX_STANDARD_LIBRARIES "")
-set(CMAKE_EXE_LINKER_FLAGS "")
-add_executable(km_driver ${KM_SOURCES})
-set_target_properties(km_driver PROPERTIES
+find_package(WDK REQUIRED)
+
+wdk_add_driver(driver
+    WINVER 0x0A00
+    NTDDI_VERSION 0x0A000010
+    ${DRIVER_SOURCES}
+)
+
+set_target_properties(driver PROPERTIES
     OUTPUT_NAME rngdrv
-    SUFFIX ".sys"
-    RUNTIME_OUTPUT_DIRECTORY "${RINGO_BIN_DIR}"
-    MSVC_RUNTIME_LIBRARY "MultiThreaded"
+    CXX_STANDARD 20
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
 )
 
-target_include_directories(km_driver PRIVATE
-    "${RINGO_WDK_INCLUDE}/km"
-    "${RINGO_WDK_INCLUDE}/km/crt"
-    "${RINGO_WDK_INCLUDE}/shared"
-    "${RINGO_SDK_INCLUDE}/shared"
-    "${RINGO_SDK_INCLUDE}/um"
+target_include_directories(driver PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${CMAKE_SOURCE_DIR}/cmake/wdk-shim"
 )
 
-target_compile_definitions(km_driver PRIVATE
-    _AMD64_
-    AMD64
-    _WIN64
-    _WIN32_WINNT=0x0A00
-    NTDDI_VERSION=0x0A000010
+target_link_libraries(driver
+    WDK::CNG
+    WDK::WDMSEC
 )
 
-target_compile_options(km_driver PRIVATE
-    /kernel
-    /W3
-    /EHs-c-
-    /GR-
-    /GS-
-)
-
-target_link_options(km_driver PRIVATE
-    /driver
-    /subsystem:native
-    /entry:DriverEntry
-    /nodefaultlib
-    /integritycheck
-)
-
-target_link_directories(km_driver PRIVATE "${RINGO_WDK_KM_LIB}")
-target_link_libraries(km_driver PRIVATE
-    ntoskrnl.lib
-    hal.lib
-    bufferoverflowfastfailk.lib
-    cng.lib
-    wdmsec.lib
-)
+ringo_set_output_dir(driver)

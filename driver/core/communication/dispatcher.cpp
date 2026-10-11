@@ -21,13 +21,14 @@ NTSTATUS ioctl_handler(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 
     PEPROCESS caller = IoGetRequestorProcess(Irp);
 
+    // verify caller integrity
+    UCHAR process_hash[HASH_SIZE_SHA256] = {};
+
     if (!g_ringo_context.Session.active ||
         g_ringo_context.Session.process != caller ||
         PsGetProcessStartKey(caller) != g_ringo_context.Session.process_start_key)
         goto complete;
 
-    // verify caller integrity
-    UCHAR process_hash[HASH_SIZE_SHA256] = {};
     if (!get_caller_process_hash(caller, process_hash))
         goto complete;
 

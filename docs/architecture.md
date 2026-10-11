@@ -6,7 +6,7 @@ This document describes the internal layout of the Ringo kernel driver: how it i
 
 ## Driver Lifecycle
 
-The kernel driver (`rngdrv.sys`) is a standard WDM driver targeting Windows 10/11 x64. Its entry point is `DriverEntry` in `km/main.cpp`.
+The kernel driver (`rngdrv.sys`) is a standard WDM driver targeting Windows 10/11 x64. Its entry point is `DriverEntry` in `driver/main.cpp`.
 
 On load, `DriverEntry` runs the following sequence in order:
 
@@ -24,7 +24,7 @@ On unload, `DriverUnload` reverses the process: it deregisters each callback onl
 
 ## Runtime Context
 
-All mutable driver state lives in a single zero-initialized global `RINGO_CONTEXT g_ringo_context`, declared in `km/core/global.hpp`:
+All mutable driver state lives in a single zero-initialized global `RINGO_CONTEXT g_ringo_context`, declared in `driver/core/global.hpp`:
 
 ```cpp
 typedef struct RINGO_CONTEXT {
@@ -70,7 +70,7 @@ Detection report arrays are fixed-size and write-once from the kernel side. The 
 
 All communication uses `METHOD_BUFFERED` via `DeviceIoControl`. In this mode the I/O manager copies the user-mode input buffer into `Irp->AssociatedIrp.SystemBuffer` before invoking the driver, and copies that same buffer back to the user-mode output buffer on completion. The driver never touches user-mode memory directly.
 
-Control code definitions live in `km/core/communication/codes.hpp`, which is `#include`'d by both the kernel and user-mode projects.
+Control code definitions live in `driver/core/communication/codes.hpp`, which is `#include`'d by both the kernel and user-mode projects.
 
 | Control Code | Direction | Payload | Description |
 |---|---|---|---|
@@ -96,6 +96,6 @@ The dispatcher validates that the system buffer pointer is non-null whenever a n
 
 ## User-Mode Client
 
-`um/main.cpp` represents the minimal consumer of the IOCTL interface. It opens `\\.\ringo` with `CreateFile`, calls `IOCTL_SET_GAME_NAME` to push the target process name, and then exercises each getter in sequence. The shared type headers from the kernel project are included directly — both solutions reference the same struct definitions without duplication.
+`client/main.cpp` represents the minimal consumer of the IOCTL interface. It opens `\\.\ringo` with `CreateFile`, calls `IOCTL_SET_GAME_NAME` to push the target process name, and then exercises each getter in sequence. The shared type headers from the kernel project are included directly — both solutions reference the same struct definitions without duplication.
 
 In a complete deployment, the user-mode layer would forward the collected data to a backend service, handle session authentication, and act on the driver's detection reports. None of that backend logic is part of this repository.

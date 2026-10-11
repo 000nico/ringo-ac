@@ -7,88 +7,28 @@
   },
   "configurePresets": [
     {
-      "name": "debug",
-      "displayName": "Debug x64",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/debug",
-      "toolchainFile": "${sourceDir}/cmake/windows-clang.cmake",
+      "name": "windows",
+      "displayName": "Windows x64 (MSVC + WDK)",
+      "generator": "Visual Studio 18 2026",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "RINGO_TOOLCHAIN_ROOT": "$env{HOME}/toolchains",
-        "RINGO_BUILD_KM": "ON",
-        "RINGO_BUILD_UM": "ON"
-      }
-    },
-    {
-      "name": "release",
-      "displayName": "Release x64",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/release",
-      "toolchainFile": "${sourceDir}/cmake/windows-clang.cmake",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "RINGO_TOOLCHAIN_ROOT": "$env{HOME}/toolchains",
-        "RINGO_BUILD_KM": "ON",
-        "RINGO_BUILD_UM": "ON"
-      }
-    },
-    {
-      "name": "debug-km",
-      "inherits": "debug",
-      "displayName": "Debug x64 driver only",
-      "cacheVariables": {
-        "RINGO_BUILD_UM": "OFF"
-      }
-    },
-    {
-      "name": "debug-um",
-      "inherits": "debug",
-      "displayName": "Debug x64 user application only",
-      "cacheVariables": {
-        "RINGO_BUILD_KM": "OFF"
-      }
-    },
-    {
-      "name": "release-km",
-      "inherits": "release",
-      "displayName": "Release x64 driver only",
-      "cacheVariables": {
-        "RINGO_BUILD_UM": "OFF"
-      }
-    },
-    {
-      "name": "release-um",
-      "inherits": "release",
-      "displayName": "Release x64 user application only",
-      "cacheVariables": {
-        "RINGO_BUILD_KM": "OFF"
+        "RINGO_BUILD_DRIVER": "ON",
+        "RINGO_BUILD_CLIENT": "ON",
+        "RINGO_BUILD_SERVER": "ON"
       }
     }
   ],
   "buildPresets": [
     {
       "name": "debug",
-      "configurePreset": "debug"
+      "configurePreset": "windows",
+      "configuration": "Debug"
     },
     {
       "name": "release",
-      "configurePreset": "release"
-    },
-    {
-      "name": "debug-km",
-      "configurePreset": "debug-km"
-    },
-    {
-      "name": "debug-um",
-      "configurePreset": "debug-um"
-    },
-    {
-      "name": "release-km",
-      "configurePreset": "release-km"
-    },
-    {
-      "name": "release-um",
-      "configurePreset": "release-um"
+      "configurePreset": "windows",
+      "configuration": "Release"
     }
   ]
 }

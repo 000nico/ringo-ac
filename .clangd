@@ -1,11 +1,4 @@
-# clangd resuelve los includes desde los compile_commands.json de cada parte:
-#   - raiz:    build/debug/compile_commands.json  (km/um, comandos clang-cl)
-#   - server/: server/compile_commands.json -> ../build/compile_commands.json
-#              (server nativo, comandos g++)
-#
-# No forzar Compiler ni paths de g++ acá: rompía el parseo de los comandos
-# clang-cl del build de Windows (imponía --driver-mode=g++ y target de Windows,
-# haciendo que el server perdiera /usr/include -> 'features.h' not found).
+# clangd para el driver y el cliente (MSVC + WDK). Para el server tambien.
 CompileFlags:
   Add:
     - -std=c++20

@@ -2,10 +2,10 @@
 
 #include "get_env_info.hpp"
 
-#include "../../../km/core/communication/codes.hpp"
+#include "../../../driver/core/communication/codes.hpp"
 
-#include "../../../km/core/system/system.hpp"
-#include "../../../km/core/identity/identity.hpp"
+#include "../../../driver/core/system/system.hpp"
+#include "../../../driver/core/identity/identity.hpp"
 
 
 DWORD get_information_class(ENVIRONMENT_INFO_CLASS informationClass) {

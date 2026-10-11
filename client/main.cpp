@@ -4,8 +4,8 @@
 #include "core/communication/get_env_info.hpp"
 #include "core/communication/communication.hpp"
 
-#include "../km/core/system/system.hpp"
-#include "../km/core/identity/identity.hpp"
+#include "../driver/core/system/system.hpp"
+#include "../driver/core/identity/identity.hpp"
 
 
 #ifndef NT_SUCCESS

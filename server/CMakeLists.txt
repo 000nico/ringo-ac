@@ -3,10 +3,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
 
+# Las dependencias traidas por FetchContent declaran versiones minimas viejas
+# que CMake 4.x rechaza; permitimos esas politicas.
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+
 FetchContent_Declare(
     sqlitecpp
     GIT_REPOSITORY https://github.com/SRombauts/SQLiteCpp.git
     GIT_TAG        3.4.0
+    GIT_SUBMODULES sqlite3
+    GIT_SUBMODULES_RECURSE TRUE
 )
 
 FetchContent_Declare(
@@ -49,4 +55,8 @@ target_link_libraries(ringo-server
     PRIVATE
     SQLiteCpp
     nlohmann_json::nlohmann_json
+    ws2_32
+    crypt32
 )
+
+ringo_set_output_dir(ringo-server)

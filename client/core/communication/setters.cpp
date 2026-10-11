@@ -1,4 +1,4 @@
-#include "../../../km/core/communication/codes.hpp"
+#include "../../../driver/core/communication/codes.hpp"
 #include "communication.hpp"
 
 NTSTATUS set_game_process_name(HANDLE hDriver, const char* name) {

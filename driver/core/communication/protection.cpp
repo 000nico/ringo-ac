@@ -54,6 +54,8 @@ bool get_caller_file_hash(PEPROCESS process, UCHAR sha256[HASH_SIZE_SHA256]) {
     PUNICODE_STRING image_path = NULL;
     PE pe = { 0 };
     bool pe_loaded = false;
+    SECTION* text = NULL;
+    SIZE_T size = 0;
 
     NTSTATUS status = SeLocateProcessImageName(process, &image_path);
     if (!NT_SUCCESS(status))
@@ -65,11 +67,11 @@ bool get_caller_file_hash(PEPROCESS process, UCHAR sha256[HASH_SIZE_SHA256]) {
 
     pe_loaded = true;
 
-    SECTION* text = find_section_by_name(&pe, ".text");
+    text = find_section_by_name(&pe, ".text");
     if (!text)
         goto cleanup;
 
-    SIZE_T size = common_section_size(text);
+    size = common_section_size(text);
     if (size == 0)
         goto cleanup;
 
@@ -90,6 +92,8 @@ bool get_caller_process_hash(PEPROCESS process, UCHAR sha256[HASH_SIZE_SHA256]) 
     HANDLE file_handle = NULL;
     PE pe = { 0 };
     bool pe_loaded = false;
+    SECTION* text = NULL;
+    SIZE_T size = 0;
 
     if (!get_process_image_handle(process, &file_handle))
         return false;
@@ -100,11 +104,11 @@ bool get_caller_process_hash(PEPROCESS process, UCHAR sha256[HASH_SIZE_SHA256]) 
 
     pe_loaded = true;
 
-    SECTION* text = find_section_by_name(&pe, ".text");
+    text = find_section_by_name(&pe, ".text");
     if (!text)
         goto cleanup;
 
-    SIZE_T size = common_section_size(text);
+    size = common_section_size(text);
     if (size == 0)
         goto cleanup;
 
