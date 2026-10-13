@@ -20,9 +20,15 @@ typedef enum _ENVIRONMENT_INFO_CLASS {
     INFO_OB_CALLBACK_SET,
     INFO_SET_GAME_NAME,
     INFO_HEARTBEAT,
+    INFO_BYOVD_REPORT,
+    INFO_MANUAL_MAPPED_REPORT,
+    INFO_HASH_DIFF_REPORT,
+    INFO_FLAGGED_DLL_REPORT,
+    INFO_THREAD_REPORT,
     INFO_UNLOAD_DRIVER
 } ENVIRONMENT_INFO_CLASS, * PENVIRONMENT_INFO_CLASS;
 
 BOOLEAN get_environment_information(HANDLE h_driver, ENVIRONMENT_INFO_CLASS information_class, PVOID buffer, ULONG size, DWORD* bytes_returned);
 
 NTSTATUS set_game_process_name(HANDLE h_driver, const char* name);
+NTSTATUS set_file_hash(HANDLE h_driver, const UCHAR* hash);

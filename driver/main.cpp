@@ -10,6 +10,24 @@
 void driver_unload(PDRIVER_OBJECT DriverObject) {
     UNREFERENCED_PARAMETER(DriverObject);
 
+    // stop the scheduler thread and wait for it to finish before tearing anything else down
+    g_ringo_context.scheduler.scheduler_stop = TRUE;
+    KeSetEvent(&g_stop_event, IO_NO_INCREMENT, FALSE);
+
+    if (g_ringo_context.scheduler.scheduler_thread_handle != NULL) {
+        PVOID thread_object = NULL;
+
+        if (NT_SUCCESS(ObReferenceObjectByHandle(
+                g_ringo_context.scheduler.scheduler_thread_handle,
+                THREAD_ALL_ACCESS, *PsThreadType, KernelMode, &thread_object, NULL))) {
+            KeWaitForSingleObject(thread_object, Executive, KernelMode, FALSE, NULL);
+            ObDereferenceObject(thread_object);
+        }
+
+        ZwClose(g_ringo_context.scheduler.scheduler_thread_handle);
+        g_ringo_context.scheduler.scheduler_thread_handle = NULL;
+    }
+
     if (g_ringo_context.callbacks.ob.callback_handle != NULL)
         ObUnRegisterCallbacks(g_ringo_context.callbacks.ob.callback_handle);
 
@@ -61,7 +79,7 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) 
 
     KeInitializeEvent(&g_stop_event, NotificationEvent, FALSE);
     
-    PsCreateSystemThread(
+    NTSTATUS thread_status = PsCreateSystemThread(
         &g_ringo_context.scheduler.scheduler_thread_handle,
         THREAD_ALL_ACCESS, 
         NULL, 
@@ -71,8 +89,10 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) 
         NULL
     );
 
-    ZwClose(g_ringo_context.scheduler.scheduler_thread_handle);
-    g_ringo_context.scheduler.scheduler_thread_handle = NULL;
+    if (!NT_SUCCESS(thread_status)) {
+        g_ringo_context.scheduler.scheduler_thread_handle = NULL;
+        KdPrint(("[-] scheduler thread not created\n"));
+    }
     
     DriverObject->DriverUnload = driver_unload;
 

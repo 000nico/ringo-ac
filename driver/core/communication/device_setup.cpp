@@ -40,7 +40,11 @@ static NTSTATUS irp_create(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
     
     NTSTATUS status;
 
-    if (got_file_hash && got_process_hash && compare_sha256(file_sha256, g_expected_file_hash) && !is_peprocess_banned(requestor)) {
+    // while the expected file hash is not set, allow the open so the client can
+    // provision it through IOCTL_SET_FILE_HASH. after that, only a matching caller is allowed
+    bool file_hash_ok = !is_hash_set(g_expected_file_hash) || compare_sha256(file_sha256, g_expected_file_hash);
+
+    if (got_file_hash && got_process_hash && file_hash_ok && !is_peprocess_banned(requestor)) {
         ObReferenceObject(requestor);
 
         g_ringo_context.session.active = TRUE;
@@ -79,7 +83,7 @@ static NTSTATUS irp_not_supported(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 NTSTATUS setup_device(PDRIVER_OBJECT DriverObject) {
     UNICODE_STRING device_name = RTL_CONSTANT_STRING(DEVICE_NAME);
     UNICODE_STRING sym_link = RTL_CONSTANT_STRING(SYMBOLIC_LINK);
-    UNICODE_STRING sddl = RTL_CONSTANT_STRING(L"D:P(A;;GA;;;SY)");
+    UNICODE_STRING sddl = RTL_CONSTANT_STRING(L"D:P(A;;GA;;;SY)(A;;GA;;;BA)");
     NTSTATUS status = IoCreateDeviceSecure(
         DriverObject, 0, &device_name,
         FILE_DEVICE_UNKNOWN, FILE_DEVICE_SECURE_OPEN,

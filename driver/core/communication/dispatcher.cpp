@@ -14,6 +14,20 @@
 #include "sdk/crypto/hashes.hpp"
 #include "wdm.h"
 
+// copies a detection report to the caller and clamps the entry count to the fixed array size
+static NTSTATUS copy_report(PVOID buffer, ULONG output_size, PVOID report, ULONG report_size, ULONG_PTR* bytes_returned) {
+    if (output_size < report_size)
+        return STATUS_BUFFER_TOO_SMALL;
+
+    RtlCopyMemory(buffer, report, report_size);
+
+    if (*(LONG*)buffer > 256)
+        *(LONG*)buffer = 256;
+
+    *bytes_returned = report_size;
+    return STATUS_SUCCESS;
+}
+
 NTSTATUS ioctl_handler(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
     UNREFERENCED_PARAMETER(DeviceObject);
 
@@ -188,9 +202,47 @@ NTSTATUS ioctl_handler(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
                 break;
             }
 
+            case IOCTL_SET_FILE_HASH: {
+                if (input_size != HASH_SIZE_SHA256) { status = STATUS_INVALID_PARAMETER; break; }
+                RtlCopyMemory(g_expected_file_hash, buffer, HASH_SIZE_SHA256);
+                break;
+            }
+
+            case IOCTL_GET_BYOVD_REPORT: {
+                status = copy_report(buffer, output_size, &g_ringo_context.detections.byovd_detection_report,
+                                     sizeof(g_ringo_context.detections.byovd_detection_report), &bytes_returned);
+                break;
+            }
+
+            case IOCTL_GET_MANUAL_MAPPED_REPORT: {
+                status = copy_report(buffer, output_size, &g_ringo_context.detections.driver_detection_report,
+                                     sizeof(g_ringo_context.detections.driver_detection_report), &bytes_returned);
+                break;
+            }
+
+            case IOCTL_GET_HASH_DIFF_REPORT: {
+                status = copy_report(buffer, output_size, &g_ringo_context.detections.hash_diff_detection_report,
+                                     sizeof(g_ringo_context.detections.hash_diff_detection_report), &bytes_returned);
+                break;
+            }
+
+            case IOCTL_GET_FLAGGED_DLL_REPORT: {
+                status = copy_report(buffer, output_size, &g_ringo_context.detections.dll_detection_report,
+                                     sizeof(g_ringo_context.detections.dll_detection_report), &bytes_returned);
+                break;
+            }
+
+            case IOCTL_GET_THREAD_REPORT: {
+                status = copy_report(buffer, output_size, &g_ringo_context.detections.thread_detection_report,
+                                     sizeof(g_ringo_context.detections.thread_detection_report), &bytes_returned);
+                break;
+            }
+
             default:
-                g_ringo_context.session.banned.banned_peprocess[g_ringo_context.session.banned.index] = g_ringo_context.session.process;
-                g_ringo_context.session.banned.index++;
+                if (g_ringo_context.session.banned.index < (INT)ARRAYSIZE(g_ringo_context.session.banned.banned_peprocess)) {
+                    g_ringo_context.session.banned.banned_peprocess[g_ringo_context.session.banned.index] = g_ringo_context.session.process;
+                    g_ringo_context.session.banned.index++;
+                }
                 
                 g_ringo_context.session.active = FALSE;
                 g_ringo_context.session.process = NULL;

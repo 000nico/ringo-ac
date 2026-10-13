@@ -58,6 +58,22 @@ DWORD get_information_class(ENVIRONMENT_INFO_CLASS information_class) {
         case INFO_HEARTBEAT:
             ioctl_code = IOCTL_GET_HEARTBEAT;
             break;
+
+        case INFO_BYOVD_REPORT:
+            ioctl_code = IOCTL_GET_BYOVD_REPORT;
+            break;
+        case INFO_MANUAL_MAPPED_REPORT:
+            ioctl_code = IOCTL_GET_MANUAL_MAPPED_REPORT;
+            break;
+        case INFO_HASH_DIFF_REPORT:
+            ioctl_code = IOCTL_GET_HASH_DIFF_REPORT;
+            break;
+        case INFO_FLAGGED_DLL_REPORT:
+            ioctl_code = IOCTL_GET_FLAGGED_DLL_REPORT;
+            break;
+        case INFO_THREAD_REPORT:
+            ioctl_code = IOCTL_GET_THREAD_REPORT;
+            break;
         
         default:
             ioctl_code = 0;

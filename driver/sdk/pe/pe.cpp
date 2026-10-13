@@ -279,9 +279,8 @@ PE read_pe_from_handle(HANDLE file)
     LARGE_INTEGER offset;
     offset.QuadPart = 0;
 
-    status = ZwReadFile(file, NULL, NULL, NULL, &io, buf.data, file_size, &offset, NULL);
-    // Fallback path for a possibly-async handle: pass our own event instead
-    // of relying on a wait block that was never created for this handle.
+    status = ZwReadFile(file, &event, NULL, NULL, &io, buf.data, file_size, &offset, NULL);
+    // the file object may be asynchronous, so wait on our own event if it returns STATUS_PENDING
     if (status == STATUS_PENDING) {
         status = KeWaitForSingleObject(&event, Executive, KernelMode, FALSE, NULL);
         if (NT_SUCCESS(status)) {

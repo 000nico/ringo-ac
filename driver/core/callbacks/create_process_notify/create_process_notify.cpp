@@ -16,14 +16,14 @@ VOID update_game_state(PUCHAR name, HANDLE process_id, PPS_CREATE_NOTIFY_INFO cr
 		if (create_info) {
 			g_ringo_context.game.protected_game_pid = process_id;
 			g_ringo_context.game.is_game_open = TRUE;
-			g_ringo_context.session.first_hash_catched = FALSE;
+			g_ringo_context.game.first_hash_catched = FALSE;
 		}
 		// process destroyed
 		else {
 			if (g_ringo_context.game.protected_game_pid == process_id) {
 				g_ringo_context.game.protected_game_pid = NULL;
 				g_ringo_context.game.is_game_open = FALSE;
-				g_ringo_context.session.first_hash_catched = FALSE;
+				g_ringo_context.game.first_hash_catched = FALSE;
 			}
 		}
 	}

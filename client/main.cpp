@@ -27,9 +27,9 @@ int main() {
     std::cout << (set_game_process_name(drv, "cs2.exe") >= 0
         ? "[+] Game process name set\n" : "[-] Error setting game name\n");
 
-    DWORD pid = 0;
+    HANDLE pid = NULL;
     if (query(drv, INFO_GAME_PID, pid))
-        std::cout << "[+] Game pid = " << pid << "\n";
+        std::cout << "[+] Game pid = " << (ULONG_PTR)pid << "\n";
 
     HVCI_CHECK hvci = {};
     if (query(drv, INFO_HVCI, hvci))

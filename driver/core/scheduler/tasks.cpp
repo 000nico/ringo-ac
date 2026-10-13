@@ -21,16 +21,16 @@ void hash_compare() {
     if (!hash_disk_game_image(disk_image) || !hash_process_image(process_image2))
         return;
 
-    if (!g_ringo_context.session.first_hash_catched) {
-        RtlCopyMemory(g_ringo_context.session.last_hash, process_image2, HASH_SIZE_SHA256);
-        g_ringo_context.session.first_hash_catched = TRUE;
+    if (!g_ringo_context.game.first_hash_catched) {
+        RtlCopyMemory(g_ringo_context.game.last_image_hash, process_image2, HASH_SIZE_SHA256);
+        g_ringo_context.game.first_hash_catched = TRUE;
     }
 
-    if (!compare_hash(process_image2, g_ringo_context.session.last_hash))
+    if (!compare_hash(process_image2, g_ringo_context.game.last_image_hash))
         report_hash_mismatch(PROCESS_WITH_PROCESS);
 
     if (!compare_hash(process_image2, disk_image))
         report_hash_mismatch(FILE_WITH_PROCESS);
 
-    RtlCopyMemory(g_ringo_context.session.last_hash, process_image2, HASH_SIZE_SHA256);
+    RtlCopyMemory(g_ringo_context.game.last_image_hash, process_image2, HASH_SIZE_SHA256);
 }

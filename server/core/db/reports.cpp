@@ -1,6 +1,7 @@
 #include "reports.hpp"
 #include "db.hpp"
 #include <nlohmann/json.hpp>
+#include <ctime>
 
 using json = nlohmann::json;
 
@@ -14,13 +15,13 @@ void save_environment_report(const ENVIRONMENT_REPORT& r) {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     )");
     stmt.bind(1, r.hwid);
-    stmt.bind(2, (int64_t)r.timestamp);
-    stmt.bind(3, (int)r.debugger_present);
-    stmt.bind(4, (int)r.hypervisor_detected);
-    stmt.bind(5, (int)r.secure_boot_enabled);
-    stmt.bind(6, (int)r.hvci_enabled);
-    stmt.bind(7, (int)r.test_signing_enabled);
-    stmt.bind(8, (int)r.vbs_enabled);
+    stmt.bind(2, (int64_t)time(nullptr));
+    stmt.bind(3, (int)r.kernel_debugging.nt_query_enabled.value);
+    stmt.bind(4, (int)r.hypervisor.nt_query.value);
+    stmt.bind(5, (int)r.secure_boot.nt_query_enabled.value);
+    stmt.bind(6, (int)r.hvci.code_integrity.value);
+    stmt.bind(7, (int)r.test_signing.code_integrity.value);
+    stmt.bind(8, (int)r.vbs.nt_query_secure_kernel.value);
     stmt.exec();
 }
 

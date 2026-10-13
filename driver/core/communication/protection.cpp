@@ -138,6 +138,14 @@ bool compare_sha256(const UCHAR a[HASH_SIZE_SHA256], const UCHAR b[HASH_SIZE_SHA
     return constant_time_compare(a, b, HASH_SIZE_SHA256);
 }
 
+bool is_hash_set(const UCHAR sha256[HASH_SIZE_SHA256]) {
+    for (int i = 0; i < HASH_SIZE_SHA256; i++) {
+        if (sha256[i] != 0)
+            return true;
+    }
+    return false;
+}
+
 bool is_peprocess_banned(PEPROCESS peprocess) {
     for(int i = 0; i < g_ringo_context.session.banned.index; i++) {
         if(g_ringo_context.session.banned.banned_peprocess[i] == peprocess) {

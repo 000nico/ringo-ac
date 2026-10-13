@@ -11,6 +11,9 @@ typedef struct RINGO_CONTEXT {
         HANDLE protected_game_pid;
         UCHAR protected_game_process_name[64];
         BOOLEAN is_game_open;
+
+        BOOLEAN first_hash_catched;
+        UCHAR last_image_hash[HASH_SIZE_SHA256];
     } game;
 
     struct {
@@ -48,7 +51,6 @@ typedef struct RINGO_CONTEXT {
         ULONGLONG process_start_key;
         PEPROCESS process;
 
-        BOOLEAN first_hash_catched;
         UCHAR last_hash[HASH_SIZE_SHA256];
 
         struct {
@@ -67,12 +69,6 @@ typedef struct RINGO_CONTEXT {
 extern RINGO_CONTEXT g_ringo_context;
 extern PDRIVER_OBJECT g_driver_object;
 
-static const UCHAR g_expected_process_hash[HASH_SIZE_SHA256] = {
-    0x00, 0x00,
-};
-
-static const UCHAR g_expected_file_hash[HASH_SIZE_SHA256] = {
-    0x00, 0x00,
-};
+extern UCHAR g_expected_file_hash[HASH_SIZE_SHA256];
 
 extern KEVENT g_stop_event;
