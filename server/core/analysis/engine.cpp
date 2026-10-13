@@ -28,23 +28,29 @@ static void apply_results(const std::string& hwid, const std::vector<RULE_RESULT
     PLAYER_RISK p = db::get_or_create(hwid);
     uint64_t now = (uint64_t)time(nullptr);
 
-    // low old score
+    // lower the old score
     p.risk_score = decayed(p.risk_score, p.last_updated, now);
 
-    // add with the new onde
+    static const uint64_t DEDUP_WINDOW = 24 * 3600;   // same signal counts once every 24 h
+
     for (const auto& res : results) {
         if (res.signal.weight == 0) continue;   // no_finding
 
-        p.risk_score += res.signal.weight;
-        db::save_evidence(hwid, res.signal_reason, res.signal.weight, now);
-
+        // a ban is applied even if the signal was already counted
         if (res.signal.definitive) {
             p.status = VERDICT_STATUS::BANNED;
             p.ban_reason = res.reason;
         }
+
+        // already counted recently: don't add again
+        if (db::has_recent_evidence(hwid, res.signal_reason, now - DEDUP_WINDOW))
+            continue;
+
+        p.risk_score += res.signal.weight;
+        db::save_evidence(hwid, res.signal_reason, res.signal.weight, now);
     }
 
-    // 3) status with the score
+    // status with the score
     if (p.status != VERDICT_STATUS::BANNED) {
         if (p.risk_score >= 75)      p.status = VERDICT_STATUS::BANNED;
         else if (p.risk_score >= 40) p.status = VERDICT_STATUS::FLAGGED;

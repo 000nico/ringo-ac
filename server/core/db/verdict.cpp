@@ -30,6 +30,15 @@ PLAYER_RISK get_or_create(const std::string& hwid) {
     return p;
 }
 
+bool has_recent_evidence(const std::string& hwid, const std::string& signal, uint64_t since) {
+    SQLite::Statement stmt(*g_db,
+        "SELECT 1 FROM evidence WHERE hwid = ? AND signal = ? AND timestamp >= ? LIMIT 1");
+    stmt.bind(1, hwid);
+    stmt.bind(2, signal);
+    stmt.bind(3, (int64_t)since);
+    return stmt.executeStep();
+}
+
 void save_player_risk(const PLAYER_RISK& p) {
     SQLite::Statement stmt(*g_db, R"(
         INSERT INTO player_risk (hwid, risk_score, status, ban_reason, last_updated, first_seen)
