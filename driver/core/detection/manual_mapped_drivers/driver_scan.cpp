@@ -12,25 +12,25 @@ extern "C" unsigned __int64 __readcr3(void) {
 }
 #endif
 
-PVOID allocate_and_query_modules(ULONG* outReturnLength) {
-    ULONG returnLength = 0;
+PVOID allocate_and_query_modules(ULONG* out_return_length) {
+    ULONG return_length = 0;
 
-    ZwQuerySystemInformation(SystemModuleInformation, NULL, 0, &returnLength);
+    ZwQuerySystemInformation(SystemModuleInformation, NULL, 0, &return_length);
 
-    if (returnLength == 0)
+    if (return_length == 0)
         return NULL;
 
-    PVOID buffer = ExAllocatePool2(POOL_FLAG_NON_PAGED, returnLength, 'tGLD');
+    PVOID buffer = ExAllocatePool2(POOL_FLAG_NON_PAGED, return_length, 'tGLD');
     if (!buffer)
         return NULL;
 
-    NTSTATUS status = ZwQuerySystemInformation(SystemModuleInformation, buffer, returnLength, &returnLength);
+    NTSTATUS status = ZwQuerySystemInformation(SystemModuleInformation, buffer, return_length, &return_length);
     if (!NT_SUCCESS(status)) {
         ExFreePoolWithTag(buffer, 'tGLD');
         return NULL;
     }
 
-    *outReturnLength = returnLength;
+    *out_return_length = return_length;
     return buffer;
 }
 
@@ -39,27 +39,27 @@ ULONG get_legit_driver_count(RTL_PROCESS_MODULES* modules) {
 }
 
 LOADED_LEGIT_DRIVERS* get_legit_driver_list() {
-    ULONG returnLength = 0;
+    ULONG return_length = 0;
 
-    PVOID buffer = allocate_and_query_modules(&returnLength);
+    PVOID buffer = allocate_and_query_modules(&return_length);
     if (!buffer)
         return NULL;
 
     RTL_PROCESS_MODULES* modules = (RTL_PROCESS_MODULES*)buffer;
     ULONG count = get_legit_driver_count(modules);
 
-    SIZE_T allocSize = sizeof(LOADED_LEGIT_DRIVERS) + (count > 0 ? (count - 1) : 0) * sizeof(LOADED_LEGIT_DRIVER_ENTRY);
-    LOADED_LEGIT_DRIVERS* lld = (LOADED_LEGIT_DRIVERS*)ExAllocatePool2(POOL_FLAG_NON_PAGED, allocSize, 'tGLD');
+    SIZE_T alloc_size = sizeof(LOADED_LEGIT_DRIVERS) + (count > 0 ? (count - 1) : 0) * sizeof(LOADED_LEGIT_DRIVER_ENTRY);
+    LOADED_LEGIT_DRIVERS* lld = (LOADED_LEGIT_DRIVERS*)ExAllocatePool2(POOL_FLAG_NON_PAGED, alloc_size, 'tGLD');
     if (!lld) {
         ExFreePoolWithTag(buffer, 'tGLD');
         return NULL;
     }
 
-    lld->Count = count;
+    lld->count = count;
     for (ULONG i = 0; i < count; i++) {
-        lld->Drivers[i].image_base = modules->Modules[i].image_base;
-        lld->Drivers[i].image_size = modules->Modules[i].image_size;
-        RtlCopyMemory(lld->Drivers[i].full_path_name, modules->Modules[i].full_path_name, sizeof(lld->Drivers[i].full_path_name));
+        lld->drivers[i].image_base = modules->Modules[i].image_base;
+        lld->drivers[i].image_size = modules->Modules[i].image_size;
+        RtlCopyMemory(lld->drivers[i].full_path_name, modules->Modules[i].full_path_name, sizeof(lld->drivers[i].full_path_name));
     }
 
     ExFreePoolWithTag(buffer, 'tGLD');
@@ -75,9 +75,9 @@ VOID free_legit_driver_list(LOADED_LEGIT_DRIVERS* lld) {
 BOOLEAN is_address_in_known_module(PVOID address, LOADED_LEGIT_DRIVERS* lld) {
     if (!lld) return FALSE;
 
-    for (ULONG i = 0; i < lld->Count; i++) {
-        ULONG_PTR base = (ULONG_PTR)lld->Drivers[i].image_base;
-        ULONG_PTR end = base + lld->Drivers[i].image_size;
+    for (ULONG i = 0; i < lld->count; i++) {
+        ULONG_PTR base = (ULONG_PTR)lld->drivers[i].image_base;
+        ULONG_PTR end = base + lld->drivers[i].image_size;
         ULONG_PTR addr = (ULONG_PTR)address;
 
         if (addr >= base && addr < end)

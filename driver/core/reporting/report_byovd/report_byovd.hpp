@@ -8,16 +8,16 @@ enum BYOVD_DETECTION_METHOD {
 };
 
 struct BYOVD_DETECTION_ENTRY {
-	WCHAR NameBuffer[256];
-	UNICODE_STRING FullImageName;
-	PDEVICE_OBJECT DeviceObject;
-	PDRIVER_OBJECT DriverObject;
-	BYOVD_DETECTION_METHOD Method;
+	WCHAR name_buffer[256];
+	UNICODE_STRING full_image_name;
+	PDEVICE_OBJECT device_object;
+	PDRIVER_OBJECT driver_object;
+	BYOVD_DETECTION_METHOD method;
 };
 
 struct BYOVD_DETECTION_REPORT {
 	LONG count;
-	BYOVD_DETECTION_ENTRY Entries[256];
+	BYOVD_DETECTION_ENTRY entries[256];
 };
 
-VOID add_byovd_report_entry(PUNICODE_STRING FullImageName, PDRIVER_OBJECT DriverObject, PDEVICE_OBJECT DeviceObject, BYOVD_DETECTION_METHOD Method);
+VOID report_byovd_detection(PUNICODE_STRING full_image_name, PDRIVER_OBJECT driver_object, PDEVICE_OBJECT device_object, BYOVD_DETECTION_METHOD method);

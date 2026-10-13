@@ -2,8 +2,8 @@
 #include "ob_callback.hpp"
 
 VOID strip_handle_to_byovd(POB_PRE_OPERATION_INFORMATION Info) {
-	for (int i = 0; i < g_ringo_context.Detections.byovd_detection_report.count; i++) {
-		if (Info->Object == g_ringo_context.Detections.byovd_detection_report.Entries[i].DeviceObject) {
+	for (int i = 0; i < g_ringo_context.detections.byovd_detection_report.count; i++) {
+		if (Info->Object == g_ringo_context.detections.byovd_detection_report.entries[i].device_object) {
 			if (Info->Operation == OB_OPERATION_HANDLE_CREATE)
 				Info->Parameters->CreateHandleInformation.DesiredAccess = 0;
 			else if (Info->Operation == OB_OPERATION_HANDLE_DUPLICATE)
@@ -14,8 +14,8 @@ VOID strip_handle_to_byovd(POB_PRE_OPERATION_INFORMATION Info) {
 	}
 }
 
-VOID strip_handle_to_game(HANDLE callerPid, HANDLE targetPid, POB_PRE_OPERATION_INFORMATION Info) {
-	if (targetPid == (HANDLE)g_ringo_context.Game.protected_game_pid && callerPid != (HANDLE)g_ringo_context.Game.protected_game_pid) {
+VOID strip_handle_to_game(HANDLE caller_pid, HANDLE target_pid, POB_PRE_OPERATION_INFORMATION Info) {
+	if (target_pid == (HANDLE)g_ringo_context.game.protected_game_pid && caller_pid != (HANDLE)g_ringo_context.game.protected_game_pid) {
 		if (Info->ObjectType == *PsProcessType) {
 			if (Info->Operation == OB_OPERATION_HANDLE_CREATE) {
 				if (Info->Parameters->CreateHandleInformation.OriginalDesiredAccess & (PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION)) {
@@ -30,17 +30,17 @@ VOID strip_handle_to_game(HANDLE callerPid, HANDLE targetPid, POB_PRE_OPERATION_
 			}
 		}
 		else if (Info->ObjectType == *PsThreadType) {
-			ACCESS_MASK dangerousThreadMask = THREAD_TERMINATE | THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_SET_INFORMATION | THREAD_DIRECT_IMPERSONATION;
+			ACCESS_MASK dangerous_thread_mask = THREAD_TERMINATE | THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_SET_INFORMATION | THREAD_DIRECT_IMPERSONATION;
 
 			if (Info->Operation == OB_OPERATION_HANDLE_CREATE) {
-				if (Info->Parameters->CreateHandleInformation.OriginalDesiredAccess & dangerousThreadMask) {
-					Info->Parameters->CreateHandleInformation.DesiredAccess &= ~dangerousThreadMask;
+				if (Info->Parameters->CreateHandleInformation.OriginalDesiredAccess & dangerous_thread_mask) {
+					Info->Parameters->CreateHandleInformation.DesiredAccess &= ~dangerous_thread_mask;
 				}
 			}
 
 			if (Info->Operation == OB_OPERATION_HANDLE_DUPLICATE) {
-				if (Info->Parameters->DuplicateHandleInformation.OriginalDesiredAccess & dangerousThreadMask) {
-					Info->Parameters->DuplicateHandleInformation.DesiredAccess &= ~dangerousThreadMask;
+				if (Info->Parameters->DuplicateHandleInformation.OriginalDesiredAccess & dangerous_thread_mask) {
+					Info->Parameters->DuplicateHandleInformation.DesiredAccess &= ~dangerous_thread_mask;
 				}
 			}
 		}
@@ -51,16 +51,16 @@ OB_PREOP_CALLBACK_STATUS open_process_callback(_In_ PVOID RegistrationContext, _
 	UNREFERENCED_PARAMETER(RegistrationContext);
 
 	if (Info->KernelHandle) return OB_PREOP_SUCCESS; // Ignore kernel-mode handles to prevent breaking legitimate drivers / system services
-	if (!g_ringo_context.Game.is_game_open || g_ringo_context.Game.protected_game_pid == NULL) return OB_PREOP_SUCCESS;
+	if (!g_ringo_context.game.is_game_open || g_ringo_context.game.protected_game_pid == NULL) return OB_PREOP_SUCCESS;
 	if (Info->ObjectType != *PsProcessType && Info->ObjectType != *PsThreadType && Info->ObjectType != *IoDeviceObjectType) return OB_PREOP_SUCCESS;
 
-	HANDLE callerPid = PsGetProcessId(PsGetCurrentProcess());
-	HANDLE targetPid = NULL;
+	HANDLE caller_pid = PsGetProcessId(PsGetCurrentProcess());
+	HANDLE target_pid = NULL;
 
-	if (Info->ObjectType == *PsProcessType)     targetPid = PsGetProcessId((PEPROCESS)Info->Object);
-	else if (Info->ObjectType == *PsThreadType) targetPid = PsGetThreadProcessId((PETHREAD)Info->Object);
+	if (Info->ObjectType == *PsProcessType)     target_pid = PsGetProcessId((PEPROCESS)Info->Object);
+	else if (Info->ObjectType == *PsThreadType) target_pid = PsGetThreadProcessId((PETHREAD)Info->Object);
 
-	strip_handle_to_game(callerPid, targetPid, Info);
+	strip_handle_to_game(caller_pid, target_pid, Info);
 	if(Info->ObjectType == *IoDeviceObjectType) strip_handle_to_byovd(Info);
 	return OB_PREOP_SUCCESS;
 }
@@ -91,9 +91,9 @@ PVOID ob_register_callbacks_open_process() {
 	ocr.RegistrationContext = NULL;
 	ocr.OperationRegistration = operations;
 
-	PVOID pRegistrationHandle = NULL;
-	NTSTATUS status = ObRegisterCallbacks(&ocr, &pRegistrationHandle); 
+	PVOID p_registration_handle = NULL;
+	NTSTATUS status = ObRegisterCallbacks(&ocr, &p_registration_handle); 
 
 	if (!NT_SUCCESS(status)) return NULL;
-	else return pRegistrationHandle;
+	else return p_registration_handle;
 }

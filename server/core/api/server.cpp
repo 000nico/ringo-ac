@@ -4,10 +4,10 @@
 #include "routes/verdict.hpp"
 #include <iostream>
 
-RingoServer::RingoServer(const std::string& host, int port)
+RINGO_SERVER::RINGO_SERVER(const std::string& host, int port)
     : _host(host), _port(port) {}
 
-void RingoServer::register_routes() {
+void RINGO_SERVER::register_routes() {
     // telemetry sent by usermode
     _svr.Post("/telemetry/environment", handle_environment_report);
     
@@ -26,7 +26,7 @@ void RingoServer::register_routes() {
     });
 }
 
-void RingoServer::start() {
+void RINGO_SERVER::start() {
     register_routes();
     std::cout << "[ringo] listening on " << _host << ":" << _port << "\n";
     _svr.listen(_host.c_str(), _port);

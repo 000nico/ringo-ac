@@ -6,7 +6,7 @@ using json = nlohmann::json;
 
 namespace db {
 
-void save_environment_report(const EnvironmentReport& r) {
+void save_environment_report(const ENVIRONMENT_REPORT& r) {
     SQLite::Statement stmt(*g_db, R"(
         INSERT INTO environment_reports
             (hwid, timestamp, debugger_present, hypervisor_detected,
@@ -24,7 +24,7 @@ void save_environment_report(const EnvironmentReport& r) {
     stmt.exec();
 }
 
-void save_module_report(const ModuleReport& r) {
+void save_module_report(const MODULE_REPORT& r) {
     // los vectores los serializamos como JSON string
     json unsigned_json = r.unsigned_modules;
     json suspicious_json = r.suspicious_module_names;

@@ -30,8 +30,8 @@ struct LOADED_LEGIT_DRIVER_ENTRY {
 };
 
 struct LOADED_LEGIT_DRIVERS {
-    ULONG Count;
-    LOADED_LEGIT_DRIVER_ENTRY Drivers[1];
+    ULONG count;
+    LOADED_LEGIT_DRIVER_ENTRY drivers[1];
 };
 
 // exposing fns

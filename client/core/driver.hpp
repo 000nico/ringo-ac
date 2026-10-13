@@ -1,4 +1,4 @@
 #pragma once
 #include <windows.h>
 
-BOOLEAN open_driver(HANDLE* pDriverHandle);
+BOOLEAN open_driver(HANDLE* p_driver_handle);

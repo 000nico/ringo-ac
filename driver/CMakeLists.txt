@@ -14,6 +14,8 @@ set(DRIVER_SOURCES
     core/reporting/report_byovd/report_byovd.cpp
     core/reporting/report_manual_mapped_driver/report_manual_mapped_driver.cpp
     core/reporting/report_hash_diff/report_hash_diff.cpp
+    core/reporting/report_flagged_dll/report_flagged_dll.cpp
+    core/reporting/report_thread_detection/report_thread_detection.cpp
     core/system/hvci/hvci.cpp
     core/system/hypervisor/hypervisor.cpp
     core/system/kernel_debugging/kernel_debugging.cpp

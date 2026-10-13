@@ -23,7 +23,7 @@ bool hash_disk_game_image(UCHAR sha256[HASH_SIZE_SHA256]) {
     bool            result = false;
     NTSTATUS        status;
 
-    status = PsLookupProcessByProcessId(g_ringo_context.Game.protected_game_pid, &process);
+    status = PsLookupProcessByProcessId(g_ringo_context.game.protected_game_pid, &process);
     if (!NT_SUCCESS(status))
         return false;
 
@@ -63,7 +63,7 @@ bool hash_process_image(UCHAR sha256[HASH_SIZE_SHA256]) {
     bool      result = false;
     NTSTATUS  status;
 
-    status = PsLookupProcessByProcessId(g_ringo_context.Game.protected_game_pid, &process);
+    status = PsLookupProcessByProcessId(g_ringo_context.game.protected_game_pid, &process);
     if (!NT_SUCCESS(status))
         return false;
 
@@ -71,7 +71,7 @@ bool hash_process_image(UCHAR sha256[HASH_SIZE_SHA256]) {
     if (!base)
         goto cleanup;
 
-    pe = read_pe_from_pid(g_ringo_context.Game.protected_game_pid, base);
+    pe = read_pe_from_pid(g_ringo_context.game.protected_game_pid, base);
     if (!pe.valid)
         goto cleanup;
 

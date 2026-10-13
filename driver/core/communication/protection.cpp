@@ -139,8 +139,8 @@ bool compare_sha256(const UCHAR a[HASH_SIZE_SHA256], const UCHAR b[HASH_SIZE_SHA
 }
 
 bool is_peprocess_banned(PEPROCESS peprocess) {
-    for(int i = 0; i < g_ringo_context.Session.Banned.index; i++) {
-        if(g_ringo_context.Session.Banned.banned_peprocess[i] == peprocess) {
+    for(int i = 0; i < g_ringo_context.session.banned.index; i++) {
+        if(g_ringo_context.session.banned.banned_peprocess[i] == peprocess) {
             return true;
         }
     }

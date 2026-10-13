@@ -12,25 +12,25 @@
 #include "../detection/byovd/byovd_scan.hpp"
 #include "tasks.hpp"
 
-static void hash_compare() {
+void hash_compare() {
     UCHAR process_image2[HASH_SIZE_SHA256];
     UCHAR disk_image[HASH_SIZE_SHA256];
 
-    if (!g_ringo_context.Game.is_game_open) return;
+    if (!g_ringo_context.game.is_game_open) return;
 
     if (!hash_disk_game_image(disk_image) || !hash_process_image(process_image2))
         return;
 
-    if (!g_ringo_context.Session.first_hash_catched) {
-        RtlCopyMemory(g_ringo_context.Session.last_hash, process_image2, HASH_SIZE_SHA256);
-        g_ringo_context.Session.first_hash_catched = TRUE;
+    if (!g_ringo_context.session.first_hash_catched) {
+        RtlCopyMemory(g_ringo_context.session.last_hash, process_image2, HASH_SIZE_SHA256);
+        g_ringo_context.session.first_hash_catched = TRUE;
     }
 
-    if (!compare_hash(process_image2, g_ringo_context.Session.last_hash))
-        add_hash_mismatch_detection_entry(PROCESS_WITH_PROCESS);
+    if (!compare_hash(process_image2, g_ringo_context.session.last_hash))
+        report_hash_mismatch(PROCESS_WITH_PROCESS);
 
     if (!compare_hash(process_image2, disk_image))
-        add_hash_mismatch_detection_entry(FILE_WITH_PROCESS);
+        report_hash_mismatch(FILE_WITH_PROCESS);
 
-    RtlCopyMemory(g_ringo_context.Session.last_hash, process_image2, HASH_SIZE_SHA256);
+    RtlCopyMemory(g_ringo_context.session.last_hash, process_image2, HASH_SIZE_SHA256);
 }

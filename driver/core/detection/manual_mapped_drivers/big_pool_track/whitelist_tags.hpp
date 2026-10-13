@@ -2,7 +2,7 @@
 
 #include "sdk/sdk.hpp"
 
-static const ULONG KnownLegitPoolTags[] = {
+static const ULONG KNOWN_LEGIT_POOL_TAGS[] = {
 
     // ==========================================
     // NDIS / Network Driver Interface

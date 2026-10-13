@@ -11,8 +11,8 @@ struct HASH_DIFF_ENTRY {
 };
 
 struct HASH_DIFF_REPORT {
-    HASH_DIFF_ENTRY Entries[256];
-    LONG count;
+    LONG           count;
+    HASH_DIFF_ENTRY entries[256];
 };
 
-void add_hash_mismatch_detection_entry(HASH_MISMATCH_TYPE type);
+VOID report_hash_mismatch(HASH_MISMATCH_TYPE type);

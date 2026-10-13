@@ -1,17 +1,17 @@
 #include "report_byovd.hpp"
-#include "../../global.hpp"
+#include "core/global.hpp"
 
-VOID add_byovd_report_entry(PUNICODE_STRING FullImageName, PDRIVER_OBJECT DriverObject, PDEVICE_OBJECT DeviceObject, BYOVD_DETECTION_METHOD Method) {
-	LONG index = InterlockedIncrement(&g_ringo_context.Detections.byovd_detection_report.count) - 1;
+VOID report_byovd_detection(PUNICODE_STRING full_image_name, PDRIVER_OBJECT driver_object, PDEVICE_OBJECT device_object, BYOVD_DETECTION_METHOD method) {
+	LONG index = InterlockedIncrement(&g_ringo_context.detections.byovd_detection_report.count) - 1;
 	if (index >= 256) return;
 
-	BYOVD_DETECTION_ENTRY* entry = &g_ringo_context.Detections.byovd_detection_report.Entries[index];
+	BYOVD_DETECTION_ENTRY* entry = &g_ringo_context.detections.byovd_detection_report.entries[index];
 	RtlZeroMemory(entry, sizeof(BYOVD_DETECTION_ENTRY));
 
-	RtlInitEmptyUnicodeString(&entry->FullImageName, entry->NameBuffer, sizeof(entry->NameBuffer));
-	RtlCopyUnicodeString(&entry->FullImageName, FullImageName);
+	RtlInitEmptyUnicodeString(&entry->full_image_name, entry->name_buffer, sizeof(entry->name_buffer));
+	RtlCopyUnicodeString(&entry->full_image_name, full_image_name);
 
-	entry->Method = Method;
-	entry->DriverObject = DriverObject;
-	entry->DeviceObject = DeviceObject;
+	entry->method = method;
+	entry->driver_object = driver_object;
+	entry->device_object = device_object;
 }

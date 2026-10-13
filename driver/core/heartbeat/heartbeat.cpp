@@ -1,8 +1,8 @@
 #include "heartbeat.hpp"
 
-Heartbeat heartbeat_counter = {};
+HEARTBEAT heartbeat_counter = {};
 
-Heartbeat get_heartbeat() {
+HEARTBEAT get_heartbeat() {
     return heartbeat_counter;
 }
 

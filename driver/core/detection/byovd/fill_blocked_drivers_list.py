@@ -44,18 +44,18 @@ for d in drivers:
         entries[sha256] = (sha256_arr, authentihash_arr, filename)
 
 lines = []
-lines.append("static const VULNERABLE_DRIVER_ENTRY VulnerableDriverHashes[] = {\n")
+lines.append("static const VULNERABLE_DRIVER_ENTRY VULNERABLE_DRIVER_HASHES[] = {\n")
 for sha256, (sha256_arr, authentihash_arr, filename) in sorted(entries.items()):
     ah = authentihash_arr if authentihash_arr else "0x00" + ", 0x00" * 31
     lines.append(f'    {{ {{ {sha256_arr} }}, {{ {ah} }}, "{filename}" }},\n')
 lines.append("};\n")
-lines.append(f"static const ULONG VulnerableDriverCount = {len(entries)};\n")
+lines.append(f"static const ULONG VULNERABLE_DRIVER_COUNT = {len(entries)};\n")
 new_content = "".join(lines).strip()
 
 with open("blocked_drivers.hpp", "r") as f:
     original = f.read()
 
-pattern = r"static const VULNERABLE_DRIVER_ENTRY VulnerableDriverHashes\[\].*?static const ULONG VulnerableDriverCount = \d+;"
+pattern = r"static const VULNERABLE_DRIVER_ENTRY VULNERABLE_DRIVER_HASHES\[\].*?static const ULONG VULNERABLE_DRIVER_COUNT = \d+;"
 updated = re.sub(pattern, new_content, original, flags=re.DOTALL)
 
 with open("blocked_drivers.hpp", "w") as f:

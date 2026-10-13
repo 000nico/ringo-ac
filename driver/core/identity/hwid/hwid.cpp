@@ -3,7 +3,7 @@
 #include <ntddstor.h>
 #include <intrin.h>
 
-NTSTATUS get_smbios_uuid(UCHAR OutUuid[16]) {
+NTSTATUS get_smbios_uuid(UCHAR out_uuid[16]) {
     ULONG size = sizeof(SYSTEM_FIRMWARE_TABLE_INFORMATION);
     PSYSTEM_FIRMWARE_TABLE_INFORMATION info =
         (PSYSTEM_FIRMWARE_TABLE_INFORMATION)ExAllocatePool2(POOL_FLAG_NON_PAGED, size, 'SMBI');
@@ -14,11 +14,11 @@ NTSTATUS get_smbios_uuid(UCHAR OutUuid[16]) {
     info->TableID = 0;
     info->TableBufferLength = 0;
 
-    ULONG returnLength = 0;
-    NTSTATUS status = ZwQuerySystemInformation(SystemFirmwareTableInformation, info, size, &returnLength);
+    ULONG return_length = 0;
+    NTSTATUS status = ZwQuerySystemInformation(SystemFirmwareTableInformation, info, size, &return_length);
 
     ExFreePoolWithTag(info, 'SMBI');
-    size = returnLength;
+    size = return_length;
     info = (PSYSTEM_FIRMWARE_TABLE_INFORMATION)ExAllocatePool2(POOL_FLAG_NON_PAGED, size, 'SMBI');
     if (!info) return STATUS_INSUFFICIENT_RESOURCES;
 
@@ -27,7 +27,7 @@ NTSTATUS get_smbios_uuid(UCHAR OutUuid[16]) {
     info->TableID = 0;
     info->TableBufferLength = size;
 
-    status = ZwQuerySystemInformation(SystemFirmwareTableInformation, info, size, &returnLength);
+    status = ZwQuerySystemInformation(SystemFirmwareTableInformation, info, size, &return_length);
 
     if (!NT_SUCCESS(status)) {
         ExFreePoolWithTag(info, 'SMBI');
@@ -46,15 +46,15 @@ NTSTATUS get_smbios_uuid(UCHAR OutUuid[16]) {
             break;
 
         if (type == 1 && length >= 0x19 && (ptr + 8 + 16 <= end)) {
-            RtlCopyMemory(OutUuid, ptr + 8, 16);
+            RtlCopyMemory(out_uuid, ptr + 8, 16);
             ExFreePoolWithTag(info, 'SMBI');
             return STATUS_SUCCESS;
         }
 
-        PUCHAR strSection = ptr + length;
-        while (strSection + 1 < end && !(strSection[0] == 0 && strSection[1] == 0))
-            strSection++;
-        ptr = strSection + 2;
+        PUCHAR str_section = ptr + length;
+        while (str_section + 1 < end && !(str_section[0] == 0 && str_section[1] == 0))
+            str_section++;
+        ptr = str_section + 2;
     }
 
     ExFreePoolWithTag(info, 'SMBI');
@@ -62,57 +62,57 @@ NTSTATUS get_smbios_uuid(UCHAR OutUuid[16]) {
 }
 
 ULONG get_cpu_hash() {
-    int cpuInfo[4] = { 0 };
+    int cpu_info[4] = { 0 };
 
-    __cpuid(cpuInfo, 0);
-    ULONG hash = (ULONG)cpuInfo[0] ^ (ULONG)cpuInfo[1] ^ (ULONG)cpuInfo[2] ^ (ULONG)cpuInfo[3];
+    __cpuid(cpu_info, 0);
+    ULONG hash = (ULONG)cpu_info[0] ^ (ULONG)cpu_info[1] ^ (ULONG)cpu_info[2] ^ (ULONG)cpu_info[3];
 
-    __cpuid(cpuInfo, 1);
-    hash ^= (ULONG)cpuInfo[0];
-    hash ^= (ULONG)cpuInfo[3];
+    __cpuid(cpu_info, 1);
+    hash ^= (ULONG)cpu_info[0];
+    hash ^= (ULONG)cpu_info[3];
 
-    __cpuidex(cpuInfo, 4, 0);
-    hash ^= (ULONG)cpuInfo[0];
+    __cpuidex(cpu_info, 4, 0);
+    hash ^= (ULONG)cpu_info[0];
 
     return hash;
 }
 
-NTSTATUS get_disk_serial(ULONG* OutSerial) {
-    UNICODE_STRING diskPath = RTL_CONSTANT_STRING(L"\\Device\\Harddisk0\\DR0");
+NTSTATUS get_disk_serial(ULONG* out_serial) {
+    UNICODE_STRING disk_path = RTL_CONSTANT_STRING(L"\\Device\\Harddisk0\\DR0");
 
     OBJECT_ATTRIBUTES oa;
-    InitializeObjectAttributes(&oa, &diskPath, OBJ_KERNEL_HANDLE | OBJ_CASE_INSENSITIVE, NULL, NULL);
+    InitializeObjectAttributes(&oa, &disk_path, OBJ_KERNEL_HANDLE | OBJ_CASE_INSENSITIVE, NULL, NULL);
 
     IO_STATUS_BLOCK iosb;
-    HANDLE hDisk;
-    NTSTATUS status = ZwOpenFile(&hDisk, GENERIC_READ | SYNCHRONIZE, &oa, &iosb,
+    HANDLE h_disk;
+    NTSTATUS status = ZwOpenFile(&h_disk, GENERIC_READ | SYNCHRONIZE, &oa, &iosb,
         FILE_SHARE_READ | FILE_SHARE_WRITE, FILE_SYNCHRONOUS_IO_NONALERT);
 
     if (!NT_SUCCESS(status)) return status;
 
-    ULONG bufSize = sizeof(STORAGE_DEVICE_DESCRIPTOR) + 256;
+    ULONG buf_size = sizeof(STORAGE_DEVICE_DESCRIPTOR) + 256;
     PSTORAGE_DEVICE_DESCRIPTOR desc = (PSTORAGE_DEVICE_DESCRIPTOR)
-        ExAllocatePool2(POOL_FLAG_NON_PAGED, bufSize, 'DISK');
-    if (!desc) { ZwClose(hDisk); return STATUS_INSUFFICIENT_RESOURCES; }
+        ExAllocatePool2(POOL_FLAG_NON_PAGED, buf_size, 'DISK');
+    if (!desc) { ZwClose(h_disk); return STATUS_INSUFFICIENT_RESOURCES; }
 
     STORAGE_PROPERTY_QUERY query;
     RtlZeroMemory(&query, sizeof(query));
     query.PropertyId = StorageDeviceProperty;
     query.QueryType = PropertyStandardQuery;
 
-    status = ZwDeviceIoControlFile(hDisk, NULL, NULL, NULL, &iosb,
-        IOCTL_STORAGE_QUERY_PROPERTY, &query, sizeof(query), desc, bufSize);
+    status = ZwDeviceIoControlFile(h_disk, NULL, NULL, NULL, &iosb,
+        IOCTL_STORAGE_QUERY_PROPERTY, &query, sizeof(query), desc, buf_size);
 
     if (NT_SUCCESS(status) && desc->SerialNumberOffset != 0) {
         PCHAR serial = (PCHAR)desc + desc->SerialNumberOffset;
         ULONG hash = 0;
         for (ULONG i = 0; serial[i] != 0; i++)
             hash = hash * 31 + (UCHAR)serial[i];
-        *OutSerial = hash;
+        *out_serial = hash;
     }
 
     ExFreePoolWithTag(desc, 'DISK');
-    ZwClose(hDisk);
+    ZwClose(h_disk);
     return status;
 }
 
@@ -120,13 +120,13 @@ HWID build_hwid() {
     HWID hwid;
     RtlZeroMemory(&hwid, sizeof(hwid));
 
-    hwid.CpuHash = get_cpu_hash();
+    hwid.cpu_hash = get_cpu_hash();
 
-    UCHAR UUID[16];
-    if (NT_SUCCESS(get_smbios_uuid(UUID)))
-        RtlCopyMemory(hwid.SmbiosUuid, UUID, 16);
+    UCHAR uuid[16];
+    if (NT_SUCCESS(get_smbios_uuid(uuid)))
+        RtlCopyMemory(hwid.smbios_uuid, uuid, 16);
 
-    hwid.DiskSerial = NT_SUCCESS(get_disk_serial(&hwid.DiskSerial)) ? hwid.DiskSerial : 0;
+    hwid.disk_serial = NT_SUCCESS(get_disk_serial(&hwid.disk_serial)) ? hwid.disk_serial : 0;
 
     return hwid;
 }

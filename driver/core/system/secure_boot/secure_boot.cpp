@@ -5,11 +5,11 @@
 DEFINE_GUID(EFI_GLOBAL_VARIABLE_GUID,
 	0x8be4df61, 0x93ca, 0x11d2, 0xaa, 0x0d, 0x00, 0xe0, 0x98, 0x03, 0x2b, 0x8c);
 
-BOOLEAN zwQueryCheck(_SYSTEM_SECUREBOOT_INFORMATION* psbi) {
+BOOLEAN zw_query_check(_SYSTEM_SECUREBOOT_INFORMATION* psbi) {
 	_SYSTEM_SECUREBOOT_INFORMATION sbi = { 0 };
-	ULONG returnLenght = 0;
+	ULONG return_length = 0;
 
-	NTSTATUS status = ZwQuerySystemInformation(SystemSecureBootInformation, &sbi, sizeof(sbi), &returnLenght);
+	NTSTATUS status = ZwQuerySystemInformation(SystemSecureBootInformation, &sbi, sizeof(sbi), &return_length);
 
 	if (!NT_SUCCESS(status))
 		return FALSE; // not supported
@@ -20,54 +20,54 @@ BOOLEAN zwQueryCheck(_SYSTEM_SECUREBOOT_INFORMATION* psbi) {
 	}
 }
 
-BOOLEAN uefiCheck(BOOLEAN* pEnabled) {
-	UNICODE_STRING varName;
-	RtlInitUnicodeString(&varName, L"SecureBoot");
+BOOLEAN uefi_check(BOOLEAN* p_enabled) {
+	UNICODE_STRING var_name;
+	RtlInitUnicodeString(&var_name, L"SecureBoot");
 
 	UCHAR value = 0;
-	ULONG valueLenght = sizeof(value);
+	ULONG value_length = sizeof(value);
 	ULONG attributes = 0;
 
-	NTSTATUS status = ExGetFirmwareEnvironmentVariable(&varName, (LPGUID)&EFI_GLOBAL_VARIABLE_GUID, &value, &valueLenght, &attributes);
+	NTSTATUS status = ExGetFirmwareEnvironmentVariable(&var_name, (LPGUID)&EFI_GLOBAL_VARIABLE_GUID, &value, &value_length, &attributes);
 
 	if (!NT_SUCCESS(status)) {
 		return FALSE; // no uefi or not existing variable, or legacy bios
 	}
 	else {
-		*pEnabled = (value != 0);
+		*p_enabled = (value != 0);
 		return TRUE;
 	}
 }
 
-BOOLEAN registryKeyCheck(BOOLEAN* pEnabled)
+BOOLEAN registry_key_check(BOOLEAN* p_enabled)
 {
-	*pEnabled = FALSE;
+	*p_enabled = FALSE;
 
-	UNICODE_STRING keyPath;
-	RtlInitUnicodeString(&keyPath, L"\\Registry\\Machine\\SYSTEM\\CurrentControlSet\\Control\\SecureBoot\\State");
+	UNICODE_STRING key_path;
+	RtlInitUnicodeString(&key_path, L"\\Registry\\Machine\\SYSTEM\\CurrentControlSet\\Control\\SecureBoot\\State");
 
-	OBJECT_ATTRIBUTES objAttr;
-	InitializeObjectAttributes(&objAttr, &keyPath, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, NULL, NULL);
+	OBJECT_ATTRIBUTES obj_attr;
+	InitializeObjectAttributes(&obj_attr, &key_path, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, NULL, NULL);
 
 	HANDLE handle;
-	NTSTATUS status = ZwOpenKey(&handle, KEY_READ, &objAttr);
+	NTSTATUS status = ZwOpenKey(&handle, KEY_READ, &obj_attr);
 	if (!NT_SUCCESS(status)) {
 		return FALSE;
 	}
 
-	UNICODE_STRING valueName;
-	RtlInitUnicodeString(&valueName, L"UEFISecureBootEnabled");
+	UNICODE_STRING value_name;
+	RtlInitUnicodeString(&value_name, L"UEFISecureBootEnabled");
 
 	UCHAR buffer[sizeof(KEY_VALUE_PARTIAL_INFORMATION) + sizeof(ULONG)];
-	PKEY_VALUE_PARTIAL_INFORMATION pInfo = (PKEY_VALUE_PARTIAL_INFORMATION)buffer;
-	ULONG resultLength = 0;
+	PKEY_VALUE_PARTIAL_INFORMATION p_info = (PKEY_VALUE_PARTIAL_INFORMATION)buffer;
+	ULONG result_length = 0;
 
-	status = ZwQueryValueKey(handle, &valueName, KeyValuePartialInformation, buffer, sizeof(buffer), &resultLength);
+	status = ZwQueryValueKey(handle, &value_name, KeyValuePartialInformation, buffer, sizeof(buffer), &result_length);
 	ZwClose(handle);
 
-	if (NT_SUCCESS(status) && pInfo->Type == REG_DWORD && pInfo->DataLength == sizeof(ULONG)) {
-		ULONG value = *(PULONG)pInfo->Data;
-		*pEnabled = (value != 0);
+	if (NT_SUCCESS(status) && p_info->Type == REG_DWORD && p_info->DataLength == sizeof(ULONG)) {
+		ULONG value = *(PULONG)p_info->Data;
+		*p_enabled = (value != 0);
 		return TRUE;
 	}
 
@@ -78,23 +78,23 @@ SECURE_BOOT_CHECK is_secure_boot_enabled() {
 	SECURE_BOOT_CHECK sbc = {};
 
 	_SYSTEM_SECUREBOOT_INFORMATION sbi = { 0 };
-	if (zwQueryCheck(&sbi)) {
+	if (zw_query_check(&sbi)) {
 		sbc.nt_query_enabled.valid = TRUE;
 		sbc.nt_query_enabled.value = sbi.SecureBootEnabled;
 		sbc.nt_query_capable.valid = TRUE;
 		sbc.nt_query_capable.value = sbi.SecureBootCapable;
 	}
 
-	BOOLEAN uefiCheckEnabled;
-	if (uefiCheck(&uefiCheckEnabled)) {
+	BOOLEAN uefi_check_enabled;
+	if (uefi_check(&uefi_check_enabled)) {
 		sbc.uefi_var.valid = TRUE;
-		sbc.uefi_var.value = uefiCheckEnabled;
+		sbc.uefi_var.value = uefi_check_enabled;
 	}
 
-	BOOLEAN regCheckEnabled;
-	if (registryKeyCheck(&regCheckEnabled)) {
+	BOOLEAN reg_check_enabled;
+	if (registry_key_check(&reg_check_enabled)) {
 		sbc.registry.valid = TRUE;
-		sbc.registry.value = regCheckEnabled;
+		sbc.registry.value = reg_check_enabled;
 	}
 
 	return sbc;

@@ -1,24 +1,22 @@
 #pragma once
 #include "sdk/sdk.hpp"
 
-// todo: rename with manual map driver detections
-
 enum DETECTION_METHOD {
     METHOD_BIG_POOL,
     METHOD_KERNEL_SPACE_WALKING
 };
 
 struct MANUAL_MAPPED_DRIVER_DETECTION_ENTRY {
-    PVOID           SuspiciousAddress;
-    SIZE_T          Size;
-    DETECTION_METHOD Method;           // which metod detected
-    UCHAR           Tag[4];            // pool tag if necessary
-    UCHAR           ModulePath[256];   // path if it was resolved
+    PVOID            suspicious_address;
+    SIZE_T           size;
+    DETECTION_METHOD method;           // which method detected it
+    UCHAR            tag[4];           // pool tag if necessary
+    UCHAR            module_path[256]; // path if it was resolved
 };
 
 struct MANUAL_MAPPED_DRIVER_DETECTION_REPORT {
-    ULONG            Count;
-    MANUAL_MAPPED_DRIVER_DETECTION_ENTRY  Entries[256];
+    LONG                                 count;
+    MANUAL_MAPPED_DRIVER_DETECTION_ENTRY entries[256];
 };
 
-MANUAL_MAPPED_DRIVER_DETECTION_ENTRY create_manual_mapped_driver_report_entry(PVOID suspiciousAddr, SIZE_T driverSize, DETECTION_METHOD method, UCHAR* modulePath);
+VOID report_manual_mapped_driver(PVOID suspicious_address, SIZE_T driver_size, DETECTION_METHOD method, UCHAR* module_path);

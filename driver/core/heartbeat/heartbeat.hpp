@@ -2,9 +2,9 @@
 
 typedef struct {
     unsigned long long counter;
-} Heartbeat;
+} HEARTBEAT;
 
-extern Heartbeat heartbeat_counter;
+extern HEARTBEAT heartbeat_counter;
 
-Heartbeat get_heartbeat();
+HEARTBEAT get_heartbeat();
 void add_heartbeat_counter();

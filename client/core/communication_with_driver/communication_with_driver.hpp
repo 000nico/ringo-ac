@@ -4,25 +4,25 @@
 #include <ntstatus.h>
 
 typedef enum _ENVIRONMENT_INFO_CLASS {
-    InfoHwid = 1,
-    InfoGamePid,
-    InfoGameStatus,
-    InfoHvci,
-    InfoHypervisorStatus,
-    InfoKernelDebuggingStatus,
-    InfoSecureBoot,
-    InfoTestSigningMode,
-    InfoVbs,
-    InfoTpm,
-    InfoCreateProcessCallbackSet,
-    InfoCreateThreadCallbackSet,
-    InfoImageCallbackSet,
-    InfoObCallbackSet,
-    InfoSetGameName,
-    InfoHeartbeat,
-    InfoUnloadDriver
+    INFO_HWID = 1,
+    INFO_GAME_PID,
+    INFO_GAME_STATUS,
+    INFO_HVCI,
+    INFO_HYPERVISOR_STATUS,
+    INFO_KERNEL_DEBUGGING_STATUS,
+    INFO_SECURE_BOOT,
+    INFO_TEST_SIGNING_MODE,
+    INFO_VBS,
+    INFO_TPM,
+    INFO_CREATE_PROCESS_CALLBACK_SET,
+    INFO_CREATE_THREAD_CALLBACK_SET,
+    INFO_IMAGE_CALLBACK_SET,
+    INFO_OB_CALLBACK_SET,
+    INFO_SET_GAME_NAME,
+    INFO_HEARTBEAT,
+    INFO_UNLOAD_DRIVER
 } ENVIRONMENT_INFO_CLASS, * PENVIRONMENT_INFO_CLASS;
 
-BOOLEAN get_environment_information(HANDLE hDriver, ENVIRONMENT_INFO_CLASS informationClass, PVOID buffer, ULONG size, DWORD* bytesReturned);
+BOOLEAN get_environment_information(HANDLE h_driver, ENVIRONMENT_INFO_CLASS information_class, PVOID buffer, ULONG size, DWORD* bytes_returned);
 
-NTSTATUS set_game_process_name(HANDLE hDriver, const char* name);
+NTSTATUS set_game_process_name(HANDLE h_driver, const char* name);

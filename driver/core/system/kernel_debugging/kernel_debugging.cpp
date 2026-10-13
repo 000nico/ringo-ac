@@ -4,13 +4,13 @@
 KERNEL_DEBUGGING_CHECK is_kernel_debugger_present() {
 	KERNEL_DEBUGGING_CHECK kdc = {};
 	SYSTEM_KERNEL_DEBUGGER_INFORMATION skdi = {};
-	ULONG returnLength = 0;
+	ULONG return_length = 0;
 
 	NTSTATUS status = ZwQuerySystemInformation(
 		SystemKernelDebuggerInformation,
 		&skdi,
 		sizeof(skdi),
-		&returnLength
+		&return_length
 	);
 
 	if (NT_SUCCESS(status)) {

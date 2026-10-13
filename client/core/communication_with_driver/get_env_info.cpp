@@ -8,72 +8,72 @@
 #include "../../../driver/core/identity/identity.hpp"
 
 
-DWORD get_information_class(ENVIRONMENT_INFO_CLASS informationClass) {
-    DWORD ioctlCode = 0;
+DWORD get_information_class(ENVIRONMENT_INFO_CLASS information_class) {
+    DWORD ioctl_code = 0;
 
-    switch (informationClass) {
-        case InfoHwid:
-            ioctlCode = IOCTL_GET_HWID;
+    switch (information_class) {
+        case INFO_HWID:
+            ioctl_code = IOCTL_GET_HWID;
             break;
-        case InfoGamePid:
-            ioctlCode = IOCTL_GET_GAME_PID;
+        case INFO_GAME_PID:
+            ioctl_code = IOCTL_GET_GAME_PID;
             break;
-        case InfoGameStatus:
-            ioctlCode = IOCTL_GET_GAME_STATUS;
+        case INFO_GAME_STATUS:
+            ioctl_code = IOCTL_GET_GAME_STATUS;
             break;
-        case InfoHvci:
-            ioctlCode = IOCTL_GET_HVCI_INFORMATION;
+        case INFO_HVCI:
+            ioctl_code = IOCTL_GET_HVCI_INFORMATION;
             break;
-        case InfoHypervisorStatus:
-            ioctlCode = IOCTL_GET_HYPERVISOR_STATUS;
+        case INFO_HYPERVISOR_STATUS:
+            ioctl_code = IOCTL_GET_HYPERVISOR_STATUS;
             break;
-        case InfoKernelDebuggingStatus:
-            ioctlCode = IOCTL_GET_KERNEL_DEBUGGING_STATUS;
+        case INFO_KERNEL_DEBUGGING_STATUS:
+            ioctl_code = IOCTL_GET_KERNEL_DEBUGGING_STATUS;
             break;
-        case InfoSecureBoot:
-            ioctlCode = IOCTL_GET_SECURE_BOOT_INFORMATION;
+        case INFO_SECURE_BOOT:
+            ioctl_code = IOCTL_GET_SECURE_BOOT_INFORMATION;
             break;
-        case InfoTestSigningMode:
-            ioctlCode = IOCTL_GET_TEST_SIGNING_MODE;
+        case INFO_TEST_SIGNING_MODE:
+            ioctl_code = IOCTL_GET_TEST_SIGNING_MODE;
             break;
-        case InfoVbs:
-            ioctlCode = IOCTL_GET_VBS_INFORMATION;
+        case INFO_VBS:
+            ioctl_code = IOCTL_GET_VBS_INFORMATION;
             break;
-        case InfoTpm:
-            ioctlCode = IOCTL_GET_TPM_INFORMATION;
+        case INFO_TPM:
+            ioctl_code = IOCTL_GET_TPM_INFORMATION;
             break;
-        case InfoCreateProcessCallbackSet:
-            ioctlCode = IOCTL_IS_CREATE_PROCESS_CALLBACK_SET;
+        case INFO_CREATE_PROCESS_CALLBACK_SET:
+            ioctl_code = IOCTL_IS_CREATE_PROCESS_CALLBACK_SET;
             break;
-        case InfoCreateThreadCallbackSet:
-            ioctlCode = IOCTL_IS_CREATE_THREAD_CALLBACK_SET;
+        case INFO_CREATE_THREAD_CALLBACK_SET:
+            ioctl_code = IOCTL_IS_CREATE_THREAD_CALLBACK_SET;
             break;
-        case InfoImageCallbackSet:
-            ioctlCode = IOCTL_IS_IMAGE_CALLBACK_SET;
+        case INFO_IMAGE_CALLBACK_SET:
+            ioctl_code = IOCTL_IS_IMAGE_CALLBACK_SET;
             break;
-        case InfoObCallbackSet:
-            ioctlCode = IOCTL_IS_OBCALLBACK_SET;
+        case INFO_OB_CALLBACK_SET:
+            ioctl_code = IOCTL_IS_OBCALLBACK_SET;
             break;
 
-        case InfoHeartbeat:
-            ioctlCode = IOCTL_GET_HEARTBEAT;
+        case INFO_HEARTBEAT:
+            ioctl_code = IOCTL_GET_HEARTBEAT;
             break;
         
         default:
-            ioctlCode = 0;
+            ioctl_code = 0;
             break;
     }
 
-    return ioctlCode;
+    return ioctl_code;
 }
 
-BOOLEAN get_environment_information(HANDLE hDriver, ENVIRONMENT_INFO_CLASS informationClass, PVOID buffer, ULONG size, DWORD* bytesReturned) {
-	if (!hDriver || hDriver == INVALID_HANDLE_VALUE || !buffer) return FALSE;
+BOOLEAN get_environment_information(HANDLE h_driver, ENVIRONMENT_INFO_CLASS information_class, PVOID buffer, ULONG size, DWORD* bytes_returned) {
+	if (!h_driver || h_driver == INVALID_HANDLE_VALUE || !buffer) return FALSE;
 
-	DWORD ioctlCode = get_information_class(informationClass);
-	if (ioctlCode == 0) return FALSE;
+	DWORD ioctl_code = get_information_class(information_class);
+	if (ioctl_code == 0) return FALSE;
 
-	BOOL result = DeviceIoControl(hDriver, ioctlCode, NULL, 0, buffer, size, bytesReturned, NULL);
+	BOOL result = DeviceIoControl(h_driver, ioctl_code, NULL, 0, buffer, size, bytes_returned, NULL);
 
 	return (BOOLEAN)result;
 }

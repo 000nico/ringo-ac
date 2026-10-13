@@ -1,9 +1,9 @@
 #include "report_hash_diff.hpp"
 #include "core/global.hpp"
 
-void add_hash_mismatch_detection_entry(HASH_MISMATCH_TYPE type) {
-    HASH_DIFF_ENTRY entry;
-    entry.mismatch_type = type;
-    g_ringo_context.Detections.hash_diff_detection_report.Entries[g_ringo_context.Detections.hash_diff_detection_report.count] = entry;
-    g_ringo_context.Detections.hash_diff_detection_report.count++;
+VOID report_hash_mismatch(HASH_MISMATCH_TYPE type) {
+    LONG index = InterlockedIncrement(&g_ringo_context.detections.hash_diff_detection_report.count) - 1;
+    if (index >= 256) return;
+
+    g_ringo_context.detections.hash_diff_detection_report.entries[index].mismatch_type = type;
 }

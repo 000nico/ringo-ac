@@ -7,32 +7,32 @@
 #define MAX_DRIVER_FILE_SIZE 0x10000000
 #define MAX_SECTIONS 96
 
-static NTSTATUS read_file_from_disk(PUNICODE_STRING filePath, PVOID* outBuffer, ULONG* outSize) {
-    OBJECT_ATTRIBUTES         objAttr;
-    IO_STATUS_BLOCK           ioStatus;
-    HANDLE                    fileHandle = NULL;
+static NTSTATUS read_file_from_disk(PUNICODE_STRING file_path, PVOID* out_buffer, ULONG* out_size) {
+    OBJECT_ATTRIBUTES         obj_attr;
+    IO_STATUS_BLOCK           io_status;
+    HANDLE                    file_handle = NULL;
     NTSTATUS                  status = STATUS_SUCCESS;
-    FILE_STANDARD_INFORMATION fileInfo = {};
+    FILE_STANDARD_INFORMATION file_info = {};
     PVOID                     buffer = NULL;
-    ULONG                     fileSize = 0;
-    LARGE_INTEGER             byteOffset = {};
+    ULONG                     file_size = 0;
+    LARGE_INTEGER             byte_offset = {};
 
-    *outBuffer = NULL;
-    *outSize = 0;
+    *out_buffer = NULL;
+    *out_size = 0;
 
     InitializeObjectAttributes(
-        &objAttr,
-        filePath,
+        &obj_attr,
+        file_path,
         OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE,
         NULL,
         NULL
     );
 
     status = ZwCreateFile(
-        &fileHandle,
+        &file_handle,
         GENERIC_READ | SYNCHRONIZE,
-        &objAttr,
-        &ioStatus,
+        &obj_attr,
+        &io_status,
         NULL,
         FILE_ATTRIBUTE_NORMAL,
         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
@@ -45,38 +45,38 @@ static NTSTATUS read_file_from_disk(PUNICODE_STRING filePath, PVOID* outBuffer, 
         return status;
 
     status = ZwQueryInformationFile(
-        fileHandle,
-        &ioStatus,
-        &fileInfo,
-        sizeof(fileInfo),
+        file_handle,
+        &io_status,
+        &file_info,
+        sizeof(file_info),
         FileStandardInformation
     );
     if (!NT_SUCCESS(status))
         goto cleanup;
 
-    if (fileInfo.EndOfFile.QuadPart <= 0 || fileInfo.EndOfFile.QuadPart > MAX_DRIVER_FILE_SIZE) {
+    if (file_info.EndOfFile.QuadPart <= 0 || file_info.EndOfFile.QuadPart > MAX_DRIVER_FILE_SIZE) {
         status = STATUS_FILE_TOO_LARGE;
         goto cleanup;
     }
 
-    fileSize = (ULONG)fileInfo.EndOfFile.QuadPart;
+    file_size = (ULONG)file_info.EndOfFile.QuadPart;
 
     // Paged pool is enough, everything here runs at PASSIVE_LEVEL
-    buffer = ExAllocatePool2(POOL_FLAG_PAGED, fileSize, DRIVER_FILE_TAG);
+    buffer = ExAllocatePool2(POOL_FLAG_PAGED, file_size, DRIVER_FILE_TAG);
     if (!buffer) {
         status = STATUS_INSUFFICIENT_RESOURCES;
         goto cleanup;
     }
 
     status = ZwReadFile(
-        fileHandle,
+        file_handle,
         NULL,
         NULL,
         NULL,
-        &ioStatus,
+        &io_status,
         buffer,
-        fileSize,
-        &byteOffset,
+        file_size,
+        &byte_offset,
         NULL
     );
     if (!NT_SUCCESS(status)) {
@@ -84,280 +84,280 @@ static NTSTATUS read_file_from_disk(PUNICODE_STRING filePath, PVOID* outBuffer, 
         goto cleanup;
     }
 
-    if (ioStatus.Information != fileSize) {
+    if (io_status.Information != file_size) {
         ExFreePoolWithTag(buffer, DRIVER_FILE_TAG);
         status = STATUS_UNSUCCESSFUL;
         goto cleanup;
     }
 
-    *outBuffer = buffer;
-    *outSize = fileSize;
+    *out_buffer = buffer;
+    *out_size = file_size;
 
 cleanup:
-    ZwClose(fileHandle);
+    ZwClose(file_handle);
     return status;
 }
 
-static NTSTATUS hash_chunk(BCRYPT_HASH_HANDLE hHash, PVOID data, ULONG size) {
+static NTSTATUS hash_chunk(BCRYPT_HASH_HANDLE h_hash, PVOID data, ULONG size) {
     if (size == 0)
         return STATUS_SUCCESS;
-    return BCryptHashData(hHash, (PUCHAR)data, size, 0);
+    return BCryptHashData(h_hash, (PUCHAR)data, size, 0);
 }
 
-NTSTATUS compute_sha256(PVOID data, ULONG dataSize, UCHAR output[HASH_SIZE_SHA256]) {
-    BCRYPT_ALG_HANDLE  hAlg = NULL;
-    BCRYPT_HASH_HANDLE hHash = NULL;
+NTSTATUS compute_sha256(PVOID data, ULONG data_size, UCHAR output[HASH_SIZE_SHA256]) {
+    BCRYPT_ALG_HANDLE  h_alg = NULL;
+    BCRYPT_HASH_HANDLE h_hash = NULL;
     NTSTATUS           status;
 
-    status = BCryptOpenAlgorithmProvider(&hAlg, BCRYPT_SHA256_ALGORITHM, NULL, 0);
+    status = BCryptOpenAlgorithmProvider(&h_alg, BCRYPT_SHA256_ALGORITHM, NULL, 0);
     if (!NT_SUCCESS(status))
         return status;
 
-    status = BCryptCreateHash(hAlg, &hHash, NULL, 0, NULL, 0, 0);
+    status = BCryptCreateHash(h_alg, &h_hash, NULL, 0, NULL, 0, 0);
     if (!NT_SUCCESS(status))
         goto cleanup;
 
-    status = hash_chunk(hHash, data, dataSize);
+    status = hash_chunk(h_hash, data, data_size);
     if (!NT_SUCCESS(status))
         goto cleanup;
 
-    status = BCryptFinishHash(hHash, output, HASH_SIZE_SHA256, 0);
+    status = BCryptFinishHash(h_hash, output, HASH_SIZE_SHA256, 0);
 
 cleanup:
-    if (hHash) BCryptDestroyHash(hHash);
-    if (hAlg)  BCryptCloseAlgorithmProvider(hAlg, 0);
+    if (h_hash) BCryptDestroyHash(h_hash);
+    if (h_alg)  BCryptCloseAlgorithmProvider(h_alg, 0);
     return status;
 }
 
-static NTSTATUS compute_authentihash(PVOID fileData, ULONG fileSize, UCHAR output[HASH_SIZE_SHA256]) {
-    BCRYPT_ALG_HANDLE        hAlg = NULL;
-    BCRYPT_HASH_HANDLE       hHash = NULL;
+static NTSTATUS compute_authentihash(PVOID file_data, ULONG file_size, UCHAR output[HASH_SIZE_SHA256]) {
+    BCRYPT_ALG_HANDLE        h_alg = NULL;
+    BCRYPT_HASH_HANDLE       h_hash = NULL;
     NTSTATUS                 status = STATUS_SUCCESS;
-    PIMAGE_DOS_HEADER        dosHeader = NULL;
-    PIMAGE_NT_HEADERS64      ntHeaders = NULL;
-    PIMAGE_OPTIONAL_HEADER64 optHeader = NULL;
-    PIMAGE_SECTION_HEADER    sortedSections = NULL;
-    ULONG                    checksumOffset = 0;
-    ULONG                    secDirOffset = 0;
-    ULONG                    afterChecksum = 0;
-    ULONG                    afterSecDir = 0;
-    ULONG                    headerSize = 0;
-    ULONG                    fileEndOffset = 0;
-    ULONG                    minOptHeaderSize = 0;
-    ULONGLONG                sumOfBytesHashed = 0;
-    ULONGLONG                firstSectionOffset = 0;
-    USHORT                   numSections = 0;
-    SIZE_T                   sectionsBytes = 0;
-    BOOLEAN                  hasSecDir = FALSE;
-    IMAGE_DATA_DIRECTORY     secDir = {};
+    PIMAGE_DOS_HEADER        dos_header = NULL;
+    PIMAGE_NT_HEADERS64      nt_headers = NULL;
+    PIMAGE_OPTIONAL_HEADER64 opt_header = NULL;
+    PIMAGE_SECTION_HEADER    sorted_sections = NULL;
+    ULONG                    checksum_offset = 0;
+    ULONG                    sec_dir_offset = 0;
+    ULONG                    after_checksum = 0;
+    ULONG                    after_sec_dir = 0;
+    ULONG                    header_size = 0;
+    ULONG                    file_end_offset = 0;
+    ULONG                    min_opt_header_size = 0;
+    ULONGLONG                sum_of_bytes_hashed = 0;
+    ULONGLONG                first_section_offset = 0;
+    USHORT                   num_sections = 0;
+    SIZE_T                   sections_bytes = 0;
+    BOOLEAN                  has_sec_dir = FALSE;
+    IMAGE_DATA_DIRECTORY     sec_dir = {};
 
     __try {
-        if (fileSize < sizeof(IMAGE_DOS_HEADER)) {
+        if (file_size < sizeof(IMAGE_DOS_HEADER)) {
             status = STATUS_INVALID_IMAGE_FORMAT;
             goto cleanup;
         }
 
-        dosHeader = (PIMAGE_DOS_HEADER)fileData;
-        if (dosHeader->e_magic != IMAGE_DOS_SIGNATURE) {
+        dos_header = (PIMAGE_DOS_HEADER)file_data;
+        if (dos_header->e_magic != IMAGE_DOS_SIGNATURE) {
             status = STATUS_INVALID_IMAGE_FORMAT;
             goto cleanup;
         }
 
-        if (dosHeader->e_lfanew < (LONG)sizeof(IMAGE_DOS_HEADER) ||
-            (ULONGLONG)dosHeader->e_lfanew + sizeof(IMAGE_NT_HEADERS64) > fileSize) {
+        if (dos_header->e_lfanew < (LONG)sizeof(IMAGE_DOS_HEADER) ||
+            (ULONGLONG)dos_header->e_lfanew + sizeof(IMAGE_NT_HEADERS64) > file_size) {
             status = STATUS_INVALID_IMAGE_FORMAT;
             goto cleanup;
         }
 
-        ntHeaders = (PIMAGE_NT_HEADERS64)((PUCHAR)fileData + dosHeader->e_lfanew);
+        nt_headers = (PIMAGE_NT_HEADERS64)((PUCHAR)file_data + dos_header->e_lfanew);
 
-        if (ntHeaders->Signature != IMAGE_NT_SIGNATURE) {
+        if (nt_headers->Signature != IMAGE_NT_SIGNATURE) {
             status = STATUS_INVALID_IMAGE_FORMAT;
             goto cleanup;
         }
 
         // 64-bit images only
-        if (ntHeaders->OptionalHeader.Magic != IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
+        if (nt_headers->OptionalHeader.Magic != IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
             status = STATUS_INVALID_IMAGE_FORMAT;
             goto cleanup;
         }
 
-        optHeader = &ntHeaders->OptionalHeader;
+        opt_header = &nt_headers->OptionalHeader;
 
-        checksumOffset = (ULONG)dosHeader->e_lfanew
+        checksum_offset = (ULONG)dos_header->e_lfanew
             + FIELD_OFFSET(IMAGE_NT_HEADERS64, OptionalHeader)
             + FIELD_OFFSET(IMAGE_OPTIONAL_HEADER64, CheckSum);
-        afterChecksum = checksumOffset + sizeof(ULONG);
+        after_checksum = checksum_offset + sizeof(ULONG);
 
-        headerSize = optHeader->SizeOfHeaders;
-        if (headerSize > fileSize || headerSize < afterChecksum) {
+        header_size = opt_header->SizeOfHeaders;
+        if (header_size > file_size || header_size < after_checksum) {
             status = STATUS_INVALID_IMAGE_FORMAT;
             goto cleanup;
         }
 
         // The security directory entry may not exist in small optional headers
-        minOptHeaderSize = FIELD_OFFSET(IMAGE_OPTIONAL_HEADER64, DataDirectory)
+        min_opt_header_size = FIELD_OFFSET(IMAGE_OPTIONAL_HEADER64, DataDirectory)
             + (IMAGE_DIRECTORY_ENTRY_SECURITY + 1) * sizeof(IMAGE_DATA_DIRECTORY);
 
-        hasSecDir = optHeader->NumberOfRvaAndSizes > IMAGE_DIRECTORY_ENTRY_SECURITY &&
-                    ntHeaders->FileHeader.SizeOfOptionalHeader >= minOptHeaderSize;
+        has_sec_dir = opt_header->NumberOfRvaAndSizes > IMAGE_DIRECTORY_ENTRY_SECURITY &&
+                    nt_headers->FileHeader.SizeOfOptionalHeader >= min_opt_header_size;
 
-        if (hasSecDir) {
-            secDirOffset = (ULONG)dosHeader->e_lfanew
+        if (has_sec_dir) {
+            sec_dir_offset = (ULONG)dos_header->e_lfanew
                 + FIELD_OFFSET(IMAGE_NT_HEADERS64, OptionalHeader)
                 + FIELD_OFFSET(IMAGE_OPTIONAL_HEADER64, DataDirectory)
                 + IMAGE_DIRECTORY_ENTRY_SECURITY * sizeof(IMAGE_DATA_DIRECTORY);
-            afterSecDir = secDirOffset + (ULONG)sizeof(IMAGE_DATA_DIRECTORY);
+            after_sec_dir = sec_dir_offset + (ULONG)sizeof(IMAGE_DATA_DIRECTORY);
 
-            if (headerSize < afterSecDir) {
+            if (header_size < after_sec_dir) {
                 status = STATUS_INVALID_IMAGE_FORMAT;
                 goto cleanup;
             }
-            secDir = optHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_SECURITY];
+            sec_dir = opt_header->DataDirectory[IMAGE_DIRECTORY_ENTRY_SECURITY];
         }
 
         // Validate section headers before touching them
-        numSections = ntHeaders->FileHeader.NumberOfSections;
-        if (numSections == 0 || numSections > MAX_SECTIONS) {
+        num_sections = nt_headers->FileHeader.NumberOfSections;
+        if (num_sections == 0 || num_sections > MAX_SECTIONS) {
             status = STATUS_INVALID_IMAGE_FORMAT;
             goto cleanup;
         }
 
-        sectionsBytes = (SIZE_T)numSections * sizeof(IMAGE_SECTION_HEADER);
-        firstSectionOffset = (ULONGLONG)dosHeader->e_lfanew
+        sections_bytes = (SIZE_T)num_sections * sizeof(IMAGE_SECTION_HEADER);
+        first_section_offset = (ULONGLONG)dos_header->e_lfanew
             + FIELD_OFFSET(IMAGE_NT_HEADERS64, OptionalHeader)
-            + ntHeaders->FileHeader.SizeOfOptionalHeader;
+            + nt_headers->FileHeader.SizeOfOptionalHeader;
 
-        if (firstSectionOffset > fileSize || sectionsBytes > fileSize - firstSectionOffset) {
+        if (first_section_offset > file_size || sections_bytes > file_size - first_section_offset) {
             status = STATUS_INVALID_IMAGE_FORMAT;
             goto cleanup;
         }
 
         // Validate certificate table location
-        fileEndOffset = fileSize;
-        if (secDir.VirtualAddress != 0 && secDir.Size != 0) {
-            if (secDir.VirtualAddress > fileSize || secDir.Size > fileSize - secDir.VirtualAddress) {
+        file_end_offset = file_size;
+        if (sec_dir.VirtualAddress != 0 && sec_dir.Size != 0) {
+            if (sec_dir.VirtualAddress > file_size || sec_dir.Size > file_size - sec_dir.VirtualAddress) {
                 status = STATUS_INVALID_IMAGE_FORMAT;
                 goto cleanup;
             }
-            fileEndOffset = secDir.VirtualAddress;
+            file_end_offset = sec_dir.VirtualAddress;
         }
 
-        sortedSections = (PIMAGE_SECTION_HEADER)ExAllocatePool2(
-            POOL_FLAG_PAGED, sectionsBytes, SECTIONS_TAG);
-        if (!sortedSections) {
+        sorted_sections = (PIMAGE_SECTION_HEADER)ExAllocatePool2(
+            POOL_FLAG_PAGED, sections_bytes, SECTIONS_TAG);
+        if (!sorted_sections) {
             status = STATUS_INSUFFICIENT_RESOURCES;
             goto cleanup;
         }
 
-        RtlCopyMemory(sortedSections, (PUCHAR)fileData + firstSectionOffset, sectionsBytes);
+        RtlCopyMemory(sorted_sections, (PUCHAR)file_data + first_section_offset, sections_bytes);
 
         // Insertion sort by PointerToRawData
-        for (LONG i = 1; i < (LONG)numSections; i++) {
-            IMAGE_SECTION_HEADER tmp = sortedSections[i];
+        for (LONG i = 1; i < (LONG)num_sections; i++) {
+            IMAGE_SECTION_HEADER tmp = sorted_sections[i];
             LONG j = i - 1;
-            while (j >= 0 && sortedSections[j].PointerToRawData > tmp.PointerToRawData) {
-                sortedSections[j + 1] = sortedSections[j];
+            while (j >= 0 && sorted_sections[j].PointerToRawData > tmp.PointerToRawData) {
+                sorted_sections[j + 1] = sorted_sections[j];
                 j--;
             }
-            sortedSections[j + 1] = tmp;
+            sorted_sections[j + 1] = tmp;
         }
 
-        status = BCryptOpenAlgorithmProvider(&hAlg, BCRYPT_SHA256_ALGORITHM, NULL, 0);
+        status = BCryptOpenAlgorithmProvider(&h_alg, BCRYPT_SHA256_ALGORITHM, NULL, 0);
         if (!NT_SUCCESS(status))
             goto cleanup;
 
-        status = BCryptCreateHash(hAlg, &hHash, NULL, 0, NULL, 0, 0);
+        status = BCryptCreateHash(h_alg, &h_hash, NULL, 0, NULL, 0, 0);
         if (!NT_SUCCESS(status))
             goto cleanup;
 
         // Headers: skip CheckSum and the security directory entry
-        status = hash_chunk(hHash, fileData, checksumOffset);
+        status = hash_chunk(h_hash, file_data, checksum_offset);
         if (!NT_SUCCESS(status))
             goto cleanup;
 
-        if (hasSecDir) {
-            status = hash_chunk(hHash, (PUCHAR)fileData + afterChecksum, secDirOffset - afterChecksum);
+        if (has_sec_dir) {
+            status = hash_chunk(h_hash, (PUCHAR)file_data + after_checksum, sec_dir_offset - after_checksum);
             if (!NT_SUCCESS(status))
                 goto cleanup;
 
-            status = hash_chunk(hHash, (PUCHAR)fileData + afterSecDir, headerSize - afterSecDir);
+            status = hash_chunk(h_hash, (PUCHAR)file_data + after_sec_dir, header_size - after_sec_dir);
             if (!NT_SUCCESS(status))
                 goto cleanup;
         }
         else {
-            status = hash_chunk(hHash, (PUCHAR)fileData + afterChecksum, headerSize - afterChecksum);
+            status = hash_chunk(h_hash, (PUCHAR)file_data + after_checksum, header_size - after_checksum);
             if (!NT_SUCCESS(status))
                 goto cleanup;
         }
 
-        sumOfBytesHashed = headerSize;
+        sum_of_bytes_hashed = header_size;
 
         // Sections in file order
-        for (USHORT i = 0; i < numSections; i++) {
-            ULONG rawOffset = sortedSections[i].PointerToRawData;
-            ULONG rawSize = sortedSections[i].SizeOfRawData;
+        for (USHORT i = 0; i < num_sections; i++) {
+            ULONG raw_offset = sorted_sections[i].PointerToRawData;
+            ULONG raw_size = sorted_sections[i].SizeOfRawData;
 
-            if (rawSize == 0)
+            if (raw_size == 0)
                 continue;
 
-            if ((ULONGLONG)rawOffset + rawSize > fileSize) {
+            if ((ULONGLONG)raw_offset + raw_size > file_size) {
                 status = STATUS_INVALID_IMAGE_FORMAT;
                 goto cleanup;
             }
 
-            status = hash_chunk(hHash, (PUCHAR)fileData + rawOffset, rawSize);
+            status = hash_chunk(h_hash, (PUCHAR)file_data + raw_offset, raw_size);
             if (!NT_SUCCESS(status))
                 goto cleanup;
 
-            sumOfBytesHashed += rawSize;
+            sum_of_bytes_hashed += raw_size;
         }
 
         // Extra data after the last section, up to the certificate table
-        if (sumOfBytesHashed < fileEndOffset) {
-            status = hash_chunk(hHash,
-                (PUCHAR)fileData + (ULONG)sumOfBytesHashed,
-                fileEndOffset - (ULONG)sumOfBytesHashed);
+        if (sum_of_bytes_hashed < file_end_offset) {
+            status = hash_chunk(h_hash,
+                (PUCHAR)file_data + (ULONG)sum_of_bytes_hashed,
+                file_end_offset - (ULONG)sum_of_bytes_hashed);
             if (!NT_SUCCESS(status))
                 goto cleanup;
         }
 
-        status = BCryptFinishHash(hHash, output, HASH_SIZE_SHA256, 0);
+        status = BCryptFinishHash(h_hash, output, HASH_SIZE_SHA256, 0);
     }
     __except (EXCEPTION_EXECUTE_HANDLER) {
         status = STATUS_ACCESS_VIOLATION;
     }
 
 cleanup:
-    if (sortedSections) ExFreePoolWithTag(sortedSections, SECTIONS_TAG);
-    if (hHash)          BCryptDestroyHash(hHash);
-    if (hAlg)           BCryptCloseAlgorithmProvider(hAlg, 0);
+    if (sorted_sections) ExFreePoolWithTag(sorted_sections, SECTIONS_TAG);
+    if (h_hash)          BCryptDestroyHash(h_hash);
+    if (h_alg)           BCryptCloseAlgorithmProvider(h_alg, 0);
     return status;
 }
 
-NTSTATUS compute_driver_hashes(PUNICODE_STRING FullImageName, PDRIVER_HASHES outHashes) {
-    PVOID    fileBuffer = NULL;
-    ULONG    fileSize = 0;
+NTSTATUS compute_driver_hashes(PUNICODE_STRING full_image_name, PDRIVER_HASHES out_hashes) {
+    PVOID    file_buffer = NULL;
+    ULONG    file_size = 0;
     NTSTATUS status;
 
-    if (!FullImageName || !outHashes)
+    if (!full_image_name || !out_hashes)
         return STATUS_INVALID_PARAMETER;
 
-    RtlZeroMemory(outHashes, sizeof(DRIVER_HASHES));
+    RtlZeroMemory(out_hashes, sizeof(DRIVER_HASHES));
 
-    status = read_file_from_disk(FullImageName, &fileBuffer, &fileSize);
+    status = read_file_from_disk(full_image_name, &file_buffer, &file_size);
     if (!NT_SUCCESS(status))
         return status;
 
-    status = compute_sha256(fileBuffer, fileSize, outHashes->SHA256);
-    outHashes->SHA256Valid = NT_SUCCESS(status);
+    status = compute_sha256(file_buffer, file_size, out_hashes->sha256);
+    out_hashes->sha256_valid = NT_SUCCESS(status);
 
-    status = compute_authentihash(fileBuffer, fileSize, outHashes->Authentihash);
-    outHashes->AuthentihashValid = NT_SUCCESS(status);
+    status = compute_authentihash(file_buffer, file_size, out_hashes->authentihash);
+    out_hashes->authentihash_valid = NT_SUCCESS(status);
 
-    ExFreePoolWithTag(fileBuffer, DRIVER_FILE_TAG);
+    ExFreePoolWithTag(file_buffer, DRIVER_FILE_TAG);
 
-    return (outHashes->SHA256Valid || outHashes->AuthentihashValid)
+    return (out_hashes->sha256_valid || out_hashes->authentihash_valid)
         ? STATUS_SUCCESS
         : STATUS_UNSUCCESSFUL;
 }

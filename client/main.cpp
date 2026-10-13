@@ -2,96 +2,88 @@
 
 #include "core/driver.hpp"
 #include "core/communication_with_driver/communication_with_driver.hpp"
-
 #include "../driver/core/system/system.hpp"
 #include "../driver/core/identity/identity.hpp"
 
+template <typename T>
+static const char* str(const T& c) {
+    return c.valid ? (c.value ? "TRUE" : "FALSE") : "INVALID";
+}
 
-#ifndef NT_SUCCESS
-#define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
-#endif
+template <typename T>
+static bool query(HANDLE drv, ENVIRONMENT_INFO_CLASS cls, T& out) {
+    DWORD returned = 0;
+    return get_environment_information(drv, cls, &out, sizeof(out), &returned) != FALSE;
+}
 
-int main()
-{
-    HANDLE hDriver = NULL;
-    if (open_driver(&hDriver))
-        std::cout << "[+] Driver opened" << std::endl;
-    else {
-        std::cout << "[-] Error opening driver" << std::endl;
+int main() {
+    HANDLE drv = NULL;
+    if (!open_driver(&drv)) {
+        std::cout << "[-] Error opening driver\n";
         return 1;
     }
+    std::cout << "[+] Driver opened\n";
 
-    DWORD bytesReturned = 0;
+    std::cout << (set_game_process_name(drv, "cs2.exe") >= 0
+        ? "[+] Game process name set\n" : "[-] Error setting game name\n");
 
-    if (NT_SUCCESS(set_game_process_name(hDriver, "cs2.exe")))
-        std::cout << "[+] Game process name set" << std::endl;
-    else
-        std::cout << "[-] Error setting game name" << std::endl;
-
-    // PID — fix InfoHwid → InfoGamePid
     DWORD pid = 0;
-    if (NT_SUCCESS(get_environment_information(hDriver, InfoGamePid, &pid, sizeof(pid), &bytesReturned)))
-        std::cout << "[+] Game pid = " << pid << std::endl;
-    else
-        std::cout << "[-] Error getting game pid" << std::endl;
+    if (query(drv, INFO_GAME_PID, pid))
+        std::cout << "[+] Game pid = " << pid << "\n";
 
-    // Environment checks 
     HVCI_CHECK hvci = {};
-    if (NT_SUCCESS(get_environment_information(hDriver, InfoHvci, &hvci, sizeof(hvci), &bytesReturned)))
-        std::cout << "[+] HVCI = " << (hvci.code_integrity.valid ? (hvci.code_integrity.value ? "TRUE" : "FALSE") : "INVALID") << std::endl;
+    if (query(drv, INFO_HVCI, hvci))
+        std::cout << "[+] HVCI = " << str(hvci.code_integrity) << "\n";
 
-    HYPERVISOR_CHECK hypervisor = {};
-    if (NT_SUCCESS(get_environment_information(hDriver, InfoHypervisorStatus, &hypervisor, sizeof(hypervisor), &bytesReturned)))
-        std::cout << "[+] Hypervisor NT query = " << (hypervisor.nt_query.valid ? (hypervisor.nt_query.value ? "TRUE" : "FALSE") : "INVALID")
-            << ", CPUID = " << (hypervisor.cpuid.valid ? (hypervisor.cpuid.value ? "TRUE" : "FALSE") : "INVALID") << std::endl;
+    HYPERVISOR_CHECK hv = {};
+    if (query(drv, INFO_HYPERVISOR_STATUS, hv))
+        std::cout << "[+] Hypervisor NT query = " << str(hv.nt_query)
+                  << ", CPUID = " << str(hv.cpuid) << "\n";
 
     KERNEL_DEBUGGING_CHECK kd = {};
-    if (NT_SUCCESS(get_environment_information(hDriver, InfoKernelDebuggingStatus, &kd, sizeof(kd), &bytesReturned)))
-        std::cout << "[+] Kernel Debugger enabled = " << (kd.nt_query_enabled.valid ? (kd.nt_query_enabled.value ? "TRUE" : "FALSE") : "INVALID")
-            << ", not present = " << (kd.nt_query_not_present.valid ? (kd.nt_query_not_present.value ? "TRUE" : "FALSE") : "INVALID") << std::endl;
+    if (query(drv, INFO_KERNEL_DEBUGGING_STATUS, kd))
+        std::cout << "[+] Kernel Debugger enabled = " << str(kd.nt_query_enabled)
+                  << ", not present = " << str(kd.nt_query_not_present) << "\n";
 
     SECURE_BOOT_CHECK sb = {};
-    if (NT_SUCCESS(get_environment_information(hDriver, InfoSecureBoot, &sb, sizeof(sb), &bytesReturned)))
-        std::cout << "[+] Secure Boot NT query = " << (sb.nt_query_enabled.valid ? (sb.nt_query_enabled.value ? "TRUE" : "FALSE") : "INVALID")
-            << ", capable = " << (sb.nt_query_capable.valid ? (sb.nt_query_capable.value ? "TRUE" : "FALSE") : "INVALID")
-            << ", UEFI = " << (sb.uefi_var.valid ? (sb.uefi_var.value ? "TRUE" : "FALSE") : "INVALID")
-            << ", registry = " << (sb.registry.valid ? (sb.registry.value ? "TRUE" : "FALSE") : "INVALID") << std::endl;
+    if (query(drv, INFO_SECURE_BOOT, sb))
+        std::cout << "[+] Secure Boot NT query = " << str(sb.nt_query_enabled)
+                  << ", capable = " << str(sb.nt_query_capable)
+                  << ", UEFI = " << str(sb.uefi_var)
+                  << ", registry = " << str(sb.registry) << "\n";
 
     TEST_SIGNING_CHECK ts = {};
-    if (NT_SUCCESS(get_environment_information(hDriver, InfoTestSigningMode, &ts, sizeof(ts), &bytesReturned)))
-        std::cout << "[+] Test Signing = " << (ts.code_integrity.valid ? (ts.code_integrity.value ? "TRUE" : "FALSE") : "INVALID") << std::endl;
+    if (query(drv, INFO_TEST_SIGNING_MODE, ts))
+        std::cout << "[+] Test Signing = " << str(ts.code_integrity) << "\n";
 
     VBS_CHECK vbs = {};
-    if (NT_SUCCESS(get_environment_information(hDriver, InfoVbs, &vbs, sizeof(vbs), &bytesReturned)))
-        std::cout << "[+] VBS = " << (vbs.nt_query_secure_kernel.valid ? (vbs.nt_query_secure_kernel.value ? "TRUE" : "FALSE") : "INVALID")
-            << ", HVCI = " << (vbs.nt_query_hvci.valid ? (vbs.nt_query_hvci.value ? "TRUE" : "FALSE") : "INVALID") << std::endl;
+    if (query(drv, INFO_VBS, vbs))
+        std::cout << "[+] VBS = " << str(vbs.nt_query_secure_kernel)
+                  << ", HVCI = " << str(vbs.nt_query_hvci) << "\n";
 
-    // TPM — fix InfoVbs → InfoTpm
     TPM_CHECK tpm = {};
-    if (NT_SUCCESS(get_environment_information(hDriver, InfoTpm, &tpm, sizeof(tpm), &bytesReturned)))
-        std::cout << "[+] TPM 2.0 = " << (tpm.tpm_2_0.valid ? (tpm.tpm_2_0.value ? "TRUE" : "FALSE") : "INVALID")
-            << ", TPM 1.2 = " << (tpm.tpm_1_2.valid ? (tpm.tpm_1_2.value ? "TRUE" : "FALSE") : "INVALID") << std::endl;
+    if (query(drv, INFO_TPM, tpm))
+        std::cout << "[+] TPM 2.0 = " << str(tpm.tpm_2_0)
+                  << ", TPM 1.2 = " << str(tpm.tpm_1_2) << "\n";
 
-    // Callbacks
-    BOOLEAN cb = FALSE;
-    if (NT_SUCCESS(get_environment_information(hDriver, InfoCreateProcessCallbackSet, &cb, sizeof(cb), &bytesReturned)))
-        std::cout << "[+] CreateProcess Callback = " << (cb ? "TRUE" : "FALSE") << std::endl;
-    cb = FALSE;
-    if (NT_SUCCESS(get_environment_information(hDriver, InfoCreateThreadCallbackSet, &cb, sizeof(cb), &bytesReturned)))
-        std::cout << "[+] CreateThread Callback = " << (cb ? "TRUE" : "FALSE") << std::endl;
-    cb = FALSE;
-    if (NT_SUCCESS(get_environment_information(hDriver, InfoImageCallbackSet, &cb, sizeof(cb), &bytesReturned)))
-        std::cout << "[+] LoadImage Callback = " << (cb ? "TRUE" : "FALSE") << std::endl;
-    cb = FALSE;
-    if (NT_SUCCESS(get_environment_information(hDriver, InfoObCallbackSet, &cb, sizeof(cb), &bytesReturned)))
-        std::cout << "[+] ObRegisterCallbacks = " << (cb ? "TRUE" : "FALSE") << std::endl;
+    struct { ENVIRONMENT_INFO_CLASS cls; const char* name; } callbacks[] = {
+        { INFO_CREATE_PROCESS_CALLBACK_SET, "CreateProcess Callback" },
+        { INFO_CREATE_THREAD_CALLBACK_SET,  "CreateThread Callback"  },
+        { INFO_IMAGE_CALLBACK_SET,         "LoadImage Callback"     },
+        { INFO_OB_CALLBACK_SET,            "ObRegisterCallbacks"    },
+    };
+    
+    for (auto& c : callbacks) {
+        BOOLEAN set = FALSE;
+        if (query(drv, c.cls, set))
+            std::cout << "[+] " << c.name << " = " << (set ? "TRUE" : "FALSE") << "\n";
+    }
 
-    // HWID 
     HWID hwid = {};
-    if (NT_SUCCESS(get_environment_information(hDriver, InfoHwid, &hwid, sizeof(hwid), &bytesReturned))) {
-        printf("[+] HWID[cpuHash = %lu, diskSerial = %lu, hwidSerial = ", hwid.CpuHash, hwid.DiskSerial);
-        for (int i = 0; i < sizeof(hwid.SmbiosUuid); i++)
-            printf("%02X", ((BYTE*)&hwid.SmbiosUuid)[i]);
+    if (query(drv, INFO_HWID, hwid)) {
+        printf("[+] HWID[cpuHash = %lu, diskSerial = %lu, hwidSerial = ", hwid.cpu_hash, hwid.disk_serial);
+        for (size_t i = 0; i < sizeof(hwid.smbios_uuid); i++)
+            printf("%02X", ((BYTE*)&hwid.smbios_uuid)[i]);
         printf("]\n");
     }
 

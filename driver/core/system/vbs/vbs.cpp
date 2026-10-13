@@ -1,28 +1,28 @@
 #include "vbs.hpp"
 #include "sdk/sdk.hpp"
 
-BOOLEAN zwCheck(BOOLEAN* pIsVBSEnabled, BOOLEAN* pIsHVCIEnabled) {
-	ULONG returnLength = 0;
+BOOLEAN zw_check(BOOLEAN* p_is_vbs_enabled, BOOLEAN* p_is_hvci_enabled) {
+	ULONG return_length = 0;
 
 	SYSTEM_ISOLATED_USER_MODE_INFORMATION siumi = { 0 };
-	NTSTATUS status = ZwQuerySystemInformation(SystemIsolatedUserModeInformation, &siumi, sizeof(siumi), &returnLength);
+	NTSTATUS status = ZwQuerySystemInformation(SystemIsolatedUserModeInformation, &siumi, sizeof(siumi), &return_length);
 
 	if (!NT_SUCCESS(status)) return FALSE;
 	else {
-		*pIsHVCIEnabled = siumi.HvciEnabled;
-		*pIsVBSEnabled = siumi.SecureKernelRunning;
+		*p_is_hvci_enabled = siumi.HvciEnabled;
+		*p_is_vbs_enabled = siumi.SecureKernelRunning;
 
 		return TRUE;
 	}
 }
 
-VBS_CHECK isVBSEnabled() {
+VBS_CHECK is_vbs_enabled() {
 	VBS_CHECK vc = {};
-	BOOLEAN isVBSEnabled, is_hvci_enabled;
+	BOOLEAN is_vbs_enabled, is_hvci_enabled;
 
-	if (zwCheck(&isVBSEnabled, &is_hvci_enabled)) {
+	if (zw_check(&is_vbs_enabled, &is_hvci_enabled)) {
 		vc.nt_query_secure_kernel.valid = TRUE;
-		vc.nt_query_secure_kernel.value = isVBSEnabled;
+		vc.nt_query_secure_kernel.value = is_vbs_enabled;
 		vc.nt_query_hvci.valid = TRUE;
 		vc.nt_query_hvci.value = is_hvci_enabled;
 	}

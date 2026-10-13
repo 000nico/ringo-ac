@@ -2,15 +2,15 @@
 #include <string>
 #include <cstdint>
 
-enum class VerdictStatus {
-    Clean   = 0,
-    Flagged = 1,
-    Banned  = 2
+enum class VERDICT_STATUS {
+    CLEAN   = 0,
+    FLAGGED = 1,
+    BANNED  = 2
 };
 
-struct Verdict {
+struct VERDICT {
     std::string hwid;
-    VerdictStatus status;
+    VERDICT_STATUS status;
     std::string reason; // top reason
     float confidence;  // 0.0 - 1.0
     uint64_t issued_at;   // unix timestamp

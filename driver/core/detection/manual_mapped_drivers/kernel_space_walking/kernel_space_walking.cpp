@@ -4,16 +4,16 @@
 #include "kernel_space_walking.hpp"
 #include "core/reporting/report_manual_mapped_driver/report_manual_mapped_driver.hpp"
 
-constexpr ULONG kSystemProcessInformation = 5;
-constexpr ULONG kThreadWaiting = 5;
-constexpr ULONG kProcTag = 'corP';
+constexpr ULONG K_SYSTEM_PROCESS_INFORMATION = 5;
+constexpr ULONG K_THREAD_WAITING = 5;
+constexpr ULONG K_PROC_TAG = 'corP';
 
 static int check_thread_return_address(PSYSTEM_THREAD_INFORMATION thread, LOADED_LEGIT_DRIVERS* lld);
 static int check_thread_start_address(PSYSTEM_THREAD_INFORMATION thread, LOADED_LEGIT_DRIVERS* lld);
 
 int thread_walking() {
     ULONG size = 0;
-    ZwQuerySystemInformation(kSystemProcessInformation, nullptr, 0, &size);
+    ZwQuerySystemInformation(K_SYSTEM_PROCESS_INFORMATION, nullptr, 0, &size);
     if (size == 0) return 0;
 
     PVOID buffer = nullptr;
@@ -21,12 +21,12 @@ int thread_walking() {
 
     for (int attempt = 0; attempt < 5 && status == STATUS_INFO_LENGTH_MISMATCH; attempt++) {
         size += 0x4000;
-        buffer = ExAllocatePool2(POOL_FLAG_PAGED, size, kProcTag);
+        buffer = ExAllocatePool2(POOL_FLAG_PAGED, size, K_PROC_TAG);
         if (!buffer) return 0;
 
-        status = ZwQuerySystemInformation(kSystemProcessInformation, buffer, size, &size);
+        status = ZwQuerySystemInformation(K_SYSTEM_PROCESS_INFORMATION, buffer, size, &size);
         if (!NT_SUCCESS(status)) {
-            ExFreePoolWithTag(buffer, kProcTag);
+            ExFreePoolWithTag(buffer, K_PROC_TAG);
             buffer = nullptr;
         }
     }
@@ -50,26 +50,26 @@ int thread_walking() {
         }
     }
 
-    ExFreePoolWithTag(buffer, kProcTag);
+    ExFreePoolWithTag(buffer, K_PROC_TAG);
     return 1;
 }
 
 static int check_thread_return_address(PSYSTEM_THREAD_INFORMATION thread, LOADED_LEGIT_DRIVERS* lld) {
-    if (thread->ThreadState != kThreadWaiting)
+    if (thread->ThreadState != K_THREAD_WAITING)
         return 0;
 
-    PETHREAD pThread = nullptr;
-    if (!NT_SUCCESS(PsLookupThreadByThreadId(thread->ClientId.UniqueThread, &pThread)) || !pThread)
+    PETHREAD p_thread = nullptr;
+    if (!NT_SUCCESS(PsLookupThreadByThreadId(thread->ClientId.UniqueThread, &p_thread)) || !p_thread)
         return 0;
 
-    auto base = (PUCHAR)pThread;
+    auto base = (PUCHAR)p_thread;
     ULONG_PTR initial = 0, limit = 0, kstack = 0;
     __try {
         initial = *(ULONG_PTR*)(base + 0x28);
         limit   = *(ULONG_PTR*)(base + 0x30);
         kstack  = *(ULONG_PTR*)(base + 0x58);
     } __except (EXCEPTION_EXECUTE_HANDLER) {
-        ObDereferenceObject(pThread);
+        ObDereferenceObject(p_thread);
         return 0;
     }
 
@@ -89,11 +89,11 @@ static int check_thread_return_address(PSYSTEM_THREAD_INFORMATION thread, LOADED
             if (!is_executable(value))                      continue;
             if (!looks_like_return_address((PUCHAR)value))  continue;
 
-            create_manual_mapped_driver_report_entry((PVOID)value, 0, METHOD_KERNEL_SPACE_WALKING, 0);
+            report_manual_mapped_driver((PVOID)value, 0, METHOD_KERNEL_SPACE_WALKING, 0);
         }
     }
 
-    ObDereferenceObject(pThread);
+    ObDereferenceObject(p_thread);
     return 1;
 }
 
@@ -102,7 +102,7 @@ static int check_thread_start_address(PSYSTEM_THREAD_INFORMATION thread, LOADED_
 
     if (!is_address_in_known_module(thread->StartAddress, lld)) {
         KdPrint(("thread start outside known module: %p\n", thread->StartAddress));
-        create_manual_mapped_driver_report_entry(thread->StartAddress, 0, METHOD_KERNEL_SPACE_WALKING, 0);
+        report_manual_mapped_driver(thread->StartAddress, 0, METHOD_KERNEL_SPACE_WALKING, 0);
         return 1;
     }
     return 0;

@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <nlohmann/json.hpp>
 
-struct EnvironmentReport {
+struct ENVIRONMENT_REPORT {
     std::string hwid;
     uint64_t    timestamp;
     bool        debugger_present;
@@ -15,7 +15,7 @@ struct EnvironmentReport {
     bool        vbs_enabled;
 };
 
-struct ModuleReport {
+struct MODULE_REPORT {
     std::string              hwid;
     uint64_t                 timestamp;
     bool                     process_hash_mismatch;
@@ -23,13 +23,13 @@ struct ModuleReport {
     std::vector<std::string> suspicious_module_names;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(EnvironmentReport,
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ENVIRONMENT_REPORT,
     hwid, timestamp,
     debugger_present, hypervisor_detected,
     secure_boot_enabled, hvci_enabled,
     test_signing_enabled, vbs_enabled)
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ModuleReport,
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MODULE_REPORT,
     hwid, timestamp,
     process_hash_mismatch,
     unsigned_modules,

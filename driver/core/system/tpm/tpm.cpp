@@ -1,18 +1,18 @@
 #include "sdk/sdk.hpp"
 #include "tpm.hpp"
 
-static NTSTATUS OpenTpmDevice(HANDLE* outHandle) {
-    UNICODE_STRING deviceName = RTL_CONSTANT_STRING(L"\\Device\\TPM");
-    OBJECT_ATTRIBUTES objAttr;
-    IO_STATUS_BLOCK ioStatus;
+static NTSTATUS open_tpm_device(HANDLE* out_handle) {
+    UNICODE_STRING device_name = RTL_CONSTANT_STRING(L"\\Device\\TPM");
+    OBJECT_ATTRIBUTES obj_attr;
+    IO_STATUS_BLOCK io_status;
 
-    InitializeObjectAttributes(&objAttr, &deviceName, OBJ_KERNEL_HANDLE | OBJ_CASE_INSENSITIVE, NULL, NULL);
+    InitializeObjectAttributes(&obj_attr, &device_name, OBJ_KERNEL_HANDLE | OBJ_CASE_INSENSITIVE, NULL, NULL);
 
     return ZwCreateFile(
-        outHandle,
+        out_handle,
         GENERIC_READ | GENERIC_WRITE,
-        &objAttr,
-        &ioStatus,
+        &obj_attr,
+        &io_status,
         NULL,
         FILE_ATTRIBUTE_NORMAL,
         0,
@@ -23,15 +23,15 @@ static NTSTATUS OpenTpmDevice(HANDLE* outHandle) {
     );
 }
 
-static NTSTATUS SendTpmCommand(HANDLE hTpm, UCHAR* command, ULONG commandSize, UCHAR* response, ULONG* responseSize) {
-    IO_STATUS_BLOCK ioStatus;
+static NTSTATUS send_tpm_command(HANDLE h_tpm, UCHAR* command, ULONG command_size, UCHAR* response, ULONG* response_size) {
+    IO_STATUS_BLOCK io_status;
 
     NTSTATUS status = ZwWriteFile(
-        hTpm,
+        h_tpm,
         NULL, NULL, NULL,
-        &ioStatus,
+        &io_status,
         command,
-        commandSize,
+        command_size,
         NULL, NULL
     );
 
@@ -39,19 +39,19 @@ static NTSTATUS SendTpmCommand(HANDLE hTpm, UCHAR* command, ULONG commandSize, U
         return status;
     }
 
-    RtlZeroMemory(&ioStatus, sizeof(ioStatus));
+    RtlZeroMemory(&io_status, sizeof(io_status));
 
     status = ZwReadFile(
-        hTpm,
+        h_tpm,
         NULL, NULL, NULL,
-        &ioStatus,
+        &io_status,
         response,
-        *responseSize,
+        *response_size,
         NULL, NULL
     );
 
     if (NT_SUCCESS(status)) {
-        *responseSize = (ULONG)ioStatus.Information;
+        *response_size = (ULONG)io_status.Information;
     }
 
     return status;
@@ -60,8 +60,8 @@ static NTSTATUS SendTpmCommand(HANDLE hTpm, UCHAR* command, ULONG commandSize, U
 TPM_CHECK get_tpm_version() {
     TPM_CHECK tpm = {};
 
-    HANDLE hTpm = NULL;
-    NTSTATUS status = OpenTpmDevice(&hTpm);
+    HANDLE h_tpm = NULL;
+    NTSTATUS status = open_tpm_device(&h_tpm);
 
     if (!NT_SUCCESS(status)) {
         KdPrint(("[-] Failed to open TPM device: 0x%X\n", status));
@@ -69,65 +69,65 @@ TPM_CHECK get_tpm_version() {
     }
 
     // try TPM 2.0 first — TPM2_GetRandom command
-    UCHAR tpm2Command[] = {
+    UCHAR tpm2_command[] = {
         0x80, 0x01,
         0x00, 0x00, 0x00, 0x0C,
         0x00, 0x00, 0x01, 0x7B,
         0x00, 0x20
     };
 
-    UCHAR tpmResponse[128] = { 0 };
-    ULONG responseLength = sizeof(tpmResponse);
+    UCHAR tpm_response[128] = { 0 };
+    ULONG response_length = sizeof(tpm_response);
 
-    status = SendTpmCommand(hTpm, tpm2Command, sizeof(tpm2Command), tpmResponse, &responseLength);
+    status = send_tpm_command(h_tpm, tpm2_command, sizeof(tpm2_command), tpm_response, &response_length);
 
     if (NT_SUCCESS(status)) {
-        if (responseLength < 10) {
-            KdPrint(("[-] TPM 2.0 response too short (%lu bytes).\n", responseLength));
+        if (response_length < 10) {
+            KdPrint(("[-] TPM 2.0 response too short (%lu bytes).\n", response_length));
         }
         else {
-            UINT32 returnCode = (tpmResponse[6] << 24) | (tpmResponse[7] << 16) |
-                (tpmResponse[8] << 8) | tpmResponse[9];
+            UINT32 return_code = (tpm_response[6] << 24) | (tpm_response[7] << 16) |
+                (tpm_response[8] << 8) | tpm_response[9];
 
             tpm.tpm_2_0.valid = TRUE;
-            tpm.tpm_2_0.value = returnCode == 0;
+            tpm.tpm_2_0.value = return_code == 0;
             if (tpm.tpm_2_0.value) {
                 KdPrint(("[+] TPM 2.0 detected and responsive.\n"));
-                ZwClose(hTpm);
+                ZwClose(h_tpm);
                 return tpm;
             }
         }
     }
 
     // fallback: TPM 1.2 — TPM_ORD_GetRandom command
-    RtlZeroMemory(tpmResponse, sizeof(tpmResponse));
-    responseLength = sizeof(tpmResponse);
+    RtlZeroMemory(tpm_response, sizeof(tpm_response));
+    response_length = sizeof(tpm_response);
 
-    UCHAR tpm1Command[] = {
+    UCHAR tpm1_command[] = {
         0x00, 0xC1,
         0x00, 0x00, 0x00, 0x0E,
         0x00, 0x00, 0x00, 0x46,
         0x00, 0x00, 0x00, 0x20
     };
 
-    status = SendTpmCommand(hTpm, tpm1Command, sizeof(tpm1Command), tpmResponse, &responseLength);
+    status = send_tpm_command(h_tpm, tpm1_command, sizeof(tpm1_command), tpm_response, &response_length);
 
     if (NT_SUCCESS(status)) {
-        if (responseLength < 10) {
-            KdPrint(("[-] TPM 1.2 response too short (%lu bytes).\n", responseLength));
+        if (response_length < 10) {
+            KdPrint(("[-] TPM 1.2 response too short (%lu bytes).\n", response_length));
         }
         else {
-            UINT32 returnCode = (tpmResponse[6] << 24) | (tpmResponse[7] << 16) |
-                (tpmResponse[8] << 8) | tpmResponse[9];
+            UINT32 return_code = (tpm_response[6] << 24) | (tpm_response[7] << 16) |
+                (tpm_response[8] << 8) | tpm_response[9];
 
             tpm.tpm_1_2.valid = TRUE;
-            tpm.tpm_1_2.value = returnCode == 0;
+            tpm.tpm_1_2.value = return_code == 0;
             if (tpm.tpm_1_2.value)
                 KdPrint(("[+] TPM 1.2 detected and responsive.\n"));
         }
     }
 
     KdPrint(("[-] No functional TPM found.\n"));
-    ZwClose(hTpm);
+    ZwClose(h_tpm);
     return tpm;
 }

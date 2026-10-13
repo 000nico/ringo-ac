@@ -10,7 +10,7 @@ using json = nlohmann::json;
 void handle_environment_report(const httplib::Request& req, httplib::Response& res) {
     try {
         auto j = json::parse(req.body);
-        EnvironmentReport report = j.get<EnvironmentReport>();
+        ENVIRONMENT_REPORT report = j.get<ENVIRONMENT_REPORT>();
 
         db::save_environment_report(report); 
         // TODO: pass to engine
@@ -27,7 +27,7 @@ void handle_environment_report(const httplib::Request& req, httplib::Response& r
 void handle_module_report(const httplib::Request& req, httplib::Response& res) {
     try {
         auto j = json::parse(req.body);
-        ModuleReport report = j.get<ModuleReport>();
+        MODULE_REPORT report = j.get<MODULE_REPORT>();
 
         db::save_module_report(report);
         // TODO: pass to the analysis engine

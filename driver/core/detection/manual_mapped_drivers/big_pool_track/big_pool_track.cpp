@@ -6,31 +6,31 @@
 #include "whitelist_tags.hpp"
 
 BOOLEAN is_tag_in_white_list(ULONG tag) {
-    for (int i = 0; i < ARRAYSIZE(KnownLegitPoolTags); i++) {
-        if (KnownLegitPoolTags[i] == tag)
+    for (int i = 0; i < ARRAYSIZE(KNOWN_LEGIT_POOL_TAGS); i++) {
+        if (KNOWN_LEGIT_POOL_TAGS[i] == tag)
             return TRUE;
     }
     return FALSE;
 }
-PVOID allocate_and_query_big_pool(ULONG* outReturnLength) {
-    ULONG returnLength = 0;
+PVOID allocate_and_query_big_pool(ULONG* out_return_length) {
+    ULONG return_length = 0;
     PVOID buffer = NULL;
 
     for (int attempt = 0; attempt < 5; attempt++) {
-        ZwQuerySystemInformation(SystemBigPoolInformation, NULL, 0, &returnLength);
-        if (returnLength == 0) return NULL;
+        ZwQuerySystemInformation(SystemBigPoolInformation, NULL, 0, &return_length);
+        if (return_length == 0) return NULL;
 
-        returnLength += sizeof(SYSTEM_BIGPOOL_ENTRY) * 16;
+        return_length += sizeof(SYSTEM_BIGPOOL_ENTRY) * 16;
 
-        buffer = ExAllocatePool2(POOL_FLAG_NON_PAGED, returnLength, 'tGLD');
+        buffer = ExAllocatePool2(POOL_FLAG_NON_PAGED, return_length, 'tGLD');
         if (!buffer) return NULL;
 
         NTSTATUS status = ZwQuerySystemInformation(
-            SystemBigPoolInformation, buffer, returnLength, &returnLength
+            SystemBigPoolInformation, buffer, return_length, &return_length
         );
 
         if (NT_SUCCESS(status)) {
-            *outReturnLength = returnLength;
+            *out_return_length = return_length;
             return buffer;
         }
 
@@ -45,12 +45,12 @@ PVOID allocate_and_query_big_pool(ULONG* outReturnLength) {
 }
 
 void big_pool_detect() {
-    ULONG returnLength = 0;
+    ULONG return_length = 0;
     LOADED_LEGIT_DRIVERS* lld = get_legit_driver_list();
     if (!lld)
         return;
 
-    PVOID buffer = allocate_and_query_big_pool(&returnLength);
+    PVOID buffer = allocate_and_query_big_pool(&return_length);
     if (!buffer) {
         free_legit_driver_list(lld);
         return;
@@ -59,17 +59,15 @@ void big_pool_detect() {
     SYSTEM_BIGPOOL_INFORMATION* sbi = (SYSTEM_BIGPOOL_INFORMATION*)buffer;
 
     for (ULONG i = 0; i < sbi->Count; i++) {
-        PVOID realVirtualAddress = (PVOID)((ULONG_PTR)sbi->allocated_info[i].virtual_address & ~1);
+        PVOID real_virtual_address = (PVOID)((ULONG_PTR)sbi->allocated_info[i].virtual_address & ~1);
 
         if (sbi->allocated_info[i].non_paged != 1) continue;
         if (sbi->allocated_info[i].size_in_bytes <= 0x1000) continue;
-        if (is_address_in_known_module(realVirtualAddress, lld)) continue;
-        if (!is_region_executable(realVirtualAddress)) continue;
+        if (is_address_in_known_module(real_virtual_address, lld)) continue;
+        if (!is_region_executable(real_virtual_address)) continue;
         if (is_tag_in_white_list(sbi->allocated_info[i].tag_ulong)) continue;
 
-        if (g_ringo_context.Detections.driver_detection_report.Count < 256) {
-            g_ringo_context.Detections.driver_detection_report.Entries[g_ringo_context.Detections.driver_detection_report.Count++] = create_manual_mapped_driver_report_entry(realVirtualAddress, sbi->allocated_info[i].size_in_bytes, METHOD_BIG_POOL, NULL);
-        }
+        report_manual_mapped_driver(real_virtual_address, sbi->allocated_info[i].size_in_bytes, METHOD_BIG_POOL, NULL);
     }
 
     ExFreePoolWithTag(buffer, 'tGLD');

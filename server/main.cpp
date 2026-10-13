@@ -4,7 +4,7 @@
 int main() {
     db_init("ringo.db");
 
-    RingoServer server("0.0.0.0", 8080);
+    RINGO_SERVER server("0.0.0.0", 8080);
     server.start();
     return 0;
 }

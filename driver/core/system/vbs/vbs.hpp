@@ -34,4 +34,4 @@ struct VBS_CHECK {
 
 static_assert(sizeof(VBS_CHECK) == sizeof(SOURCE_RESULT) * 2, "VBS_CHECK layout changed");
 
-VBS_CHECK isVBSEnabled();
+VBS_CHECK is_vbs_enabled();

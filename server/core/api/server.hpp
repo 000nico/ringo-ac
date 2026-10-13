@@ -2,9 +2,9 @@
 #include "third_party/httplib/httplib.h"
 #include <string>
 
-class RingoServer {
+class RINGO_SERVER {
 public:
-    RingoServer(const std::string& host, int port);
+    RINGO_SERVER(const std::string& host, int port);
     void start();
 
 private:

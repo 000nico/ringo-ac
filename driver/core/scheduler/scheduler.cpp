@@ -14,22 +14,22 @@
 #include <intrin.h>
 
 ULONG random_in_range(ULONG min, ULONG max) {
-    ULONG r = RtlRandomEx(&g_ringo_context.Scheduler.random_seed);
+    ULONG r = RtlRandomEx(&g_ringo_context.scheduler.random_seed);
     return min + (r % (max - min + 1));
 }
 
 VOID scheduler(PVOID context) {
     UNREFERENCED_PARAMETER(context);
-    g_ringo_context.Scheduler.random_seed = (ULONG)KeQueryInterruptTime() ^ (ULONG)__rdtsc();
+    g_ringo_context.scheduler.random_seed = (ULONG)KeQueryInterruptTime() ^ (ULONG)__rdtsc();
 
     // one-time-tasks
     detect_byovd_drivers_at_runtime();
 
-    while (!g_ringo_context.Scheduler.scheduler_stop) {
+    while (!g_ringo_context.scheduler.scheduler_stop) {
         LARGE_INTEGER timeout;
         timeout.QuadPart = -(LONGLONG)random_in_range(8000, 12000) * 10000;
         KeWaitForSingleObject(&g_stop_event, Executive, KernelMode, FALSE, &timeout);
-        if (g_ringo_context.Scheduler.scheduler_stop) break;
+        if (g_ringo_context.scheduler.scheduler_stop) break;
 
         switch (random_in_range(0, 2)) {
             case 0: hash_compare(); break;

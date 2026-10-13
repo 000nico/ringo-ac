@@ -4,27 +4,27 @@
 #include "../../models/reports.hpp"
 #include "../../models/player_risk.hpp"
 
-struct Signal {
+struct SIGNAL {
     float weight; // how much it adds to the risk score
     bool definitive; // immediate ban
 };
 
 // this is the interface for the analysis
-struct RuleResult {
-    Signal signal;
+struct RULE_RESULT {
+    SIGNAL signal;
     std::string signal_reason; // ex. "debugger_with_impossible_stats"
     std::string reason; // legible description, ex. "debugger present with KDA > 10"
 };
 
 // if didn't found nothing, use this
-inline RuleResult no_finding() {
+inline RULE_RESULT no_finding() {
     return { 0, 0, 0};
 }   
 
 // 0-39 -> clean
 // 40-74 -> flagged
 // 75-100 -> ban
-static const std::map<std::string, Signal> SIGNAL_WEIGHTS = {
+static const std::map<std::string, SIGNAL> SIGNAL_WEIGHTS = {
     // weak
     { "hypervisor_detected",          { 15.0f, false } },
     { "test_signing_enabled",         { 10.0f, false } },
