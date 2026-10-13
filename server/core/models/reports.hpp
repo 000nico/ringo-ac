@@ -1,5 +1,5 @@
-#include "../../sdk/helpers.hpp"
 #pragma once
+#include "sdk/helpers.hpp"
 #include <string>
 #include <cstdint>
 #include <cstring>
@@ -41,27 +41,6 @@ struct MODULE_REPORT {
     THREAD_DETECTION_REPORT               thread;
     HASH_DIFF_REPORT                      hash_diff;
 };
-template <typename T, size_t N>
-inline size_t sdk::array_count(const T (&)[N]) { return N; }
-
-inline void sdk::string_to_wchar(const std::string& s, WCHAR* buffer, size_t length) {
-    size_t n = s.size() < length - 1 ? s.size() : length - 1;
-    for (size_t i = 0; i < n; i++)
-        buffer[i] = (WCHAR)(unsigned char)s[i];
-    buffer[n] = 0;
-}
-
-inline void sdk::string_to_uchar(const std::string& s, UCHAR* buffer, size_t length) {
-    size_t n = s.size() < length - 1 ? s.size() : length - 1;
-    for (size_t i = 0; i < n; i++)
-        buffer[i] = (UCHAR)s[i];
-    buffer[n] = 0;
-}
-
-inline void* sdk::number_to_pointer(uint64_t number) {
-    return (void*)(uintptr_t)number;
-}
-
 inline LONG json_count(const nlohmann::json& j, size_t max_entries) {
     LONG count = j.value("count", 0);
     if (count < 0) count = 0;
@@ -153,7 +132,7 @@ inline void from_json(const nlohmann::json& j, THREAD_DETECTION_REPORT& r) {
 
 inline void from_json(const nlohmann::json& j, HASH_DIFF_REPORT& r) {
     memset(&r, 0, sizeof(r));
-    r.count = json_count(j, sdk::sdk::array_count(r.entries));
+    r.count = json_count(j, sdk::array_count(r.entries));
 
     const nlohmann::json& entries = j.at("entries");
     for (LONG i = 0; i < r.count; i++)
@@ -170,5 +149,6 @@ inline void from_json(const nlohmann::json& j, MODULE_REPORT& r) {
     j.at("thread").get_to(r.thread);
     j.at("hash_diff").get_to(r.hash_diff);
 }
+
 
 

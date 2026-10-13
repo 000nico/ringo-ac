@@ -32,6 +32,7 @@ add_executable(ringo-server ${SERVER_SOURCES})
 target_include_directories(ringo-server PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}/third_party"
+    "${CMAKE_SOURCE_DIR}/shared"
     "${CMAKE_SOURCE_DIR}/driver"
 )
 

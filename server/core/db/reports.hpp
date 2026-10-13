@@ -1,5 +1,6 @@
 #pragma once
-#include "../../sdk/helpers.hpp"
+#include "sdk/helpers.hpp"
+#include "../models/reports.hpp"
 #include <string>
 #include <cstdint>
 

@@ -8,9 +8,7 @@
 #include "protection.hpp"
 #include "sdk/crypto/hashes.hpp"
 #include "wdm.h"
-
-#define DEVICE_NAME   L"\\Device\\ringo"
-#define SYMBOLIC_LINK L"\\DosDevices\\ringo"
+#include "codes.hpp"
 
 static PDEVICE_OBJECT g_device_object = NULL;
 

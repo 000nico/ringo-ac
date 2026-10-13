@@ -47,6 +47,7 @@ set_target_properties(client PROPERTIES
 
 target_include_directories(client PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${CMAKE_SOURCE_DIR}/shared"
     "${CMAKE_SOURCE_DIR}/driver"
 )
 

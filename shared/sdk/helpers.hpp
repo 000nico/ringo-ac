@@ -3,6 +3,11 @@
 #include <cstddef>
 #include <cstdint>
 
+// Helpers comunes a cliente y servidor (usermode).
+//
+// Viven aca para tener una unica definicion; antes estaban duplicados en
+// server/sdk/helpers.hpp y en client/core/communication_with_server/serialize.hpp.
+// Los helpers de kernel NO viven aca: esos estan bajo driver/sdk.
 namespace sdk {
     template <typename T, size_t N>
     inline size_t array_count(const T (&)[N]) {
