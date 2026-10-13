@@ -1,5 +1,6 @@
 #include "telemetry.hpp"
 #include <nlohmann/json.hpp>
+#include <memory>
 #include "../../models/reports.hpp"
 #include "../../db/reports.hpp" 
 #include "core/db/db.hpp"
@@ -27,9 +28,9 @@ void handle_environment_report(const httplib::Request& req, httplib::Response& r
 void handle_module_report(const httplib::Request& req, httplib::Response& res) {
     try {
         auto j = json::parse(req.body);
-        MODULE_REPORT report = j.get<MODULE_REPORT>();
-
-        db::save_module_report(report);
+auto report = std::make_unique<MODULE_REPORT>();
+        j.get_to(*report);
+db::save_module_report(report->hwid, report->timestamp, req.body);
         // TODO: pass to the analysis engine
 
         res.status = 200;

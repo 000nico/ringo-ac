@@ -1,9 +1,6 @@
 #include "reports.hpp"
 #include "db.hpp"
-#include <nlohmann/json.hpp>
 #include <ctime>
-
-using json = nlohmann::json;
 
 namespace db {
 
@@ -25,21 +22,14 @@ void save_environment_report(const ENVIRONMENT_REPORT& r) {
     stmt.exec();
 }
 
-void save_module_report(const MODULE_REPORT& r) {
-    // los vectores los serializamos como JSON string
-    json unsigned_json = r.unsigned_modules;
-    json suspicious_json = r.suspicious_module_names;
-
+void save_module_report(const std::string& hwid, uint64_t timestamp, const std::string& payload) {
     SQLite::Statement stmt(*g_db, R"(
-        INSERT INTO module_reports
-            (hwid, timestamp, process_hash_mismatch, unsigned_modules, suspicious_modules)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO module_reports (hwid, timestamp, payload)
+        VALUES (?, ?, ?)
     )");
-    stmt.bind(1, r.hwid);
-    stmt.bind(2, (int64_t)r.timestamp);
-    stmt.bind(3, (int)r.process_hash_mismatch);
-    stmt.bind(4, unsigned_json.dump());
-    stmt.bind(5, suspicious_json.dump());
+    stmt.bind(1, hwid);
+    stmt.bind(2, (int64_t)timestamp);
+    stmt.bind(3, payload);
     stmt.exec();
 }
 

@@ -22,12 +22,10 @@ void db_init(const std::string& path) {
 
     g_db->exec(R"(
         CREATE TABLE IF NOT EXISTS module_reports (
-            id                    INTEGER PRIMARY KEY AUTOINCREMENT,
-            hwid                  TEXT NOT NULL,
-            timestamp             INTEGER NOT NULL,
-            process_hash_mismatch INTEGER NOT NULL,
-            unsigned_modules      TEXT NOT NULL,
-            suspicious_modules    TEXT NOT NULL
+            id        INTEGER PRIMARY KEY AUTOINCREMENT,
+            hwid      TEXT    NOT NULL,
+            timestamp INTEGER NOT NULL,
+            payload   TEXT    NOT NULL
         );
     )");
 

@@ -1,10 +1,8 @@
-# Build en Windows (MSVC + WDK)
+# Building on Windows (MSVC + WDK)
 
-El proyecto se compila nativamente en Windows con MSVC y el WDK, usando
-[FindWDK](https://github.com/SergiusTheBest/FindWDK) (`cmake/FindWDK.cmake`) y la
-funcion `wdk_add_driver` para el driver.
+The project compiles natively on Windows using MSVC and the Windows Driver Kit (WDK), using [FindWDK](https://github.com/SergiusTheBest/FindWDK) (`cmake/FindWDK.cmake`) and the `wdk_add_driver` function for the kernel driver.
 
-## Estructura
+## Structure
 
 ```text
 driver/   kernel-mode driver  -> rngdrv.sys
@@ -14,34 +12,31 @@ cmake/    FindWDK.cmake, wdk-shim/warning.h
 scripts/  build-all.ps1, sign-driver.ps1, fetch-wdk.ps1, gen-compile-commands.ps1
 ```
 
-## Requisitos
+## Requirements
 
-- Windows 10/11 x64.
-- Visual Studio 2022/2026 con la workload "Desktop development with C++".
-- CMake >= 3.25 (probado con 4.4).
-- Git (FetchContent lo usa para SQLiteCpp y nlohmann/json).
-- El WDK. No hace falta instalarlo: `scripts/fetch-wdk.ps1` baja el paquete
-  NuGet `Microsoft.Windows.WDK.x64` y lo extrae en `toolchains/wdk/c`.
-  Si ya tenes el WDK instalado, definí `WDKContentRoot` y se usara ese.
-- `signtool.exe` viene con el Windows SDK (solo para firmar).
+- Windows 10/11 x64
+- Visual Studio 2022/2026 with the "Desktop development with C++" workload
+- CMake >= 3.25 (tested with 4.4)
+- Git (FetchContent is used for SQLiteCpp and nlohmann/json)
+- WDK. No need to install it globally: `scripts/fetch-wdk.ps1` downloads the NuGet package `Microsoft.Windows.WDK.x64` and extracts it to `toolchains/wdk/c`. If you already have WDK installed, set `WDKContentRoot` to use that location
+- `signtool.exe` is included with the Windows SDK (only required for signing)
 
-## Compilar todo
+## Build everything
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\build-all.ps1
 ```
 
-Opciones:
+Options:
 
 ```text
 -Configuration Debug|Release   (default: Debug)
 -SkipDriver | -SkipClient | -SkipServer
--SkipSign                      no firma el driver
--EnableTestSigning             habilita `bcdedit /set testsigning on` (admin)
+-SkipSign                      don't sign the driver
+-EnableTestSigning             enable `bcdedit /set testsigning on` (requires admin)
 ```
 
-El script baja el WDK si falta, configura CMake, compila `driver`, `client` y
-`ringo-server`, y firma `rngdrv.sys`. Salidas en `build/bin`:
+The script fetches the WDK if missing, configures CMake, builds `driver`, `client` and `ringo-server`, and signs `rngdrv.sys`. Outputs go to `build/bin/`:
 
 ```text
 build/bin/rngdrv.sys
@@ -49,86 +44,61 @@ build/bin/ringo_client.exe
 build/bin/ringo-server.exe
 ```
 
-## CMake a mano
+## Building with CMake directly
 
 ```powershell
 cmake -S . -B build -G "Visual Studio 18 2026" -A x64
 cmake --build build --config Release --target driver client ringo-server
 ```
 
-O con los presets: `cmake --preset windows` + `cmake --build --preset release`.
+Or use presets: `cmake --preset windows` + `cmake --build --preset release`.
 
 ## clangd / Zed (IntelliSense)
 
-Zed resuelve C/C++ con clangd. El `.clangd` de la raiz le indica usar la base de
-datos de compilacion de `build-index/`:
+Zed uses clangd for C/C++ IntelliSense. The root `.clangd` points clangd to the compilation database in `build-index/`:
 
 ```yaml
 CompileFlags:
   CompilationDatabase: build-index
 ```
 
-Regenerala cada vez que agregues o muevas archivos `.cpp`. Si no, clangd inventa
-los flags y marca falsos errores (`PVOID`/`ULONG`/`UCHAR` desconocidos,
-`ntifs.h` no encontrado, etc.):
+Regenerate it whenever you add or move `.cpp` files. Otherwise clangd will infer flags and may report false positives (unknown `PVOID`/`ULONG`/`UCHAR`, missing `ntifs.h`, etc.):
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\gen-compile-commands.ps1
 ```
 
-Por que un build aparte y no `build/`:
+Why a separate build directory (not `build/`):
 
-- El generador "Visual Studio" no sabe exportar `compile_commands.json`
-  (`CMAKE_EXPORT_COMPILE_COMMANDS` no aplica).
-- `build-index/` se configura con Ninja + MSVC (el script pasa por
-  `vcvars64.bat`). Ninja a secas agarra el GCC de MSYS2 que esta en el PATH, y
-  entonces clangd mezcla headers de MinGW con flags de MSVC.
-- Es solo para el LSP: `build-index/` no genera binarios ni reemplaza a `build/`,
-  y esta en `.gitignore`.
+- The Visual Studio generator cannot export `compile_commands.json` (`CMAKE_EXPORT_COMPILE_COMMANDS` does not apply)
+- `build-index/` is configured with Ninja + MSVC (the script runs via `vcvars64.bat`). Running Ninja directly picks up GCC from MSYS2 in PATH, which would mix MinGW headers with MSVC flags
+- It's only for LSP: `build-index/` produces no binaries and doesn't replace `build/`; it is listed in `.gitignore`
 
-`.zed/settings.json` solo fija clangd como language server para C y C++. No hace
-falta configurar `lsp.clangd.binary.path`: Zed usa su clangd propio y lo
-actualiza solo.
+`.zed/settings.json` only sets clangd as the language server for C/C++. No need to configure `lsp.clangd.binary.path` — Zed uses its own bundled clangd.
 
-## Firma y test signing
+## Driver signing and test signing
 
-El driver debe firmarse para cargarse. `scripts/sign-driver.ps1` crea (si no
-existe) un certificado autofirmado de code signing `CN=Ringo Test Driver`,
-intenta importarlo en `LocalMachine\Root` y `LocalMachine\TrustedPublisher`
-(requiere admin), y firma el `.sys`:
+The driver must be signed to load on Windows. `scripts/sign-driver.ps1` creates a self-signed code-signing certificate `CN=Ringo Test Driver` if it doesn't exist, attempts to import it into `LocalMachine\Root` and `LocalMachine\TrustedPublisher` (requires admin), and signs the `.sys` file:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\sign-driver.ps1 `
   -DriverPath build\bin\rngdrv.sys -EnableTestSigning
 ```
 
-Para un entorno de pruebas:
+For a test environment:
 
-1. Ejecuta el script como administrador (asi importa el certificado en los
-   stores de la maquina; sin admin solo firma, pero el kernel no confiara en el).
-2. `-EnableTestSigning` corre `bcdedit /set testsigning on`.
-3. Reinicia Windows.
-4. Carga el driver (el cliente lo registra e inicia el servicio solo).
+1. Run the script as administrator (so the certificate is imported into machine stores; without admin it only signs, but the kernel won't trust it)
+2. `-EnableTestSigning` runs `bcdedit /set testsigning on`
+3. Reboot Windows
+4. Load the driver (the client registers and starts the service)
 
-Comprobar el estado:
+Check status:
 
 ```powershell
 bcdedit | Select-String testsigning
 ```
 
-## Notas
+## Notes
 
-- El driver se enlaza con `wdk_add_driver` (`/driver /subsystem:native`,
-  entry `GsDriverEntry`, `WDK::NTOSKRNL`, `WDK::HAL`, `WDK::WMILIB`,
-  `WDK::BUFFEROVERFLOWFASTFAILK`, mas `WDK::CNG` y `WDK::WDMSEC`).
-- `cmake/wdk-shim/warning.h` es un shim vacio: FindWDK fuerza `/FIwarning.h` y
-  las versiones nuevas del WDK ya no traen ese header.
-- `client/CMakeLists.txt` desactiva las dependencias opcionales de httplib
-  (`HTTPLIB_USE_OPENSSL/ZLIB/BROTLI/ZSTD_IF_AVAILABLE`). Si no, el
-  `find_package()` de httplib encuentra las libs de MSYS2 que estan en el PATH y
-  arrastra `C:/msys64/ucrt64/include` a la linea de comandos de MSVC. MSVC
-  entonces incluye los headers de MinGW (`winnt.h`, `corecrt.h`) y falla con
-  `#error No supported target architecture`.
-- Cada `.cpp` nuevo bajo `driver/core` hay que sumarlo a `DRIVER_SOURCES` en
-  `driver/CMakeLists.txt` (y regenerar el DB de clangd), o el link falla con
-  `LNK2019: unresolved external symbol`.
+- The client requires administrator privileges (it opens `\\.\ringo` and manages the service)
+- Test signing requires a reboot after enabling it

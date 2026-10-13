@@ -10,6 +10,7 @@ RINGO_SERVER::RINGO_SERVER(const std::string& host, int port)
 void RINGO_SERVER::register_routes() {
     // telemetry sent by usermode
     _svr.Post("/telemetry/environment", handle_environment_report);
+    _svr.Post("/telemetry/module",      handle_module_report);
     
     // the game server consults this
     _svr.Get("/status/:hwid",           handle_get_status);

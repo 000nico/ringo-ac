@@ -1,6 +1,7 @@
 #include <iostream>
 
-#include "core/driver.hpp"
+#include "core/driver/driver.hpp"
+#include "core/scheduler/scheduler.hpp"
 #include "core/communication_with_driver/communication_with_driver.hpp"
 #include "../driver/core/system/system.hpp"
 #include "../driver/core/identity/identity.hpp"
@@ -86,6 +87,9 @@ int main() {
             printf("%02X", ((BYTE*)&hwid.smbios_uuid)[i]);
         printf("]\n");
     }
+
+    std::cout << "[*] scheduler: environment report every ~2 minutes\n";
+    run_scheduler(drv);
 
     return 0;
 }

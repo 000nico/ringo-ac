@@ -30,12 +30,8 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(json httplib)
-
-set(CLIENT_SOURCES
-    core/communication_with_driver/get_env_info.cpp
-    core/communication_with_driver/setters.cpp
-    core/driver.cpp
-    main.cpp
+file(GLOB_RECURSE CLIENT_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
 )
 
 add_executable(client ${CLIENT_SOURCES})

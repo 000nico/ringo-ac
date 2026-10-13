@@ -2,6 +2,7 @@
 #include <nlohmann/json.hpp>
 #include "server_info.hpp"
 #include "send_environment_report.hpp"
+#include "serialize.hpp"
 #include "core/communication_with_driver/communication_with_driver.hpp"
 
 #ifndef NT_SUCCESS

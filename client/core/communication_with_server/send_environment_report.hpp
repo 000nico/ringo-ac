@@ -1,3 +1,4 @@
+#pragma once
 #include "../../../driver/core/system/system.hpp"
 #include "core/communication_with_driver/communication_with_driver.hpp"
 #include "core/system/hvci/hvci.hpp"
@@ -19,3 +20,6 @@ struct ENVIRONMENT_DATA {
     TPM_CHECK tpm;
     HWID hwid;
 };
+
+bool collect_environment(HANDLE drv, ENVIRONMENT_DATA& out);
+bool send_environment_report(const ENVIRONMENT_DATA& env);

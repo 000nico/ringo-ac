@@ -22,33 +22,17 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(sqlitecpp json)
-
-set(SERVER_SOURCES
-    core/analysis/engine.cpp
-    core/analysis/rules/byovd/byovd.cpp
-    core/analysis/rules/integrity/integrity.cpp
-    core/analysis/rules/manual_mapped_drivers/manual_mapped_drivers.cpp
-    core/analysis/rules/system/hvci/hvci.cpp
-    core/analysis/rules/system/hypervisor/hypervisor.cpp
-    core/analysis/rules/system/kernel_debugger/kernel_debugger.cpp
-    core/analysis/rules/system/secure_boot/secure_boot.cpp
-    core/analysis/rules/system/test_signing/test_signing.cpp
-    core/analysis/rules/system/tpm/tpm.cpp
-    core/analysis/rules/system/vbs/vbs.cpp
-    core/api/routes/telemetry.cpp
-    core/api/routes/verdict.cpp
-    core/api/server.cpp
-    core/db/db.cpp
-    core/db/reports.cpp
-    core/db/verdict.cpp
-    main.cpp
+file(GLOB_RECURSE SERVER_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
 )
+list(FILTER SERVER_SOURCES EXCLUDE REGEX "/third_party/")
 
 add_executable(ringo-server ${SERVER_SOURCES})
 
 target_include_directories(ringo-server PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}/third_party"
+    "${CMAKE_SOURCE_DIR}/driver"
 )
 
 target_link_libraries(ringo-server

@@ -33,12 +33,10 @@ static const std::map<std::string, SIGNAL> SIGNAL_WEIGHTS = {
     
     // mid
     { "byovd_loaded", { 35.0f, false } },
-    { "byovd_loaded_and_unloaded_fast", { 45.0f, false } },
 
     // strong - almost ban with only one of things
     { "byovd_loaded_with_strong_import", { 65.0f, false } },
     { "kernel_thread_outside_valid_module", { 70.0f, false } },
-    { "overlay_detected", { 70.0f, false } },
 
     // immediate ban
     { "hwid_previously_banned", { 100.0f, true } },
