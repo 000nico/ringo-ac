@@ -68,3 +68,4 @@ Desktop.ini
 .DS_Store
 *.tmp
 *.bak
+build-index/

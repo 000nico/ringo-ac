@@ -1,4 +1,5 @@
 # clangd para el driver y el cliente (MSVC + WDK). Para el server tambien.
 CompileFlags:
+  CompilationDatabase: build-index
   Add:
     - -std=c++20

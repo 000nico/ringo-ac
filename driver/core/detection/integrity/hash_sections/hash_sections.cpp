@@ -92,6 +92,7 @@ cleanup:
     return result;
 }
 
+// true if equal
 bool compare_hash(const UCHAR hash_1[HASH_SIZE_SHA256], const UCHAR hash_2[HASH_SIZE_SHA256]) {
     return RtlCompareMemory(hash_1, hash_2, HASH_SIZE_SHA256) == HASH_SIZE_SHA256;
 }

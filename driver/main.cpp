@@ -4,6 +4,8 @@
 #include "core/callbacks/create_process_notify/create_process_notify.hpp"
 #include "core/global.hpp"
 #include "core/communication/communication.hpp"
+#include "core/scheduler/scheduler.hpp"
+#include <wdm.h>
 
 void driver_unload(PDRIVER_OBJECT DriverObject) {
     UNREFERENCED_PARAMETER(DriverObject);
@@ -30,6 +32,8 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) 
     UNREFERENCED_PARAMETER(RegistryPath);
     KdPrint(("Ringo Driver Loaded\n"));
 
+    g_ringo_context.Scheduler.scheduler_stop = FALSE;
+    
     // load callbacks
     g_ringo_context.Callbacks.Ob.callback_handle = ob_register_callbacks_open_process();
     if (g_ringo_context.Callbacks.Ob.callback_handle == NULL) {
@@ -55,6 +59,21 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) 
         KdPrint(("[-] IOCTL setup not loaded\n"));
     }
 
+    KeInitializeEvent(&g_stop_event, NotificationEvent, FALSE);
+    
+    PsCreateSystemThread(
+        &g_ringo_context.Scheduler.scheduler_thread_handle,
+        THREAD_ALL_ACCESS, 
+        NULL, 
+        NULL, 
+        NULL, 
+        scheduler, 
+        NULL
+    );
+
+    ZwClose(g_ringo_context.Scheduler.scheduler_thread_handle);
+    g_ringo_context.Scheduler.scheduler_thread_handle = NULL;
+    
     DriverObject->DriverUnload = driver_unload;
 
     return STATUS_SUCCESS;

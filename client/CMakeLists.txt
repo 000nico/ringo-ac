@@ -1,6 +1,39 @@
+include(FetchContent)
+
+# Las dependencias traidas por FetchContent declaran versiones minimas viejas
+# que CMake 4.x rechaza; permitimos esas politicas.
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+
+FetchContent_Declare(
+    json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG        v3.11.3
+)
+
+# v0.60.0 es la misma version que el httplib.h vendorizado en server/third_party.
+#
+# Desactivamos todas las dependencias opcionales. Si no, el find_package() de
+# httplib encuentra las libs de MSYS2 que estan en el PATH del sistema
+# (C:/msys64/ucrt64) y arrastra C:/msys64/ucrt64/include a la linea de comandos
+# de MSVC, que entonces incluye los headers de MinGW (winnt.h, corecrt.h...).
+set(HTTPLIB_INSTALL              OFF CACHE BOOL "" FORCE)
+set(HTTPLIB_TEST                 OFF CACHE BOOL "" FORCE)
+set(HTTPLIB_USE_OPENSSL_IF_AVAILABLE OFF CACHE BOOL "" FORCE)
+set(HTTPLIB_USE_ZLIB_IF_AVAILABLE    OFF CACHE BOOL "" FORCE)
+set(HTTPLIB_USE_BROTLI_IF_AVAILABLE  OFF CACHE BOOL "" FORCE)
+set(HTTPLIB_USE_ZSTD_IF_AVAILABLE    OFF CACHE BOOL "" FORCE)
+
+FetchContent_Declare(
+    httplib
+    GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
+    GIT_TAG        v0.60.0
+)
+
+FetchContent_MakeAvailable(json httplib)
+
 set(CLIENT_SOURCES
-    core/communication/get_env_info.cpp
-    core/communication/setters.cpp
+    core/communication_with_driver/get_env_info.cpp
+    core/communication_with_driver/setters.cpp
     core/driver.cpp
     main.cpp
 )
@@ -43,6 +76,8 @@ target_link_options(client PRIVATE
 
 target_link_libraries(client PRIVATE
     advapi32
+    nlohmann_json::nlohmann_json
+    httplib::httplib
 )
 
 ringo_set_output_dir(client)

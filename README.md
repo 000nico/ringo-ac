@@ -48,7 +48,7 @@ ringo detects kernel mode cheats, both manual mapped drivers and BYOVD
 ringo checks its own and game integrity through:
   - periodically hashing and comparing executable sections (first hash is done to the disk, from there, hashes are done to the process, compared periodically)
 
-ringo has a scheduler that decides randomly when and which functions are raised, in order to make patterns unpredictable, perhaps, having a single thread working makes the attack surface smaller
+ringo has a scheduler that decides randomly when and which functions are raised, in order to make patterns unpredictable
 
 ringo protects its own IRP managers through:
   - having unique HANDLE, once a process has it, none other can open a HANDLE to the device, this is done via wdmsec.h, IOCreateDeviceSecure, Exclusive=TRUE, FILE_DEVICE_SECURE_OPEN

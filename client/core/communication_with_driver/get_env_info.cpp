@@ -1,6 +1,6 @@
 #include <windows.h>
 
-#include "get_env_info.hpp"
+#include "communication_with_driver.hpp"
 
 #include "../../../driver/core/communication/codes.hpp"
 
@@ -53,6 +53,10 @@ DWORD get_information_class(ENVIRONMENT_INFO_CLASS informationClass) {
             break;
         case InfoObCallbackSet:
             ioctlCode = IOCTL_IS_OBCALLBACK_SET;
+            break;
+
+        case InfoHeartbeat:
+            ioctlCode = IOCTL_GET_HEARTBEAT;
             break;
         
         default:

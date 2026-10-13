@@ -1,5 +1,5 @@
 #include "../../../driver/core/communication/codes.hpp"
-#include "communication.hpp"
+#include "communication_with_driver.hpp"
 
 NTSTATUS set_game_process_name(HANDLE hDriver, const char* name) {
 	if (!hDriver || hDriver == INVALID_HANDLE_VALUE) return STATUS_INVALID_PARAMETER;

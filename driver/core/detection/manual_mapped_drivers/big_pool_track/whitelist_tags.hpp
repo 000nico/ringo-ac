@@ -1,3 +1,7 @@
+#pragma once
+
+#include "sdk/sdk.hpp"
+
 static const ULONG KnownLegitPoolTags[] = {
 
     // ==========================================

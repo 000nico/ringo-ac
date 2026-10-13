@@ -4,3 +4,4 @@
 RINGO_CONTEXT g_ringo_context = { 0 };
 
 PDRIVER_OBJECT g_DriverObject = NULL;
+KEVENT g_stop_event = { 0 };

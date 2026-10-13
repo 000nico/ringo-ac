@@ -1,4 +1,5 @@
 #pragma once
+#include "core/reporting/report_hash_diff/report_hash_diff.hpp"
 #include "sdk/sdk.hpp"
 #include "reporting/report_byovd/report_byovd.hpp"
 #include "callbacks/image_notify/image_notify.hpp"
@@ -33,17 +34,21 @@ typedef struct RINGO_CONTEXT {
         } CreateProcess;
     } Callbacks;
 
+    // each one has both entries and a index counter
     struct {
         MANUAL_MAPPED_DRIVER_DETECTION_REPORT driver_detection_report;
         BYOVD_DETECTION_REPORT byovd_detection_report;
         FLAGGED_DLL_REPORT dll_detection_report;
         THREAD_DETECTION_REPORT thread_detection_report;
+        HASH_DIFF_REPORT hash_diff_detection_report;
     } Detections;
 
     struct {
         BOOLEAN active;
         ULONGLONG process_start_key;
         PEPROCESS process;
+
+        BOOLEAN first_hash_catched;
         UCHAR last_hash[HASH_SIZE_SHA256];
 
         struct {
@@ -51,6 +56,12 @@ typedef struct RINGO_CONTEXT {
             INT index;
         } Banned;
     } Session;
+
+    struct {
+        INT scheduler_stop;
+        HANDLE scheduler_thread_handle;
+        ULONG random_seed;
+    } Scheduler;
 } RINGO_CONTEXT;
 
 extern RINGO_CONTEXT g_ringo_context;
@@ -63,3 +74,5 @@ static const UCHAR g_expected_process_hash[HASH_SIZE_SHA256] = {
 static const UCHAR g_expected_file_hash[HASH_SIZE_SHA256] = {
     0x00, 0x00,
 };
+
+extern KEVENT g_stop_event;

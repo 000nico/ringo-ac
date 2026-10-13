@@ -10,8 +10,10 @@ set(DRIVER_SOURCES
     core/detection/manual_mapped_drivers/driver_scan.cpp
     core/detection/manual_mapped_drivers/kernel_space_walking/kernel_space_walking.cpp
     core/detection/byovd/byovd_scan.cpp
+    core/detection/integrity/hash_sections/hash_sections.cpp
     core/reporting/report_byovd/report_byovd.cpp
     core/reporting/report_manual_mapped_driver/report_manual_mapped_driver.cpp
+    core/reporting/report_hash_diff/report_hash_diff.cpp
     core/system/hvci/hvci.cpp
     core/system/hypervisor/hypervisor.cpp
     core/system/kernel_debugging/kernel_debugging.cpp
@@ -19,8 +21,11 @@ set(DRIVER_SOURCES
     core/system/test_signing/test_signing.cpp
     core/system/tpm/tpm.cpp
     core/system/vbs/vbs.cpp
+    core/heartbeat/heartbeat.cpp
     core/global.cpp
     core/identity/hwid/hwid.cpp
+    core/scheduler/scheduler.cpp
+    core/scheduler/tasks.cpp
     main.cpp
     sdk/crypto/hashes.cpp
     sdk/pe/pe.cpp

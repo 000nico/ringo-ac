@@ -6,12 +6,5 @@
     "C++": {
       "language_servers": ["clangd"]
     }
-  },
-  "lsp": {
-    "clangd": {
-      "binary": {
-        "path": "/usr/sbin/clangd"
-      }
-    }
   }
 }

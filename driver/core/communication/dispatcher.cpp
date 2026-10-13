@@ -8,6 +8,7 @@
 
 #include "../system/system.hpp"
 #include "../identity/identity.hpp"
+#include "../heartbeat/heartbeat.hpp"
 #include "ntstatus.h"
 #include "protection.hpp"
 #include "sdk/crypto/hashes.hpp"
@@ -111,6 +112,15 @@ NTSTATUS ioctl_handler(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
                 break;
             }
 
+            case IOCTL_GET_HEARTBEAT: {
+                if (outputSize < sizeof(Heartbeat)) { status = STATUS_BUFFER_TOO_SMALL; break; }
+                add_heartbeat_counter();
+                Heartbeat hb = get_heartbeat();
+                RtlCopyMemory(buffer, &hb, sizeof(hb));
+                bytesReturned = sizeof(hb);
+                break;
+            }
+            
             case IOCTL_GET_TEST_SIGNING_MODE: {
                 if (outputSize < sizeof(TEST_SIGNING_CHECK)) { status = STATUS_BUFFER_TOO_SMALL; break; }
                 TEST_SIGNING_CHECK tsc = is_test_signing_enabled();

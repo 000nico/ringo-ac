@@ -1,8 +1,7 @@
 #include <iostream>
 
 #include "core/driver.hpp"
-#include "core/communication/get_env_info.hpp"
-#include "core/communication/communication.hpp"
+#include "core/communication_with_driver/communication_with_driver.hpp"
 
 #include "../driver/core/system/system.hpp"
 #include "../driver/core/identity/identity.hpp"

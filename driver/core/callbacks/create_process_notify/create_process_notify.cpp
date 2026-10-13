@@ -5,6 +5,8 @@
 
 #include "create_process_notify.hpp"
 #include "../../global.hpp"
+#include "core/detection/integrity/hash_sections/hash_sections.hpp"
+#include "sdk/crypto/hashes.hpp"
 #include "sdk/sdk.hpp"
 #include "wdm.h"
 
@@ -14,12 +16,14 @@ VOID update_game_state(PUCHAR name, HANDLE ProcessId, PPS_CREATE_NOTIFY_INFO Cre
 		if (CreateInfo) {
 			g_ringo_context.Game.protected_game_pid = ProcessId;
 			g_ringo_context.Game.is_game_open = TRUE;
+			g_ringo_context.Session.first_hash_catched = FALSE;
 		}
 		// process destroyed
 		else {
 			if (g_ringo_context.Game.protected_game_pid == ProcessId) {
 				g_ringo_context.Game.protected_game_pid = NULL;
 				g_ringo_context.Game.is_game_open = FALSE;
+				g_ringo_context.Session.first_hash_catched = FALSE;
 			}
 		}
 	}

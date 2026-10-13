@@ -1,5 +1,7 @@
 #pragma once
 
+#include "sdk/sdk.hpp"
+
 #define SystemBigPoolInformation 0x42
 
 typedef struct _SYSTEM_BIGPOOL_ENTRY {

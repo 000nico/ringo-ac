@@ -11,7 +11,7 @@ void RingoServer::register_routes() {
     // telemetry sent by usermode
     _svr.Post("/telemetry/environment", handle_environment_report);
     
-    // el servidor del juego consulta esto
+    // the game server consults this
     _svr.Get("/status/:hwid",           handle_get_status);
 
     // health check, heartbeat

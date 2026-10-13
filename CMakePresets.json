@@ -17,6 +17,16 @@
         "RINGO_BUILD_CLIENT": "ON",
         "RINGO_BUILD_SERVER": "ON"
       }
+    },
+    {
+      "name": "index",
+      "displayName": "compile_commands.json para clangd (Ninja + MSVC, solo LSP)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-index",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
     }
   ],
   "buildPresets": [
