@@ -3,16 +3,13 @@
 #include <cmath>
 #include <ctime>
 #include "core/analysis/rules/manual_mapped_drivers/manual_mapped_drivers.hpp"
+#include "core/analysis/rules/byovd/byovd.hpp"
 #include "rules/integrity/integrity.hpp"
 #include "rules/system/system.hpp"
 #include <vector>
 
 using Evidence = std::vector<EVIDENCE_ENTRY>;
 static const float DECAY_PER_DAY = 0.9f;
-
-static bool disagree(const SOURCE_RESULT& a, const SOURCE_RESULT& b) {
-    return a.valid && b.valid && a.value != b.value;
-}
 
 RULE_RESULT found(const std::string& signal, const std::string& reason) {
     return { SIGNAL_WEIGHTS.at(signal), signal, reason };
@@ -31,7 +28,7 @@ static void apply_results(const std::string& hwid, const std::vector<RULE_RESULT
     // lower the old score
     p.risk_score = decayed(p.risk_score, p.last_updated, now);
 
-    static const uint64_t DEDUP_WINDOW = 24 * 3600;   // same signal counts once every 24 h
+    static const uint64_t DEDUP_WINDOW = 24 * 3600;   // same finding counts once every 24 h
 
     for (const auto& res : results) {
         if (res.signal.weight == 0) continue;   // no_finding
@@ -43,11 +40,11 @@ static void apply_results(const std::string& hwid, const std::vector<RULE_RESULT
         }
 
         // already counted recently: don't add again
-        if (db::has_recent_evidence(hwid, res.signal_reason, now - DEDUP_WINDOW))
+        if (db::has_recent_evidence(hwid, res.reason, now - DEDUP_WINDOW))
             continue;
 
         p.risk_score += res.signal.weight;
-        db::save_evidence(hwid, res.signal_reason, res.signal.weight, now);
+        db::save_evidence(hwid, res.reason, res.signal.weight, now);
     }
 
     // status with the score
@@ -61,7 +58,7 @@ static void apply_results(const std::string& hwid, const std::vector<RULE_RESULT
     db::save_player_risk(p);
 }
 
-void analyze_environment(const ENVIRONMENT_REPORT& r) {
+void engine::analyze_environment(const ENVIRONMENT_REPORT& r) {
     std::vector<RULE_RESULT> results = {
         rule_secure_boot(r),
         rule_hvci(r),
@@ -77,8 +74,9 @@ void analyze_environment(const ENVIRONMENT_REPORT& r) {
 
 void engine::analyze_modules(const MODULE_REPORT& r) {
     std::vector<RULE_RESULT> results = {
-        rule_manual_mapped(r),
+        rule_manual_mapped(&r),
         rule_integrity_compromised(&r),
+        rule_byovd(&r),
     };
 
     apply_results(r.hwid, results);

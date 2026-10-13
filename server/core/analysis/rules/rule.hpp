@@ -18,7 +18,7 @@ struct RULE_RESULT {
 
 // if didn't found nothing, use this
 inline RULE_RESULT no_finding() {
-    return { 0, 0, 0};
+    return {};
 }   
 
 // 0-39 -> clean
@@ -35,6 +35,7 @@ static const std::map<std::string, SIGNAL> SIGNAL_WEIGHTS = {
 
     // strong - almost ban with only one of things
     { "kernel_thread_outside_valid_module", { 70.0f, false } },
+    { "thread_inside_big_pool", { 70.0f, false } },
     { "spoofing_detection", {70.0f, false } },
     { "unsigned_dll", {70.0f, false} },
     { "remote_thread", {70.0f, false}},

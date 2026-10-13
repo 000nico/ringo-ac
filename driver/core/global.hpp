@@ -60,7 +60,7 @@ typedef struct RINGO_CONTEXT {
     } session;
 
     struct {
-        INT scheduler_stop;
+        volatile LONG scheduler_stop;
         HANDLE scheduler_thread_handle;
         ULONG random_seed;
     } scheduler;

@@ -1,5 +1,6 @@
 #include "verdict.hpp"
 #include <nlohmann/json.hpp>
+#include "core/db/verdict.hpp"
 
 using json = nlohmann::json;
 
@@ -12,10 +13,17 @@ void handle_get_status(const httplib::Request& req, httplib::Response& res) {
         return;
     }
 
+    PLAYER_RISK p = db::get_or_create(hwid);
+
+    const char* status_str = "clean";
+    if (p.status == VERDICT_STATUS::BANNED)       status_str = "banned";
+    else if (p.status == VERDICT_STATUS::FLAGGED) status_str = "flagged";
+
     json response = {
-        { "hwid",   hwid },
-        { "status", "clean" },
-        { "reason", "" }
+        { "hwid",       p.hwid },
+        { "status",     status_str },
+        { "reason",     p.ban_reason },
+        { "risk_score", p.risk_score }
     };
 
     res.status = 200;

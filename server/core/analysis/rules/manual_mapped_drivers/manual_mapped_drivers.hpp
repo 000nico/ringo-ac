@@ -7,4 +7,4 @@
 #include "core/system/system.hpp"
 #include "core/analysis/engine.hpp"
 
-RULE_RESULT rule_manual_mapped(const MODULE_REPORT& r);
+RULE_RESULT rule_manual_mapped(const MODULE_REPORT* r);

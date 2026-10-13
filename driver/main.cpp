@@ -11,7 +11,7 @@ void driver_unload(PDRIVER_OBJECT DriverObject) {
     UNREFERENCED_PARAMETER(DriverObject);
 
     // stop the scheduler thread and wait for it to finish before tearing anything else down
-    g_ringo_context.scheduler.scheduler_stop = TRUE;
+    InterlockedExchange(&g_ringo_context.scheduler.scheduler_stop, TRUE);
     KeSetEvent(&g_stop_event, IO_NO_INCREMENT, FALSE);
 
     if (g_ringo_context.scheduler.scheduler_thread_handle != NULL) {
@@ -50,7 +50,7 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) 
     UNREFERENCED_PARAMETER(RegistryPath);
     KdPrint(("Ringo Driver Loaded\n"));
 
-    g_ringo_context.scheduler.scheduler_stop = FALSE;
+    InterlockedExchange(&g_ringo_context.scheduler.scheduler_stop, FALSE);
     
     // load callbacks
     g_ringo_context.callbacks.ob.callback_handle = ob_register_callbacks_open_process();

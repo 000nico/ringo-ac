@@ -14,5 +14,8 @@ namespace engine {
     void analyze_modules(const MODULE_REPORT& r);
 }
 
-static bool disagree(const SOURCE_RESULT& a, const SOURCE_RESULT& b);
+inline bool disagree(const SOURCE_RESULT& a, const SOURCE_RESULT& b) {
+    return a.valid && b.valid && a.value != b.value;
+}
+
 RULE_RESULT found(const std::string& signal, const std::string& reason);
