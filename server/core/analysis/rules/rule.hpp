@@ -27,18 +27,20 @@ inline RULE_RESULT no_finding() {
 static const std::map<std::string, SIGNAL> SIGNAL_WEIGHTS = {
     // weak
     { "hypervisor_detected",          { 15.0f, false } },
-    { "test_signing_enabled",         { 10.0f, false } },
     { "debugger_present",             { 20.0f, false } },
-    { "big_pool_detected",             { 25.0f, false } },
     
     // mid
     { "byovd_loaded", { 35.0f, false } },
+    { "big_pool_detected", { 35.0f, false } },
 
     // strong - almost ban with only one of things
-    { "byovd_loaded_with_strong_import", { 65.0f, false } },
     { "kernel_thread_outside_valid_module", { 70.0f, false } },
-
+    { "spoofing_detection", {70.0f, false } },
+    { "unsigned_dll", {70.0f, false} },
+    { "remote_thread", {70.0f, false}},
+    
     // immediate ban
+    { "test_signing_enabled",         { 10.0f, true } },
     { "hwid_previously_banned", { 100.0f, true } },
     { "game_hash_mismatch",  { 100.0f, true } },
     { "invalid_ioctl_sent",  { 100.0f, true } },

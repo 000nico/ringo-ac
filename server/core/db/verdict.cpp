@@ -20,7 +20,6 @@ PLAYER_RISK get_or_create(const std::string& hwid) {
         return p;
     }
 
-    // no existe, creamos uno nuevo
     PLAYER_RISK p;
     p.hwid         = hwid;
     p.risk_score   = 0.0f;
